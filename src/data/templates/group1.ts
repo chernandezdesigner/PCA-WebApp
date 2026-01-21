@@ -684,3 +684,611 @@ export const foundation = {
         }
     ]
 }
+
+//sec 6.2
+
+export const buildingFrame = {
+    //description block
+    description: [
+        {
+            id:'building-frame',
+            type:'textarea',
+            label:'Building Frame',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the building frame...',
+            quickOptions: [
+                {
+                    label: 'Wood-frame construction',
+                    text: 'The subject buildings are of wood frame construction.',
+                },
+                {
+                    label: 'Steel-frame construction',
+                    text: 'The subject building is of steel-frame construction, with non-load bearing exterior walls.',
+                },
+                {
+                    label: 'Concrete walls / steel columns',
+                    text: 'The subject building frame consists of both concrete load bearing exterior walls and interior steel columns.',
+                },
+            ],
+        },
+        {
+            id:'decking-between-floors',
+            type:'textarea',
+            label:'Decking Between Floors',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the decking...',
+            quickOptions: [
+                {
+                    label: 'Wood decking over wood frame',
+                    text: 'Wood decking over wood frame is present between the floors.',
+                },
+                {
+                    label: 'Metal pan decking with concrete',
+                    text: 'Metal pan decking, covered with a concrete floor, is present between the floors.',
+                },
+                {
+                    label: 'Single story (no decking)',
+                    text: 'The subject building is a single story structure. There is no decking between floors.',
+                },
+            ],
+        },
+        {
+            id:'roof-framing-decking',
+            type:'textarea',
+            label:'Roof Framing/Decking',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the roof framing...',
+            quickOptions: [
+                {
+                    label: 'Pitched wood trusses',
+                    text: 'Pitched wood trusses support wood decking.',
+                },
+                {
+                    label: 'Wood framing (flat roof)',
+                    text: 'Wood framing and decking support the flat roof system.',
+                },
+                {
+                    label: 'Steel joists / metal-pan decking',
+                    text: 'Open-web steel joists and steel L-beams support metal-pan decking.',
+                },
+            ],
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'The framing is original and maintained as needed.',
+            quickOptions: null,
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'wall-cracks',
+            type: 'textarea',
+            label: 'Wall Cracks',
+            rows: 3,
+            defaultValue: 'No significant signs of cracking were observed on the interior or exterior walls. No history of cracking was reported to the assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'bowed-walls',
+            type: 'textarea',
+            label: 'Bowed Walls',
+            rows: 3,
+            defaultValue: 'No evidence of bowed walls was noted by or reported to NDDS\'s assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'sagging-ceilings-floors',
+            type: 'textarea',
+            label: 'Sagging Ceilings/Floors',
+            rows: 3,
+            defaultValue: 'No evidence of sagging ceilings or floors was noted by or reported to NDDS\'s assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'sticking-doors-windows',
+            type: 'textarea',
+            label: 'Sticking Doors/Windows',
+            rows: 3,
+            defaultValue: 'No sticking doors and windows were noted that would indicate significant movement of the buildings.',
+            quickOptions: null,
+        },
+        {
+            id:'deteriorated-framing',
+            type: 'textarea',
+            label: 'Deteriorated Framing',
+            rows: 3,
+            defaultValue: 'No deteriorated framing or support members were observed by or reported to the NDDS assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'fire-retardant-decking',
+            type: 'textarea',
+            label: 'Fire-Retardant Decking',
+            rows: 4,
+            defaultValue: 'The use of fire-retardant plywood decking started in the early 1980s.  Certain types of fire-retardant treated plywood rapidly deteriorate when exposed to excessive heat and humidity or may cause nails or metal fasteners to corrode.  Common signs of fire-retardant plywood include darkening of the wood and the presence of a powder-like substance, warping of the roof and the curling of shingles.  No indications of fire-retardant plywood were noted. No plywood decking is present. ',
+            quickOptions: null,
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 3,
+            defaultValue: 'No other concerns relating to the framing or decking at the Subject Property were noted by or reported to NDDS\'s assessor.',
+            quickOptions: null,
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Make a site specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'No significant concerns',
+                    text: 'No significant concerns relating to the building frame and decking were noted by or reported to NDDS\'s assessor. No significant expenditures are anticipated during the reserve term.',
+                },
+                {
+                    label: 'Structural engineer evaluation recommended',
+                    text: 'Based on concerns noted above, NDDS recommends a structural engineer conduct a more detailed evaluation of the buildings. An estimated cost for this evaluation is included in the Deferred Maintenance/Physical Deficiencies Table.',
+                },
+            ],
+        }
+    ]
+}
+
+//sec 6.3
+
+export const facadesCurtainWall = {
+    //description block
+    description: [
+        {
+            id:'exterior-walls',
+            type:'textarea',
+            label:'Exterior Walls',
+            rows:2,
+            defaultValue:'',
+            placeholder:'The exterior walls consist of...',
+            quickOptions: null,
+        },
+        {
+            id:'fascia-soffits-trim',
+            type:'textarea',
+            label:'Fascia/Soffits/Trim',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe...',
+            quickOptions: null,
+        },
+        {
+            id:'doors-window',
+            type:'textarea',
+            label:'Doors/Window',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe accordingly...',
+            quickOptions: [
+                {
+                    label: 'Glass/aluminum doors, storefront windows',
+                    text: 'The entrance doors consist of glass in aluminum frames. Emergency doors and employee areas doors are steel in steel frame. The windows are non-opening glass storefront windows in metal framing.',
+                },
+                {
+                    label: 'Metal doors, single-pane wood windows',
+                    text: 'The entrance doors are metal in metal framing. The windows are single-pane glass in wood framing.',
+                },
+            ],
+        },
+        {
+            id:'stairs-walkways-landings',
+            type:'textarea',
+            label:'Stairs/Walkways/Landings',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe accordingly...',
+            quickOptions: [
+                {
+                    label: 'No exterior stairs',
+                    text: 'No exterior stairs are present.',
+                },
+                {
+                    label: 'Poured concrete stairs/landings',
+                    text: 'The exterior stairs are poured concrete with steel railings. The landings are poured concrete slabs. No walkways are present.',
+                },
+                {
+                    label: 'Metal-framed stairs with concrete',
+                    text: 'Exterior stairs are metal-framed with concrete in metal tray treads and steel railings. The landings and walkways are concrete filled metal-pan decking and provide access to each of the living units.',
+                },
+            ],
+        },
+        {
+            id:'other-facades',
+            type:'textarea',
+            label:'Other',
+            rows:2,
+            defaultValue:'No other significant components to the facades were noted.',
+            quickOptions: null,
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'The structural components of the facades, including the exterior walls, windows and doors, are original. Repairs and periodic maintenance, such as painting and caulking, are handled on an as-needed basis.',
+            quickOptions: null,
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'use-of-eifs',
+            type: 'textarea',
+            label: 'Use of EIFS',
+            rows: 5,
+            defaultValue: '',
+            placeholder: 'Evidence of water penetration was noted...provide locations and extent...',
+            quickOptions: [
+                {
+                    label: 'No evidence of EIFS',
+                    text: 'An exterior insulation and finish system (EIFS), also referred to as synthetic stucco, refers to a multi-layered exterior wall system consisting of a base coat, mesh and insulation board, and a finish coat that are mechanically secured or glued to plywood or another substrate. Research has discovered that if water enters the EIFS wall system through surface penetrations, around flashings at architectural details and past caulked joints around window and door openings, the structural wood framing and sheathing can rot. Due to the hidden nature of this kind of damage, NDDS cannot attest to the long-term durability of the EIFS or its effect on the structure. No evidence of EIFS was observed.',
+                },
+                {
+                    label: 'EIFS present, no water damage identified',
+                    text: 'An exterior insulation and finish system (EIFS), also referred to as synthetic stucco, refers to a multi-layered exterior wall system consisting of a base coat, mesh and insulation board, and a finish coat that are mechanically secured or glued to plywood or another substrate. Research has discovered that if water enters the EIFS wall system through surface penetrations, around flashings at architectural details and past caulked joints around window and door openings, the structural wood framing and sheathing can rot. Due to the hidden nature of this kind of damage, NDDS cannot attest to the long-term durability of the EIFS or its effect on the structure. NDDS did not identify any indications of water damage or penetration during the assessment.',
+                },
+            ],
+        },
+        {
+            id:'use-of-hardboard-siding',
+            type: 'textarea',
+            label: 'Use of Hardboard Siding',
+            rows: 5,
+            defaultValue: '',
+            placeholder: 'Areas of deteriorating hardboard were identified...discuss the location and extent...',
+            quickOptions: [
+                {
+                    label: 'No hardboard siding observed',
+                    text: 'Hardboard siding is made by combining wood shavings or fibers with resins or glues. Class action suits have been brought against some manufacturers of these products, including Masonite and Louisiana Pacific. These suits claim that the siding warps, swells and generally deteriorates. No hardboard siding was observed during the site visit.',
+                },
+                {
+                    label: 'Hardboard present, no concerns noted',
+                    text: 'Hardboard siding is made by combining wood shavings or fibers with resins or glues. Class action suits have been brought against some manufacturers of these products, including Masonite and Louisiana Pacific. These suits claim that the siding warps, swells and generally deteriorates. While NDDS cannot attest to the long-term durability of the hardboard siding, no concerns were noted by or reported to NDDS\'s assessor during the assessment.',
+                },
+            ],
+        },
+        {
+            id:'deteriorated-wood',
+            type: 'textarea',
+            label: 'Deteriorated Wood',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Describe the extent and location of the concern...',
+            quickOptions: [
+                {
+                    label: 'No wood on exterior',
+                    text: 'Wood is not present on the exterior façade or trim.',
+                },
+                {
+                    label: 'No significant deterioration',
+                    text: 'No significant evidence of deteriorated wood was noted or reported.',
+                },
+            ],
+        },
+        {
+            id:'worn-paint',
+            type: 'textarea',
+            label: 'Worn Paint',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Describe the extent and location of the concern...',
+            quickOptions: [
+                {
+                    label: 'Buildings are not painted',
+                    text: 'The buildings are not painted.',
+                },
+                {
+                    label: 'No worn or deteriorated paint',
+                    text: 'No evidence of worn or deteriorated paint was noted.',
+                },
+            ],
+        },
+        {
+            id:'damaged-masonry',
+            type: 'textarea',
+            label: 'Damaged Masonry',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Describe the extent and location of the concern...',
+            quickOptions: [
+                {
+                    label: 'No masonry walls present',
+                    text: 'No masonry walls are present.',
+                },
+                {
+                    label: 'Masonry in good condition',
+                    text: 'The masonry walls were in good condition. No significant deterioration of the pointing was noted.',
+                },
+            ],
+        },
+        {
+            id:'water-penetration',
+            type: 'textarea',
+            label: 'Water Penetration',
+            rows: 3,
+            defaultValue: 'No evidence of water penetration through walls, around windows and doors, or in any other manner related to the façade of the building, was observed by or reported to NDDS\'s assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'termites-borers',
+            type: 'textarea',
+            label: 'Termites/Borers',
+            rows: 3,
+            defaultValue: 'No evidence of termites or other wood boring insects was observed by or reported to NDDS\'s assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Describe the extent and location of concerns relating to the façade, windows, doors, exterior stairs, landings, etc...',
+            quickOptions: [
+                {
+                    label: 'No other concerns',
+                    text: 'No other concerns relating to the facades at the Subject Property were noted by or reported to NDDS\'s assessor.',
+                },
+                {
+                    label: 'NYC Local Law 11/98 Façade Inspections',
+                    text: 'New York City Building Code Local Law 11/98 "Façade Inspections" requires that facade inspections be performed for all building greater than six stories. Local Law 11 requires that the inspection be conducted on all building elevations, not just the front façade. In addition, the law now requires a scaffold drop or a platform inspection from top-of-grade of a representative drop. Façade assessor s must report that a condition falls within one of three categories: "Safe", "Safe with a repair and maintenance program" or "Unsafe." Any condition described as Safe with a repair and maintenance program will be required to be repaired within a five year time frame or else the condition will automatically be downgraded to Unsafe. Conditions described as unsafe must be repaired immediately or the building ownership will be subject to fines during the next five year cycle. The last Local Law cycle reporting was...describe when it was due and what were the results...',
+                },
+            ],
+        },
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Make a site specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'No significant concerns',
+                    text: 'No significant concerns relating to the building facades were noted by or reported to NDDS\'s assessor. No significant expenditures are anticipated during the reserve term.',
+                },
+                {
+                    label: 'Exterior maintenance (painting/caulking 6-8 years)',
+                    text: 'Exterior maintenance, such as power-washing, painting and caulking, is required every six to eight years depending on the quality of work performed, quality of materials used and weather conditions. The buildings are likely to require maintenance during the reserve term and costs are included in the Capital Replacement Reserve Schedule. The remaining portions of the facade should be monitored and addressed as part of the routine maintenance of the Subject Property.',
+                },
+                {
+                    label: 'Exterior maintenance (masonry/caulking 10-15 years)',
+                    text: 'Exterior maintenance, such as power-washing, pointing the masonry work and caulking windows, is likely to be need every ten to 15 years depending on the quality of work performed, quality of materials used and weather conditions. The buildings are likely to require maintenance during the reserve term and costs are included in the Capital Replacement Reserve Schedule. The remaining portions of the facade should be monitored and addressed as part of the routine maintenance of the Subject Property.',
+                },
+                {
+                    label: 'Exterior maintenance (curtain wall 10-15 years)',
+                    text: 'Exterior maintenance, such as wet-sealing the curtain wall is likely to be required every ten to 15 years depending on the quality of work performed, quality of materials used and weather conditions. The buildings are likely to require maintenance during the reserve term and costs are included in the Capital Replacement Reserve Schedule. The remaining portions of the facade should be monitored and addressed as part of the routine maintenance of the Subject Property.',
+                },
+                {
+                    label: 'Termite inspection recommended',
+                    text: 'Based on the wood construction and lack of a current termite and boring insect inspection report, NDDS recommends that a state licensed assessor be retained to conduct an inspection. A cost for the inspection is included in the Deferred Maintenance Table. Periodic follow-up inspections should be handled as part of routine maintenance.',
+                },
+                {
+                    label: 'Detailed inspection recommended (hardboard/EIFS)',
+                    text: 'Based on the presence of hardboard/EIFS exterior walls and indications of water damage, NDDS recommends that a more detailed inspection, that may include moisture tests with the exterior walls and/or invasive observations such as removal of portions of the façade or exterior walls, be conducted. An estimated cost for a more detailed assessment is included in the Capital Replacement Reserve Schedule.',
+                },
+            ],
+        }
+    ]
+}
+
+//sec 6.4
+
+export const roofing = {
+    //description block
+    description: [
+        {
+            id:'roofing-system',
+            type:'textarea',
+            label:'Roofing System',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe the roofing system...',
+            quickOptions: [
+                {
+                    label: 'Pitched with asphalt shingles',
+                    text: 'The roofing systems are pitched with wood framing and decking covered with asphalt composition shingles.',
+                },
+                {
+                    label: 'Flat with steel/metal decking',
+                    text: 'The roofing system is flat with steel framing and corrugated metal decking covered with...',
+                },
+            ],
+        },
+        {
+            id:'drainage',
+            type:'textarea',
+            label:'Drainage',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe the drainage system...',
+            quickOptions: [
+                {
+                    label: 'Gutters and downspouts',
+                    text: 'Gutters are located along the eaves and feed storm water into downspouts that discharge into landscaped areas near the buildings.',
+                },
+                {
+                    label: 'Sheet flow',
+                    text: 'Storm water from the pitched roofs runs off via sheet flow onto the Subject Property.',
+                },
+                {
+                    label: 'Interior roof drains',
+                    text: 'The roof has a slight slope designed to direct storm water to interior roof drains that tie underground into the city\'s storm water system.',
+                },
+            ],
+        },
+        {
+            id:'parapets-coping',
+            type:'textarea',
+            label:'Parapets/Coping',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the parapets/coping...',
+            quickOptions: [
+                {
+                    label: 'No parapet walls',
+                    text: 'No parapet walls are present.',
+                },
+                {
+                    label: 'Concrete block with aluminum coping',
+                    text: 'The parapet walls are painted concrete block with aluminum coping.',
+                },
+            ],
+        },
+        {
+            id:'other-roofing',
+            type:'textarea',
+            label:'Other',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the other roofing components...',
+            quickOptions: [
+                {
+                    label: 'Typical roof penetrations',
+                    text: 'Typical roof penetrations are present for sanitary stacks, furnace and water heater exhausts and roof vents.',
+                },
+                {
+                    label: 'No other significant components',
+                    text: 'No other significant roofing components were noted.',
+                },
+            ],
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'The roofing systems are original and are patched or repaired as needed on an ongoing basis as part of the routine maintenance of the facility.',
+            placeholder:'Or describe the last major action and date...',
+            quickOptions: null,
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'leaks',
+            type: 'textarea',
+            label: 'Leaks',
+            rows: 3,
+            defaultValue: 'No leaks were noted by or reported to NDDS\'s assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'significant-ponding',
+            type: 'textarea',
+            label: 'Significant Ponding',
+            rows: 3,
+            defaultValue: 'No indications of significant ponding were noted during the assessment.',
+            quickOptions: null,
+        },
+        {
+            id:'evidence-of-repairs',
+            type: 'textarea',
+            label: 'Evidence of Repairs',
+            rows: 3,
+            defaultValue: 'No significant areas of patching or repairs were noted during the assessment.',
+            quickOptions: null,
+        },
+        {
+            id:'area-of-roof-damage',
+            type: 'textarea',
+            label: 'Area of Roof Damage',
+            rows: 3,
+            defaultValue: 'No significant areas of damaged roofing were noted during the assessment. No significant damage to the flashing or parapet areas were noted during the assessment.',
+            quickOptions: null,
+        },
+        {
+            id:'damaged-gutters',
+            type: 'textarea',
+            label: 'Damaged Gutters',
+            rows: 3,
+            defaultValue: 'The gutters and downspouts appeared to be in good condition. No significant areas of damage or missing sections were noted during the assessment.',
+            quickOptions: null,
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 3,
+            defaultValue: 'No other concerns relating to the roofing systems were noted.',
+            quickOptions: null,
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Or make site specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'No major replacement (EUL 20-25 years)',
+                    text: 'Based on an EUL of 20 to 25 years, no major replacement of the roofing systems is anticipated during the reserve term, provided normal levels of routine maintenance, such as patching periodic leaks and clearing drainage systems, are performed.',
+                },
+                {
+                    label: 'No major replacement (EUL 15-20 years, reserve for patching)',
+                    text: 'Based on an EUL of 15 to 20 years, no major replacement of the roofing systems is anticipated during the reserve term. NDDS has included allowances in the Capital Replacement Reserve Schedule for periodic roof patching and maintenance.',
+                },
+                {
+                    label: 'Replacement likely (EUL 15-20 years)',
+                    text: 'Based on the age of the roof and an EUL of 15 to 20 years, replacement is likely to be required during the reserve term and costs for this work have been included in the Capital Replacement Reserve Schedule.',
+                },
+                {
+                    label: 'No deficiencies / routine maintenance',
+                    text: 'No deficiencies were observed or reported. The components can be maintained under routine maintenance as part of the normal operating program during the term.',
+                },
+            ],
+        }
+    ]
+}
