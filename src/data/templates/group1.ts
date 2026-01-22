@@ -1292,3 +1292,692 @@ export const roofing = {
         }
     ]
 }
+
+//SECTION 7 - MECHANICAL, ELECTRICAL AND PLUMBING SYSTEMS
+
+//sec 7.1 HEATING AND COOLING SYSTEMS
+
+export const heatingAndCooling = {
+    //description block
+    description: [
+        {
+            id:'heating-and-cooling',
+            type:'textarea',
+            label:'Heating and Cooling',
+            rows:4,
+            defaultValue:'',
+            placeholder:'Or describe the HVAC system in detail...',
+            quickOptions: [
+                {
+                    label: 'Roof-mounted package units',
+                    text: 'Heating and cooling are provided by roof-mounted package units. The heating units are gas-fired, while the air conditioning condensers are electric.',
+                },
+                {
+                    label: 'Tenant-specific furnaces / pad-mounted condensers',
+                    text: 'Heating is provided by tenant-specific furnaces located in the _______. Air conditioning is provided by pad-mounted condenser units. The condenser units range from three to five tons in capacity.',
+                },
+                {
+                    label: 'PTAC units',
+                    text: 'Heating and cooling are provided by electric packaged thru-wall air conditioning (PTAC) units. The average capacity of the units observed was three tons.',
+                },
+                {
+                    label: 'Two-pipe water system (boilers/chillers)',
+                    text: 'Heat and cooling is provided by a two-pipe water system. The hot water is produced by two 560 horsepower, 24,056 MBH Johnston steam boilers. Chilled water is produced from two 585-ton Trane centrifugal chillers and one 169-ton Trane centrifugal chiller in conjunction with a two-cell, 1,200-ton Baltimore Air Coil cooling tower on the roof.',
+                },
+            ],
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe the last major HVAC repair or action...',
+            quickOptions: [
+                {
+                    label: 'HVAC system is original',
+                    text: 'The heating, ventilation and air conditioning (HVAC) system is original.',
+                },
+                {
+                    label: 'Serviced and replaced as needed',
+                    text: 'The furnaces and condensers are serviced and repaired as need as part of the routine maintenance of the facility. Units are replaced when required on an on-going basis. It is estimated that approximately ____ have been replaced in the last three years.',
+                },
+            ],
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'inoperable-equipment',
+            type: 'textarea',
+            label: 'Inoperable Equipment',
+            rows: 3,
+            defaultValue: 'All of the systems and equipment observed were operable at the time of the assessment. No significantly obsolete equipment was noted. No concerns regarding inoperable equipment was reported to NDDS by the property contacts.',
+            quickOptions: null,
+        },
+        {
+            id:'insufficient-capacity',
+            type: 'textarea',
+            label: 'Insufficient Capacity',
+            rows: 3,
+            defaultValue: 'No concerns regarding the capacity of the HVAC systems were reported to NDDS. The units appeared adequately sized for the current usage of the property.',
+            quickOptions: null,
+        },
+        {
+            id:'use-of-cfc-refrigerants',
+            type: 'textarea',
+            label: 'Use of CFC Refrigerants',
+            rows: 5,
+            defaultValue: '',
+            placeholder: 'Or describe location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No CFC refrigerant use noted',
+                    text: 'As of July 1, 1992, it became illegal to intentionally vent CFC refrigerants to the atmosphere, and the manufacture of CFC refrigerants was phased out in 1995. CFC refrigerants include R 11, R 12, R 113, R 114 and R 115. No CFC refrigerant use was noted or reported.',
+                },
+                {
+                    label: 'R-22 refrigerant / replacement by 2030',
+                    text: 'As of July 1, 1992, it became illegal to intentionally vent CFC refrigerants to the atmosphere, and the manufacture of CFC refrigerants was phased out in 1995. CFC refrigerants include R 11, R 12, R 113, R 114 and R 115. The two 585-ton chillers are using R-134a, which is an acceptable refrigerant. The 169-ton chiller is using R-11. The rooftop units serving the Subject Property are utilizing R-22 refrigerant. R-22 is a hydro-chlorofluorocarbon (HCFC) refrigerant that cannot be intentionally vented to the atmosphere and is scheduled to be phased out of production in 2030. The packaged units will require replacement by 2030, and should be replaced with a unit that utilizes an acceptable refrigerant.',
+                },
+            ],
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 3,
+            defaultValue: 'No additional concerns relating to the HVAC system at the Subject Property were noted by or reported to NDDS\'s assessor.',
+            quickOptions: null,
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Or make other site-specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'Furnaces (EUL 20-25 years) / Condensers (EUL 10-15 years)',
+                    text: 'The furnaces generally have an EUL of 20 to 25 years. The EUL can be extended significantly with the periodic replacement of fan motors, burner assemblies and thermostats, which can be done as part of routine maintenance. Therefore, no significant replacement is anticipated during the reserve term. The condenser units have an EUL of 10 to 15 years. Replacement of some of these units is anticipated during the reserve term and an allowance has been included in the Capital Replacement Reserve Schedule. The regular changing of the air conditioning filters, cleaning of drip pans and keeping the drain lines clear as well as cleaning of the condenser coils should be handled as part of routine maintenance.',
+                },
+                {
+                    label: 'Package units (EUL 15-20 years)',
+                    text: 'The package units have an EUL of 15 to 20 years. Based on the age of the current units, some replacement is anticipated during the reserve term and an allowance for the replacement of package units is included in the Capital Replacement Reserve Schedule. The regular changing of the air conditioning filters, cleaning of drip pans and keeping the drain lines clear as well as cleaning of the condenser coils should be handled as part of routine maintenance.',
+                },
+                {
+                    label: 'Boiler/chiller overhaul anticipated',
+                    text: 'NDDS anticipates a major overhaul of the boiler and the chiller/cooling tower systems will be required during the reserve term and has included an allowance for this work in the Capital Replacement Reserve Schedule. Costs for some ongoing repairs and parts replacement for the HVAC system are also included in the table. The regular changing of the air conditioning filters, cleaning of drip pans and keeping the drain lines clear as well as cleaning of the condenser coils should be handled as part of routine maintenance.',
+                },
+            ],
+        },
+    ]
+}
+
+//sec 7.2 ELECTRICAL SYSTEMS
+
+export const electrical = {
+    //description block
+    description: [
+        {
+            id:'level-of-service',
+            type:'textarea',
+            label:'Level of Service',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the level of service...',
+            quickOptions: [
+                {
+                    label: 'Tenant space amperes',
+                    text: 'Each tenant space is provided ___ amperes of service.',
+                },
+                {
+                    label: '600-volt, three phase, four-wire',
+                    text: 'The subject building is serviced by a 600-volt, three phase, four-wire service at 400 amperes.',
+                },
+            ],
+        },
+        {
+            id:'wiring',
+            type:'textarea',
+            label:'Wiring',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the wiring...',
+            quickOptions: [
+                {
+                    label: 'All copper wiring',
+                    text: 'All wiring observed was copper.',
+                },
+                {
+                    label: 'Aluminum to building / copper branch',
+                    text: 'Wiring to the building was reportedly aluminum. The branch wiring within the building was observed to be copper.',
+                },
+                {
+                    label: 'Aluminum branch wiring',
+                    text: 'Aluminum branch wiring was observed within the buildings.',
+                },
+            ],
+        },
+        {
+            id:'overload-protection',
+            type:'textarea',
+            label:'Overload Protection',
+            rows:2,
+            defaultValue:'',
+            quickOptions: [
+                {
+                    label: 'Circuit breakers',
+                    text: 'Overload protection was provided by circuit breakers.',
+                },
+                {
+                    label: 'Fuses',
+                    text: 'Overload protection was provided by fuses.',
+                },
+            ],
+        },
+        {
+            id:'metering',
+            type:'textarea',
+            label:'Metering',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the metering...',
+            quickOptions: [
+                {
+                    label: 'Individually metered',
+                    text: 'Each tenant space was individually metered.',
+                },
+                {
+                    label: 'Single tenant / no sub-metering',
+                    text: 'The Subject Property is a single tenant facility; therefore, there is no sub-metering.',
+                },
+                {
+                    label: 'Centrally metered',
+                    text: 'The Subject Property is centrally metered. No individual tenant metering is provided.',
+                },
+            ],
+        },
+        {
+            id:'other-electrical',
+            type:'textarea',
+            label:'Other',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the other electrical components...',
+            quickOptions: [
+                {
+                    label: 'No other significant components',
+                    text: 'No other significant electrical components were noted.',
+                },
+                {
+                    label: 'Backup generator',
+                    text: 'The Subject Property features a natural gas-fired 15 kilowatt backup generator.',
+                },
+            ],
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'The electrical system is original and is maintained as part of the routine maintenance of the facility.',
+            quickOptions: null,
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'insufficient-capacity',
+            type: 'textarea',
+            label: 'Insufficient Capacity',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Describe the capacity concern...',
+            quickOptions: [
+                {
+                    label: 'No capacity concerns',
+                    text: 'No concerns regarding the capacity of the electrical system was reported to NDDS.',
+                },
+                {
+                    label: '40 amperes insufficient',
+                    text: 'Each living unit only received 40 amperes of service. With the common usage of refrigerators, microwaves, coffee makers computers and other electrical equipment, this is generally not considered sufficient capacity.',
+                },
+            ],
+        },
+        {
+            id:'aluminum-wiring',
+            type: 'textarea',
+            label: 'Aluminum Wiring',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Or describe aluminum wiring concerns...',
+            quickOptions: [
+                {
+                    label: 'No aluminum branch wiring',
+                    text: 'No aluminum branch wiring was observed.',
+                },
+                {
+                    label: 'Aluminum supply only / copper branch',
+                    text: 'While the wiring to the property was reported to be aluminum, the branch wiring within the building was observed to be copper. Aluminum supply wiring is not considered to pose the same fire concern that aluminum branch wiring poses and no further action is required regarding the supply wiring.',
+                },
+                {
+                    label: 'Aluminum branch wiring observed (receptacles not rated for aluminum)',
+                    text: 'Aluminum branch wiring was observed at the Subject Property. When used with receptacles not rated to handle aluminum wiring, aluminum wiring can pose a fire hazard. NDDS inspected representative receptacles. The receptacles inspected did not indicate that they were rated for aluminum wiring.',
+                },
+                {
+                    label: 'Aluminum branch wiring observed (CO/AL rated receptacles, no historical concerns)',
+                    text: 'Aluminum branch wiring was observed at the Subject Property. When used with receptacles not rated to handle aluminum wiring, aluminum wiring can pose a fire hazard. NDDS inspected representative receptacles. The receptacles inspected were marked CO/AL indicating they were designed for use with aluminum wiring. The property contact indicated that there have not been any historical concerns relating to the electrical wiring at the property.',
+                },
+            ],
+        },
+        {
+            id:'inappropriate-receptacles',
+            type: 'textarea',
+            label: 'Inappropriate Receptacles',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Or make site specific discussion...',
+            quickOptions: [
+                {
+                    label: 'GFCI present in appropriate areas',
+                    text: 'In general, ground fault current interrupt (GFCI) are required by code to be installed in area near water sources, such as in bathrooms and kitchens. In the areas observed, NDDS noted GFCI receptacles were present in the appropriate areas.',
+                },
+                {
+                    label: 'No GFCI noted',
+                    text: 'In general, ground fault current interrupt (GFCI) are required by code to be installed in area near water sources, such as in bathrooms and kitchens. No GFCI were noted in the areas inspected by NDDS.',
+                },
+            ],
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 3,
+            defaultValue: 'No additional concerns relating to the electrical system at the Subject Property were noted by or reported to NDDS\'s assessor.',
+            quickOptions: null,
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Or make other site specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'No concerns / routine maintenance',
+                    text: 'No concerns with the electrical system were noted. The electrical system should continue to be maintained as part of the routine maintenance of the facility.',
+                },
+                {
+                    label: 'Load study recommended',
+                    text: 'It appears that the living units may not have adequate electrical capacity. NDDS recommends a load study be conducted to determine the capacity required. An allowance for the load study is included in the Deferred Maintenance Table. Additional costs are likely to be required after the load study to upgrade the electrical capacity in each living unit.',
+                },
+                {
+                    label: 'Aluminum wiring / no action (rated receptacles)',
+                    text: 'Aluminum branch wiring was observed at the Subject Property. The receptacles observed were rated for use with aluminum wire and there has been no history of fires resulting from the wiring; therefore, no further action is recommended at this time.',
+                },
+                {
+                    label: 'GFCI installation recommended (routine maintenance)',
+                    text: 'GFCI receptacles were not present (note where). In general, the code requirements for the installation of GFCIs were instituted in 1986. Given the post 1986 construction, in order to bring the units up to current building standards, GFCI receptacles should be installed. ',
+                },
+                {
+                    label: 'GFCI installation recommended (Deferred Maintenance)',
+                    text: 'GFCI receptacles were not present (note where). In general, the code requirements for the installation of GFCIs were instituted in 1986. Given the post 1986 construction, in order to bring the units up to current building standards, GFCI receptacles should be installed.',
+                },
+            ],
+        }
+    ]
+}
+
+//sec 7.3 PLUMBING SYSTEMS
+
+export const plumbing = {
+    //description block
+    description: [
+        {
+            id:'supply-piping',
+            type:'textarea',
+            label:'Supply Piping',
+            rows:2,
+            defaultValue:'',
+            placeholder:'The supply lines are...',
+            quickOptions: null,
+        },
+        {
+            id:'waste-piping',
+            type:'textarea',
+            label:'Waste Piping',
+            rows:2,
+            defaultValue:'',
+            placeholder:'The waste lines are...',
+            quickOptions: null,
+        },
+        {
+            id:'hot-water-production',
+            type:'textarea',
+            label:'Hot Water Production',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Domestic hot water at the property is generated by...',
+            quickOptions: null,
+        },
+        {
+            id:'other-plumbing',
+            type:'textarea',
+            label:'Other',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Discuss anything unique, such as septic systems, lift stations and water treatment facilities...',
+            quickOptions: null,
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'The supply and waste piping are original and is maintained as part of the routine maintenance of the facility. Water heaters are replaced on an as-needed basis.',
+            quickOptions: null,
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'inoperable-equipment',
+            type: 'textarea',
+            label: 'Inoperable Equipment',
+            rows: 3,
+            defaultValue: 'All of the systems and equipment observed were operable at the time of the assessment. No significantly obsolete equipment was noted. No concerns regarding inoperable equipment was reported to NDDS by the property contacts.',
+            quickOptions: null,
+        },
+        {
+            id:'pb-piping',
+            type: 'textarea',
+            label: 'PB Piping',
+            rows: 3,
+            defaultValue: 'No PB piping was noted by or reported to the NDDS assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'abs-piping',
+            type: 'textarea',
+            label: 'ABS Piping',
+            rows: 3,
+            defaultValue: 'No ABS piping was noted by or reported to the NDDS assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'galvanized-piping',
+            type: 'textarea',
+            label: 'Galvanized Piping',
+            rows: 3,
+            defaultValue: 'No evidence of galvanized piping was noted by or reported to the NDDS assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'deterioration-leaks',
+            type: 'textarea',
+            label: 'Deterioration/Leaks',
+            rows: 3,
+            defaultValue: 'No evidence of wide spread deterioration of or leaks in the supply and waste piping was observed by or reported to the NDDS assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'insufficient-water-pressure',
+            type: 'textarea',
+            label: 'Insufficient Water Pressure',
+            rows: 3,
+            defaultValue: 'No concerns associated with insufficient water pressure were observed by or reported to the NDDS assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'blocked-drainage',
+            type: 'textarea',
+            label: 'Blocked Drainage',
+            rows: 3,
+            defaultValue: 'No concerns associated with blocked waste water drains were observed by or reported to the NDDS assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'inadequate-hot-water',
+            type: 'textarea',
+            label: 'Inadequate Hot Water',
+            rows: 3,
+            defaultValue: 'No concerns associated with the quantity or quality of the hot water supply were observed by or reported to the NDDS assessor.',
+            quickOptions: null,
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 3,
+            defaultValue: 'No additional concerns relating to the plumbing system at the Subject Property were noted by or reported to the NDDS assessor.',
+            quickOptions: null,
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Or make other site specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'No replacement / water heaters in reserve',
+                    text: 'No significant replacement of the supply and waste lines is anticipated during the reserve term. These systems should be maintained as part of routine maintenance. Periodic replacement of water heaters is expected during the reserve term and an allowance for this replacement is included in the Capital Replacement Reserve Schedule.',
+                },
+                {
+                    label: 'No replacement / water heaters tenant responsibility',
+                    text: 'No significant replacement of the supply and waste lines is anticipated during the reserve term. These systems should be maintained as part of routine maintenance. Periodic replacement of water heaters is expected during the reserve term; however, this is a tenant responsibility and no costs for this replacement are included in the Capital Replacement Reserve Schedule.',
+                },
+                {
+                    label: 'No replacement / boiler overhaul anticipated',
+                    text: 'No significant replacement of the supply and waste lines is anticipated during the reserve term. These systems should be maintained as part of routine maintenance. Based on the age of the boiler system it is anticipate that the boiler will need to either be replaced or overhauled during the reserve term and an allowance for this work is included in the Capital Replacement Reserve Schedule.',
+                },
+            ],
+        }
+    ]
+}
+
+//sec 7.4 elevators and escalators
+
+export const elevatorsAndEscalators = {
+    //description block
+    description: [
+        {
+            id:'elevators',
+            type:'textarea',
+            label:'Elevators',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the number, type, brand, age, capacity, etc...',
+            quickOptions: [
+                {
+                    label: 'No elevators present',
+                    text: 'No elevators are present at the Subject Property.',
+                },
+            ],
+        },
+        {
+            id:'escalators',
+            type:'textarea',
+            label:'Escalators',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the number, type, age, capacity, etc...',
+            quickOptions: [
+                {
+                    label: 'No escalators present',
+                    text: 'No escalators are present at the Subject Property.',
+                },
+            ],
+        },
+        {
+            id:'other-vertical-transport',
+            type:'textarea',
+            label:'Other',
+            rows:2,
+            defaultValue:'',
+            placeholder:'Describe the number, type, age, capacity, etc...',
+            quickOptions: [
+                {
+                    label: 'No other vertical transport',
+                    text: 'No other significant lifts or mechanical forms of vertical transport systems were noted at the Subject Property.',
+                },
+            ],
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor', 'Not Applicable'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe the last major repair or action...',
+            quickOptions: [
+                {
+                    label: 'No elevators/escalators to maintain',
+                    text: 'There are no elevators or escalators to maintain.',
+                },
+                {
+                    label: 'Original / service contract',
+                    text: 'The equipment is original and is maintained under a service contract.',
+                },
+                {
+                    label: 'Original / as-needed repairs',
+                    text: 'The equipment is original. Repairs and replacement of parts is handled on an as needed basis.',
+                },
+            ],
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'inoperable-equipment',
+            type: 'textarea',
+            label: 'Inoperable Equipment',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Describe the location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No elevators/escalators present',
+                    text: 'No elevators or escalators are present at the Subject Property.',
+                },
+                {
+                    label: 'All operational / no problems reported',
+                    text: 'All of the elevators appeared to be operational at the time of the assessment. No problems regarding the elevators were reported to the NDDS assessor.',
+                },
+            ],
+        },
+        {
+            id:'out-of-date-inspection',
+            type: 'textarea',
+            label: 'Out-of-Date Inspection',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Describe the date the inspection certificates expired...',
+            quickOptions: [
+                {
+                    label: 'No elevators/escalators present',
+                    text: 'No elevators or escalators are present at the Subject Property.',
+                },
+                {
+                    label: 'Inspection certificates current',
+                    text: 'The inspection certificates for the elevators was current.',
+                },
+            ],
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Describe location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No elevators/escalators present',
+                    text: 'No elevators or escalators are present at the Subject Property.',
+                },
+                {
+                    label: 'No other concerns',
+                    text: 'No other concerns regarding the elevators at the Subject Property were noted by or reported to the NDDS assessor.',
+                },
+            ],
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Make other site specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'No elevators/escalators present',
+                    text: 'No elevators or escalators are present at the Subject Property.',
+                },
+                {
+                    label: 'Service contract / not in reserve',
+                    text: 'The elevators are maintained under an annual service contract that includes all necessary repairs and replacement. Allowances for this work, therefore, are not included in the Capital Replacement Reserve Schedule.',
+                },
+                {
+                    label: 'Major overhaul anticipated (EUL 20-25 years)',
+                    text: 'Elevators typically need annual service, which is considered a routine maintenance item, and a major overhaul every 20 to 25 years. Based on the age of the elevators, it is anticipated that a major overhaul will be required during the reserve term and an allowance for this work is included in the Capital Replacement Reserve Schedule.',
+                },
+            ],
+        }
+    ]
+}
+
+//SECTION 8.0 - INTERIOR ELEMENTS
+
+//sec 8.1 - common areas
