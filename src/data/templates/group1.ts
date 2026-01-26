@@ -1981,3 +1981,259 @@ export const elevatorsAndEscalators = {
 //SECTION 8.0 - INTERIOR ELEMENTS
 
 //sec 8.1 - common areas
+
+export const commonAreas = {
+    //description block
+    description: [
+        {
+            id:'interior-finishes',
+            type:'textarea',
+            label:'Interior Finishes',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Or describe what common areas, such as lobbies, hallways and restrooms, are present and the typical wall, ceiling and floor finishes...',
+            quickOptions: [
+                {
+                    label: 'Single tenant / no common areas',
+                    text: 'The facility is a single tenant facility. No common areas are present.',
+                },
+            ],
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor', 'Not Applicable'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Or describe the last major renovation of common areas...',
+            quickOptions: [
+                {
+                    label: 'Finishes are original',
+                    text: 'The common area finishes are original.',
+                },
+                {
+                    label: 'No common areas',
+                    text: 'There are no common areas at the Subject Property.',
+                },
+            ],
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'damaged-walls-ceilings',
+            type: 'textarea',
+            label: 'Damaged Walls/Ceilings',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Or discuss the location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No significant damage',
+                    text: 'No significant damage to the walls and ceilings of the common areas was noted during the assessment.',
+                },
+                {
+                    label: 'No common areas',
+                    text: 'There are no common area at the Subject Property.',
+                },
+            ],
+        },
+        {
+            id:'damaged-worn-flooring',
+            type: 'textarea',
+            label: 'Damaged/Worn Flooring',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Or discuss the location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'Good condition / no damage',
+                    text: 'The common area floors were generally in good condition with no significant areas of damage or wear observed.',
+                },
+                {
+                    label: 'No common areas',
+                    text: 'There are no common area at the Subject Property.',
+                },
+            ],
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Or discuss the location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No other concerns',
+                    text: 'No other concerns relating to the interior finishes of the common areas were noted by or reported to the NDDS assessor.',
+                },
+                {
+                    label: 'No common areas',
+                    text: 'There are no common area at the Subject Property.',
+                },
+            ],
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Or make other site specific recommendations...',
+            quickOptions: [
+                {
+                    label: 'Routine maintenance / flooring replacement in reserve',
+                    text: 'Interior common area finishes, such was walls and ceilings, can be repaired and painted as needed as part of the routine maintenance of the property. Periodic replacement of vinyl flooring and carpeting is anticipated during the reserve term and an allowance for this replacement has been included in the Capital Replacement Reserve Schedule.',
+                },
+                {
+                    label: 'Updating anticipated / in reserve',
+                    text: 'The common areas will need most likely require updating during the reserve term. NDDS has included an allowance for the updating of the common area finishes in the Capital Replacement Reserve Schedule.',
+                },
+            ],
+        }
+    ]
+}
+
+//sec 8.2 - tenant spaces
+
+export const tenantSpaces = {
+    //description block
+    description: [
+        {
+            id:'interior-finishes',
+            type:'textarea',
+            label:'Interior Finishes',
+            rows:4,
+            defaultValue:'',
+            placeholder:'Or describe the interior finishes in detail...',
+            quickOptions: [
+                {
+                    label: 'Commercial tenant spaces',
+                    text: 'The interiors of the tenant spaces are finished out to meet the needs of the individual tenant spaces. Generally speaking, the walls are painted or wallpapered gypsum board, the ceilings are suspended systems with either 2\'x2\' or 2\'x4\' lay-in panels and the floors are a mixture of carpeting, vinyl floor tile and vinyl sheet flooring.',
+                },
+                {
+                    label: 'Living units',
+                    text: 'The interiors of the living units consist of painted gypsum board walls and ceilings. The flooring was a mixture of carpet, vinyl tile and vinyl sheet flooring.',
+                },
+            ],
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:4,
+            defaultValue:'',
+            placeholder:'Or describe the last major tenant area repair or action...',
+            quickOptions: [
+                {
+                    label: 'Finishes are original',
+                    text: 'The interior finishes in the tenant areas are original.',
+                },
+                {
+                    label: 'Replaced as needed / tenant make-ready',
+                    text: 'The interior finishes in the tenant areas are replaced as need on an ongoing basis. The areas are usually addressed as part of the tenant make-ready between tenants. Painting of walls and ceilings is generally handled as part of routine maintenance, while flooring is replaced as needed.',
+                },
+                {
+                    label: 'TI allowance / tenant responsibility',
+                    text: 'Interior finishes are handled as part of the tenant improvement (TI) allowances negotiated as part of the lease or by the tenant during the lease. Once the TI is completed, any repairs or replacement are generally the responsibility of the tenant.',
+                },
+            ],
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'damaged-walls-ceilings',
+            type: 'textarea',
+            label: 'Damaged Walls/Ceilings',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Or discuss the location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No significant damage',
+                    text: 'No significant damage to the walls and ceilings of the tenant areas was noted during the assessment.',
+                },
+            ],
+        },
+        {
+            id:'damaged-worn-flooring',
+            type: 'textarea',
+            label: 'Damaged/Worn Flooring',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Or discuss the location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'Good condition / no damage',
+                    text: 'The flooring in the tenant spaces was generally in good condition with no significant areas of damage or wear observed.',
+                },
+                {
+                    label: 'Living units fair to excellent',
+                    text: 'The flooring in the living units ranged from fair to excellent.',
+                },
+            ],
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Or discuss the location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No other concerns',
+                    text: 'No other concerns relating to the interior finishes of the common areas were noted by or reported to the NDDS assessor.',
+                },
+                {
+                    label: 'No common areas',
+                    text: 'There are no common area at the Subject Property.',
+                },
+            ],
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Or make other site specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'Routine maintenance / flooring in reserve',
+                    text: 'Tenant area finishes, such was walls and ceilings, can be repaired and painted as needed as part of the routine maintenance of the property. Periodic replacement of vinyl flooring and carpeting is anticipated during the reserve term and an allowance for this replacement has been included in the Capital Replacement Reserve Schedule.',
+                },
+                {
+                    label: 'Tenant responsibility / not in reserve',
+                    text: 'Interior finishes are the responsibility of the tenant and are either handled in the TI allowance negotiated as part of the lease or by the tenant during the term of the lease. Therefore, no allowance for tenant area finishes have been included in the Capital Replacement Reserve Schedule.',
+                },
+            ],
+        }
+    ]
+}
