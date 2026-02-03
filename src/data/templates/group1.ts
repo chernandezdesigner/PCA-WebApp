@@ -1554,7 +1554,7 @@ export const electrical = {
             label: 'Insufficient Capacity',
             rows: 3,
             defaultValue: '',
-            placeholder: 'Describe the capacity concern...',
+            placeholder: 'Discuss the capacity concern...',
             quickOptions: [
                 {
                     label: 'No capacity concerns',
@@ -1572,7 +1572,7 @@ export const electrical = {
             label: 'Aluminum Wiring',
             rows: 4,
             defaultValue: '',
-            placeholder: 'Or describe aluminum wiring concerns...',
+            placeholder: 'Describe aluminum wiring concerns...',
             quickOptions: [
                 {
                     label: 'No aluminum branch wiring',
@@ -1598,7 +1598,7 @@ export const electrical = {
             label: 'Inappropriate Receptacles',
             rows: 3,
             defaultValue: '',
-            placeholder: 'Or make site specific discussion...',
+            placeholder: 'Make site specific discussion...',
             quickOptions: [
                 {
                     label: 'GFCI present in appropriate areas',
@@ -1627,7 +1627,7 @@ export const electrical = {
             label: 'Recommendations',
             rows: 4,
             defaultValue: '',
-            placeholder: 'Or make other site specific recommendation...',
+            placeholder: 'Make other site specific recommendation...',
             quickOptions: [
                 {
                     label: 'No concerns / routine maintenance',
@@ -1991,7 +1991,7 @@ export const commonAreas = {
             label:'Interior Finishes',
             rows:3,
             defaultValue:'',
-            placeholder:'Or describe what common areas, such as lobbies, hallways and restrooms, are present and the typical wall, ceiling and floor finishes...',
+            placeholder:'Describe what common areas, such as lobbies, hallways and restrooms, are present and the typical wall, ceiling and floor finishes...',
             quickOptions: [
                 {
                     label: 'Single tenant / no common areas',
@@ -2014,7 +2014,7 @@ export const commonAreas = {
             label:'Age / Last Action',
             rows:3,
             defaultValue:'',
-            placeholder:'Or describe the last major renovation of common areas...',
+            placeholder:'Describe the last major renovation of common areas...',
             quickOptions: [
                 {
                     label: 'Finishes are original',
@@ -2035,7 +2035,7 @@ export const commonAreas = {
             label: 'Damaged Walls/Ceilings',
             rows: 3,
             defaultValue: '',
-            placeholder: 'Or discuss the location and extent of concern...',
+            placeholder: 'Discuss the location and extent of concern...',
             quickOptions: [
                 {
                     label: 'No significant damage',
@@ -2053,7 +2053,7 @@ export const commonAreas = {
             label: 'Damaged/Worn Flooring',
             rows: 3,
             defaultValue: '',
-            placeholder: 'Or discuss the location and extent of concern...',
+            placeholder: 'Discuss the location and extent of concern...',
             quickOptions: [
                 {
                     label: 'Good condition / no damage',
@@ -2071,7 +2071,7 @@ export const commonAreas = {
             label: 'Other',
             rows: 3,
             defaultValue: '',
-            placeholder: 'Or discuss the location and extent of concern...',
+            placeholder: 'Discuss the location and extent of concern...',
             quickOptions: [
                 {
                     label: 'No other concerns',
@@ -2092,7 +2092,7 @@ export const commonAreas = {
             label: 'Recommendations',
             rows: 4,
             defaultValue: '',
-            placeholder: 'Or make other site specific recommendations...',
+            placeholder: 'Make other site specific recommendations...',
             quickOptions: [
                 {
                     label: 'Routine maintenance / flooring replacement in reserve',
@@ -2118,7 +2118,7 @@ export const tenantSpaces = {
             label:'Interior Finishes',
             rows:4,
             defaultValue:'',
-            placeholder:'Or describe the interior finishes in detail...',
+            placeholder:'Describe the interior finishes in detail...',
             quickOptions: [
                 {
                     label: 'Commercial tenant spaces',
@@ -2145,7 +2145,7 @@ export const tenantSpaces = {
             label:'Age / Last Action',
             rows:4,
             defaultValue:'',
-            placeholder:'Or describe the last major tenant area repair or action...',
+            placeholder:'Describe the last major tenant area repair or action...',
             quickOptions: [
                 {
                     label: 'Finishes are original',
@@ -2170,7 +2170,7 @@ export const tenantSpaces = {
             label: 'Damaged Walls/Ceilings',
             rows: 3,
             defaultValue: '',
-            placeholder: 'Or discuss the location and extent of concern...',
+            placeholder: 'Discuss the location and extent of concern...',
             quickOptions: [
                 {
                     label: 'No significant damage',
@@ -2184,7 +2184,7 @@ export const tenantSpaces = {
             label: 'Damaged/Worn Flooring',
             rows: 3,
             defaultValue: '',
-            placeholder: 'Or discuss the location and extent of concern...',
+            placeholder: 'Discuss the location and extent of concern...',
             quickOptions: [
                 {
                     label: 'Good condition / no damage',
@@ -2202,7 +2202,7 @@ export const tenantSpaces = {
             label: 'Other',
             rows: 3,
             defaultValue: '',
-            placeholder: 'Or discuss the location and extent of concern...',
+            placeholder: 'Discuss the location and extent of concern...',
             quickOptions: [
                 {
                     label: 'No other concerns',
@@ -2223,7 +2223,7 @@ export const tenantSpaces = {
             label: 'Recommendations',
             rows: 4,
             defaultValue: '',
-            placeholder: 'Or make other site specific recommendation...',
+            placeholder: 'Make other site specific recommendation...',
             quickOptions: [
                 {
                     label: 'Routine maintenance / flooring in reserve',
@@ -2232,6 +2232,298 @@ export const tenantSpaces = {
                 {
                     label: 'Tenant responsibility / not in reserve',
                     text: 'Interior finishes are the responsibility of the tenant and are either handled in the TI allowance negotiated as part of the lease or by the tenant during the term of the lease. Therefore, no allowance for tenant area finishes have been included in the Capital Replacement Reserve Schedule.',
+                },
+            ],
+        }
+    ]
+}
+
+//SECTION 9.0 - LIFE SAFETY/FIRE PROTECTION
+
+//sec 9.1 - sprinklers and standpipes
+
+export const sprinklersAndStandpipes = {
+    //description block
+    description: [
+        {
+            id:'fire-sprinklers-standpipes',
+            type:'textarea',
+            label:'Fire Sprinklers and Standpipes',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe the sprinkler system in detail...',
+            quickOptions: [
+                {
+                    label: 'No fire sprinkler system',
+                    text: 'No fire sprinkler system is present at the Subject Property.',
+                },
+                {
+                    label: 'Fully fire sprinklered',
+                    text: 'The Subject Property is fully fire sprinklered.',
+                },
+            ],
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe the last major repair or action...',
+            quickOptions: [
+                {
+                    label: 'Not fire sprinklered',
+                    text: 'The Subject Property is not fire sprinklered.',
+                },
+                {
+                    label: 'Original / routine maintenance',
+                    text: 'The fire sprinkler system is original and is maintained as part of the routine maintenance of the facility.',
+                },
+            ],
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'inoperable-equipment',
+            type: 'textarea',
+            label: 'Inoperable Equipment',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Discuss the location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No fire sprinkler systems',
+                    text: 'There are no fire sprinkler systems at the Subject Property.',
+                },
+                {
+                    label: 'No indications of inoperable equipment',
+                    text: 'There was no obvious visual indications of inoperable fire sprinkler equipment. According to the property contact, the system is fully operable.',
+                },
+            ],
+        },
+        {
+            id:'insufficient-water-pressure',
+            type: 'textarea',
+            label: 'Insufficient Water Pressure',
+            rows: 3,
+            defaultValue: '',
+            quickOptions: [
+                {
+                    label: 'No fire sprinkler systems',
+                    text: 'There are no fire sprinkler systems at the Subject Property.',
+                },
+                {
+                    label: 'Water pressure sufficient',
+                    text: 'According to the property contact, the water pressure at the Subject Property is sufficient to operate the fire sprinkler system.',
+                },
+            ],
+        },
+        {
+            id:'out-of-date-inspections',
+            type: 'textarea',
+            label: 'Out-of-Date Inspections',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Describe location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No fire sprinkler systems',
+                    text: 'There are no fire sprinkler systems at the Subject Property.',
+                },
+                {
+                    label: 'Inspection certificates current',
+                    text: 'NDDS reviewed the inspection certificates for the fire sprinkler system and found them to be current.',
+                },
+            ],
+        },
+        {
+            id:'recalled-sprinkler-heads',
+            type: 'textarea',
+            label: 'Recalled Sprinkler Heads',
+            rows: 4,
+            defaultValue: '',
+            quickOptions: [
+                {
+                    label: 'No fire sprinkler systems',
+                    text: 'There are no fire sprinkler systems at the Subject Property.',
+                },
+                {
+                    label: 'Inspected / none involved in recall',
+                    text: 'Over the years, there have been extensive recalls of sprinkler heads manufactured by Central, Omega and Star. Some of these sprinklers could either fail in a fire, or trigger unexpectedly. According to property management, the sprinkler heads at the property were inspected and none of the sprinkler heads were involved in a recall.',
+                },
+                {
+                    label: 'Not aware of inspection',
+                    text: 'Over the years, there have been extensive recalls of sprinkler heads manufactured by Central, Omega and Star. Some of these sprinklers could either fail in a fire, or trigger unexpectedly. Property management was not aware of any inspection conducted at the Subject Property to determine if the sprinkler heads present were involved in any of these recalls.',
+                },
+            ],
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Describe location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No fire sprinkler systems',
+                    text: 'There are no fire sprinkler systems at the Subject Property.',
+                },
+                {
+                    label: 'No additional concerns',
+                    text: 'No additional concerns relating to the sprinkler system at the Subject Property were noted by or reported to NDDS\'s assessor.',
+                },
+            ],
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 5,
+            defaultValue: '',
+            placeholder: 'Make other site specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'No fire sprinkler systems',
+                    text: 'There are no fire sprinkler systems at the Subject Property.',
+                },
+                {
+                    label: 'No major overhaul / routine maintenance',
+                    text: 'No major overhaul or replacement of the fire sprinkler system is anticipated during the reserve term. The system should continue to be maintained as part of the routine maintenance of the facility.',
+                },
+                {
+                    label: 'Inspect for recalled heads',
+                    text: 'It may be prudent for property management to have a fire sprinkler company inspect the sprinkler heads to determine if the heads used were involved in one of the major recalls or contact the Central sprinkler-head replacement program at (800) 871-3492, or http://www.sprinklerreplacement.com. Central will provide an information packet detailing which sprinkler heads (including Central, Omega and Star brands) that are involved in the voluntary recall program. In the event sprinkler heads at the property are involved, property management should check the status of the recall program. It is possible that the affected sprinkler heads will be replaced through the sprinkler head replacement program at no cost to the Subject Property. This work should be conducted as part of routine maintenance and no costs are included in either the Deferred Maintenance or Capital Replacement Reserve Schedules.',
+                },
+            ],
+        }
+    ]
+}
+
+//sec 9.2 - alarm systems
+
+export const alarmSystems = {
+    //description block
+    description: [
+        {
+            id:'fire-alarm-systems',
+            type:'textarea',
+            label:'Fire Alarm Systems',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe the fire alarm system in detail...',
+            quickOptions: null,
+        },
+        {
+            id:'other-systems',
+            type:'textarea',
+            label:'Other Systems',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe any other fire systems in detail...',
+            quickOptions: null,
+        }
+    ],
+    //observations block
+    observations: [
+        {
+            id:'general-condition',
+            type:'condition-selector',
+            label:'General Condition',
+            options: ['Good', 'Fair', 'Poor', 'Not Applicable'],
+        },
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'',
+            placeholder:'Describe the last major repair or action...',
+            quickOptions: [
+                {
+                    label: 'No alarm systems present',
+                    text: 'No fire, security or other alarm systems were present at the Subject Property.',
+                },
+                {
+                    label: 'Original / routine maintenance',
+                    text: 'The alarm systems at the Subject Property are original and are maintained as part of the routine maintenance of the facility.',
+                },
+                {
+                    label: 'Battery operated smoke detectors',
+                    text: 'The battery operated smoke detectors are of various ages. Batteries are replaced on a periodic basis and non-functioning units are replaced on an as needed basis. This work is done as part of routine maintenance.',
+                },
+            ],
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'inoperable-equipment',
+            type: 'textarea',
+            label: 'Inoperable Equipment',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Discuss the location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No additional life safety systems',
+                    text: 'No additional property-owned life safety or fire protection systems were present at the Subject Property.',
+                },
+                {
+                    label: 'System operable / no inoperable equipment',
+                    text: 'The system appeared operable at the time of the assessment. No inoperable equipment was reported to the NDDS assessor.',
+                },
+            ],
+        },
+        {
+            id:'other-concerns',
+            type: 'textarea',
+            label: 'Other',
+            rows: 3,
+            defaultValue: '',
+            placeholder: 'Describe location and extent of concern...',
+            quickOptions: [
+                {
+                    label: 'No additional life safety systems',
+                    text: 'No additional property-owned life safety or fire protection systems were present at the Subject Property.',
+                },
+                {
+                    label: 'No additional concerns',
+                    text: 'No additional concerns relating to the system were noted by or reported to NDDS\'s assessor.',
+                },
+            ],
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 4,
+            defaultValue: '',
+            placeholder: 'Make other site specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'No additional life safety systems',
+                    text: 'No additional property-owned life safety or fire protection systems were present at the Subject Property.',
+                },
+                {
+                    label: 'No major overhaul / routine maintenance',
+                    text: 'No major overhaul or replacement of the system is anticipated during the reserve term. The system should continue to be maintained as part of the routine maintenance of the facility.',
                 },
             ],
         }
