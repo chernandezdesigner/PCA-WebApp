@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 export interface NavSubsection {
   id: string;
@@ -24,10 +24,9 @@ const emit = defineEmits<{
   'navigate': [sectionId: string, step: number];
 }>();
 
-// Track expanded sections
 const expandedSections = ref<Set<string>>(new Set());
 
-// Auto-expand section containing current step
+// Auto-expand logic
 watch(
   () => props.currentStep,
   () => {
@@ -52,40 +51,12 @@ function isExpanded(sectionId: string): boolean {
   return expandedSections.value.has(sectionId);
 }
 
-function isActiveSubsection(step: number): boolean {
+function isActive(step: number): boolean {
   return props.currentStep === step;
 }
 
 function isCompleted(step: number): boolean {
   return props.completedSteps?.has(step) ?? false;
-}
-
-function handleNavigate(sectionId: string, step: number) {
-  emit('navigate', sectionId, step);
-}
-
-// Keyboard navigation
-function handleKeydown(event: KeyboardEvent, sectionId: string) {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault();
-    toggleSection(sectionId);
-  }
-}
-
-function handleSubsectionKeydown(event: KeyboardEvent, sectionId: string, step: number) {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault();
-    handleNavigate(sectionId, step);
-  }
-}
-
-// Calculate section progress
-function getSectionProgress(section: NavSection): { completed: number; total: number } {
-  const total = section.subsections.length;
-  const completed = section.subsections.filter((sub) => 
-    props.completedSteps?.has(sub.step)
-  ).length;
-  return { completed, total };
 }
 </script>
 
@@ -93,150 +64,117 @@ function getSectionProgress(section: NavSection): { completed: number; total: nu
   <nav
     class="sidebar-nav h-full flex flex-col bg-zinc-950 border-r border-zinc-800"
     role="navigation"
-    aria-label="Report sections navigation"
+    aria-label="Progress tracker"
   >
     <!-- Header -->
-    <div class="flex-shrink-0 px-4 py-5 border-b border-zinc-800">
-      <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-        Report Sections
+    <div class="flex-shrink-0 px-6 py-6">
+      <h2 class="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-1">
+        Assessment Progress
       </h2>
+      <div class="h-1 w-full bg-zinc-900 rounded-full overflow-hidden mt-2">
+        <div 
+          class="h-full bg-blue-600 transition-all duration-500 ease-out"
+          :style="{ width: `${((completedSteps?.size || 0) / sections.reduce((acc, s) => acc + s.subsections.length, 0)) * 100}%` }"
+        />
+      </div>
     </div>
 
-    <!-- Scrollable section list -->
-    <div class="flex-1 overflow-y-auto py-2" role="tree" aria-label="Sections">
-      <div
-        v-for="section in sections"
-        :key="section.id"
-        class="section-group"
-        role="treeitem"
-        :aria-expanded="isExpanded(section.id)"
-      >
-        <!-- Section Header -->
-        <button
-          type="button"
-          class="section-header group w-full flex items-center justify-between gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
-          :class="{ 'bg-zinc-900': isExpanded(section.id) }"
-          :aria-controls="`section-${section.id}-content`"
-          :aria-expanded="isExpanded(section.id)"
-          @click="toggleSection(section.id)"
-          @keydown="handleKeydown($event, section.id)"
-        >
-          <div class="flex-1 min-w-0">
-            <span class="block text-sm font-medium text-zinc-200 truncate">
+    <!-- Timeline Scroll Area -->
+    <div class="flex-1 overflow-y-auto px-4 pb-6 custom-scrollbar">
+      <div class="space-y-1">
+        <div v-for="section in sections" :key="section.id" class="relative">
+          
+          <!-- Section Header -->
+          <button
+            @click="toggleSection(section.id)"
+            class="w-full flex items-center justify-between py-3 px-2 group focus:outline-none"
+          >
+            <span 
+              class="text-sm font-semibold transition-colors duration-200"
+              :class="isExpanded(section.id) ? 'text-zinc-100' : 'text-zinc-400 group-hover:text-zinc-300'"
+            >
               {{ section.title }}
             </span>
-            <!-- Progress indicator -->
-            <span class="block text-xs text-zinc-500 mt-0.5">
-              {{ getSectionProgress(section).completed }} of {{ getSectionProgress(section).total }} complete
-            </span>
-          </div>
-          
-          <!-- Expand/collapse icon -->
-          <svg
-            class="flex-shrink-0 w-4 h-4 text-zinc-500 transition-transform duration-200"
-            :class="{ '-rotate-180': isExpanded(section.id) }"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-
-        <!-- Subsections -->
-        <div
-          v-show="isExpanded(section.id)"
-          :id="`section-${section.id}-content`"
-          class="subsections"
-          role="group"
-          :aria-label="`${section.title} subsections`"
-        >
-          <button
-            v-for="subsection in section.subsections"
-            :key="subsection.id"
-            type="button"
-            role="treeitem"
-            :aria-current="isActiveSubsection(subsection.step) ? 'page' : undefined"
-            class="subsection-item group w-full flex items-center gap-3 px-4 py-2.5 pl-5 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
-            :class="[
-              isActiveSubsection(subsection.step)
-                ? 'bg-blue-600 text-white'
-                : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
-            ]"
-            @click="handleNavigate(section.id, subsection.step)"
-            @keydown="handleSubsectionKeydown($event, section.id, subsection.step)"
-          >
-            <!-- Status indicator -->
-            <span 
-              class="flex-shrink-0 w-2 h-2 rounded-full transition-colors"
-              :class="[
-                isActiveSubsection(subsection.step)
-                  ? 'bg-white'
-                  : isCompleted(subsection.step)
-                  ? 'bg-emerald-500'
-                  : 'bg-zinc-700 group-hover:bg-zinc-600'
-              ]"
-              :aria-label="isCompleted(subsection.step) ? 'Completed' : 'Not completed'"
-            />
-            
-            <span class="flex-1 min-w-0 text-sm truncate">
-              {{ subsection.title }}
-            </span>
-
-            <!-- Completed checkmark -->
             <svg
-              v-if="isCompleted(subsection.step) && !isActiveSubsection(subsection.step)"
-              class="flex-shrink-0 w-4 h-4 text-emerald-500"
+              class="w-4 h-4 text-zinc-600 transition-transform duration-200"
+              :class="{ 'rotate-180': isExpanded(section.id) }"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              aria-hidden="true"
             >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Footer with overall progress -->
-    <div class="flex-shrink-0 px-4 py-4 border-t border-zinc-800">
-      <div class="flex items-center justify-between text-xs text-zinc-500 mb-2">
-        <span>Overall Progress</span>
-        <span>{{ completedSteps?.size || 0 }} / {{ sections.reduce((acc, s) => acc + s.subsections.length, 0) }}</span>
-      </div>
-      <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden" role="progressbar" :aria-valuenow="completedSteps?.size || 0" :aria-valuemax="sections.reduce((acc, s) => acc + s.subsections.length, 0)">
-        <div 
-          class="h-full bg-emerald-500 transition-all duration-300"
-          :style="{ width: `${((completedSteps?.size || 0) / sections.reduce((acc, s) => acc + s.subsections.length, 0)) * 100}%` }"
-        />
+          <!-- Subsection Timeline -->
+          <div 
+            v-show="isExpanded(section.id)"
+            class="relative ml-2 pl-4 border-l-2 border-zinc-800 space-y-1 pb-2 transition-all duration-300"
+          >
+            <button
+              v-for="sub in section.subsections"
+              :key="sub.id"
+              @click="emit('navigate', section.id, sub.step)"
+              class="group relative w-full flex items-center py-2 px-3 rounded-md text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              :class="isActive(sub.step) ? 'bg-zinc-900' : 'hover:bg-zinc-900/50'"
+            >
+              <!-- Timeline Dot -->
+              <div 
+                class="absolute -left-[21px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 transition-colors duration-300 z-10"
+                :class="[
+                  isActive(sub.step) 
+                    ? 'bg-blue-600 border-blue-600 ring-4 ring-zinc-950' 
+                    : isCompleted(sub.step)
+                      ? 'bg-zinc-950 border-emerald-500'
+                      : 'bg-zinc-950 border-zinc-700 group-hover:border-zinc-500'
+                ]"
+              >
+                <!-- Checkmark for completed -->
+                <svg 
+                  v-if="isCompleted(sub.step) && !isActive(sub.step)"
+                  class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 text-emerald-500"
+                  viewBox="0 0 24 24"
+                  fill="none" 
+                  stroke="currentColor" 
+                  stroke-width="4"
+                >
+                  <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+
+              <!-- Text Content -->
+              <span 
+                class="text-sm transition-colors duration-200"
+                :class="[
+                  isActive(sub.step) 
+                    ? 'text-blue-400 font-medium' 
+                    : isCompleted(sub.step)
+                      ? 'text-zinc-300'
+                      : 'text-zinc-500 group-hover:text-zinc-400'
+                ]"
+              >
+                {{ sub.title }}
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
 </template>
 
 <style scoped>
-.sidebar-nav {
-  width: 280px;
-  min-width: 280px;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
 }
-
-/* Custom scrollbar */
-.sidebar-nav ::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar-nav ::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-
-.sidebar-nav ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
-  border-radius: 3px;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
 }
-
-.sidebar-nav ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
 }
 </style>

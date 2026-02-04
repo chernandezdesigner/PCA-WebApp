@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { FieldNoteData, FieldInspectionItem } from '@/types/fieldNotes';
-import { 
-  formatCurrency, 
-  getConditionClasses, 
-  REPAIR_STATUS_LABELS 
-} from '@/types/fieldNotes';
+import type { FieldNoteData, FieldInspectionItem, ConditionRating } from '@/types/fieldNotes';
+import { formatCurrency, REPAIR_STATUS_LABELS } from '@/types/fieldNotes';
 
 const props = defineProps<{
   data?: FieldNoteData | null;
@@ -26,7 +22,7 @@ function toggleCollapse() {
   emit('toggle-collapse');
 }
 
-// Demo data matching the mockup structure
+// Demo data (fallback)
 const demoData = computed<FieldNoteData>(() => ({
   sectionId: '6.1',
   inspector: 'John Smith',
@@ -61,200 +57,156 @@ const demoData = computed<FieldNoteData>(() => ({
       repairAmount: 33320,
     },
   ],
-  observations: 'Property seems to be in generally acceptable condition with some areas requiring immediate attention. The topography shows signs of erosion near the eastern boundary. Landscaping is well-maintained with drip irrigation functioning properly. Retaining walls show minor deterioration and should be addressed.',
+  observations: 'Property seems to be in generally acceptable condition with some areas requiring immediate attention. The topography shows signs of erosion near the eastern boundary.',
   photoCount: 12,
 }));
 
 const displayData = computed(() => props.data || demoData.value);
 
-// Split types into columns for display
-function getTypeColumns(types: string[]): [string[], string[]] {
-  const mid = Math.ceil(types.length / 2);
-  return [types.slice(0, mid), types.slice(mid)];
+function getConditionBadgeStyle(condition: ConditionRating) {
+  switch (condition) {
+    case 'Good': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+    case 'Fair': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+    case 'Poor': return 'bg-red-500/10 text-red-400 border-red-500/20';
+    default: return 'bg-zinc-800 text-zinc-400 border-zinc-700';
+  }
 }
 </script>
 
 <template>
   <aside
-    class="notes-panel h-full flex flex-col border-l transition-all duration-300 ease-in-out"
-    :class="isCollapsedInternal ? 'w-12 bg-zinc-900 border-zinc-800' : 'w-[380px] bg-zinc-900 border-zinc-800'"
-    role="complementary"
-    aria-label="Field inspection notes"
+    class="h-full flex flex-col bg-zinc-950 border-l border-zinc-800 transition-all duration-300"
+    :class="isCollapsedInternal ? 'w-14' : 'w-[400px]'"
   >
-    <!-- Collapsed state -->
-    <div v-if="isCollapsedInternal" class="h-full flex flex-col items-center py-4">
-      <button
-        type="button"
-        class="p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        aria-label="Expand field notes panel"
+    <!-- Collapsed State -->
+    <div v-if="isCollapsedInternal" class="flex flex-col items-center py-4 h-full">
+      <button 
         @click="toggleCollapse"
+        class="p-2 text-zinc-400 hover:bg-zinc-800 rounded-md transition-colors"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
         </svg>
       </button>
-      
-      <div class="mt-4 flex-1 flex items-start">
-        <span 
-          class="text-xs font-medium text-zinc-500 uppercase tracking-widest"
-          style="writing-mode: vertical-rl; text-orientation: mixed;"
-        >
-          Field Notes
-        </span>
+      <div class="mt-8 writing-mode-vertical rotate-180 text-xs font-bold tracking-widest text-zinc-500 uppercase">
+        Field Data
       </div>
-
-      <div 
-        v-if="displayData.photoCount > 0"
-        class="mt-auto mb-2 w-8 h-8 flex items-center justify-center bg-zinc-800 rounded-lg"
-      >
-        <span class="text-xs font-medium text-zinc-400">{{ displayData.photoCount }}</span>
+      <div class="mt-auto mb-4 bg-blue-600/20 text-blue-400 w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold">
+        {{ displayData.photoCount }}
       </div>
     </div>
 
-    <!-- Expanded state -->
+    <!-- Expanded State -->
     <template v-else>
       <!-- Header -->
-      <div class="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-950/50">
-        <div>
-          <h3 class="text-sm font-semibold text-zinc-100">Field Notes</h3>
-          <p class="text-xs text-zinc-500">{{ displayData.inspector }} · {{ displayData.inspectionDate }}</p>
+      <div class="flex-shrink-0 px-5 py-4 border-b border-zinc-800 bg-zinc-950">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-bold text-zinc-100 uppercase tracking-wide">Field Notes</h2>
+          <button 
+            @click="toggleCollapse"
+            class="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 rounded transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
-        <button
-          type="button"
-          class="p-2 -mr-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-          aria-label="Collapse field notes panel"
-          @click="toggleCollapse"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-          </svg>
-        </button>
+        <div class="flex items-center gap-2 text-xs text-zinc-500">
+          <span class="font-medium text-zinc-400">{{ displayData.inspector }}</span>
+          <span>•</span>
+          <span>{{ displayData.inspectionDate }}</span>
+        </div>
       </div>
 
-      <!-- Scrollable content -->
-      <div class="flex-1 overflow-y-auto">
-        <!-- Inspection items -->
-        <div class="divide-y divide-zinc-800/50">
-          <article
-            v-for="item in displayData.items"
-            :key="item.id"
-            class="p-4 hover:bg-zinc-800/30 transition-colors cursor-pointer"
-            role="button"
-            tabindex="0"
-            :aria-label="`${item.title}: ${item.condition} condition`"
-            @click="emit('view-item', item.id)"
-            @keydown.enter="emit('view-item', item.id)"
-          >
-            <!-- Item title -->
-            <h4 class="text-sm font-semibold text-zinc-100 mb-3">
-              {{ item.title }}
-            </h4>
+      <!-- Content Area -->
+      <div class="flex-1 overflow-y-auto px-5 py-4 space-y-6 custom-scrollbar">
+        
+        <!-- Inspection Cards -->
+        <div v-for="item in displayData.items" :key="item.id" class="group">
+          <div class="relative bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition-all duration-200 hover:bg-zinc-900 hover:border-zinc-700 hover:shadow-lg hover:shadow-black/20">
+            
+            <!-- Card Header: Title & Condition -->
+            <div class="flex items-start justify-between mb-4">
+              <h3 class="text-sm font-semibold text-zinc-200 group-hover:text-blue-400 transition-colors">
+                {{ item.title }}
+              </h3>
+              <span 
+                class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded border"
+                :class="getConditionBadgeStyle(item.condition)"
+              >
+                {{ item.condition || 'N/A' }}
+              </span>
+            </div>
 
-            <!-- Two column layout -->
-            <div class="grid grid-cols-2 gap-3">
-              <!-- Left: Types/Materials -->
-              <div class="space-y-1.5">
-                <span class="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
+            <!-- Card Grid Data -->
+            <div class="grid grid-cols-2 gap-y-4 gap-x-2 text-xs">
+              
+              <!-- Materials / Types -->
+              <div class="col-span-2">
+                <p class="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">
                   {{ item.typeLabel }}
-                </span>
-                <div class="flex gap-4">
-                  <ul class="space-y-0.5">
-                    <li 
-                      v-for="type in getTypeColumns(item.types)[0]" 
-                      :key="type"
-                      class="flex items-center gap-1.5 text-xs text-zinc-300"
-                    >
-                      <span class="w-1 h-1 rounded-full bg-zinc-600" aria-hidden="true" />
-                      {{ type }}
-                    </li>
-                  </ul>
-                  <ul v-if="getTypeColumns(item.types)[1].length" class="space-y-0.5">
-                    <li 
-                      v-for="type in getTypeColumns(item.types)[1]" 
-                      :key="type"
-                      class="flex items-center gap-1.5 text-xs text-zinc-300"
-                    >
-                      <span class="w-1 h-1 rounded-full bg-zinc-600" aria-hidden="true" />
-                      {{ type }}
-                    </li>
-                  </ul>
+                </p>
+                <div class="flex flex-wrap gap-1.5">
+                  <span 
+                    v-for="type in item.types" 
+                    :key="type"
+                    class="px-2 py-0.5 bg-zinc-800 text-zinc-300 rounded text-[11px]"
+                  >
+                    {{ type }}
+                  </span>
                 </div>
               </div>
 
-              <!-- Right: Condition & Repair -->
-              <div class="space-y-2">
-                <!-- Condition badge -->
-                <div>
-                  <span class="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
-                    condition
-                  </span>
-                  <div 
-                    class="mt-1 px-3 py-1.5 rounded text-center text-xs font-semibold"
-                    :class="[getConditionClasses(item.condition).bg, getConditionClasses(item.condition).text]"
-                  >
-                    {{ item.condition || '—' }}
-                  </div>
-                </div>
+              <!-- Repair Status -->
+              <div class="border-t border-zinc-800 pt-3 mt-1">
+                <p class="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Repair Status</p>
+                <p class="font-medium text-zinc-300">
+                  {{ item.repairStatus ? REPAIR_STATUS_LABELS[item.repairStatus] : '—' }}
+                </p>
+              </div>
 
-                <!-- Repair status -->
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-zinc-500">repair status</span>
-                  <span 
-                    class="font-semibold text-zinc-200"
-                    :title="item.repairStatus ? REPAIR_STATUS_LABELS[item.repairStatus] : undefined"
-                  >
-                    {{ item.repairStatus || '—' }}
-                  </span>
-                </div>
-
-                <!-- Amount to repair -->
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-zinc-500">amount to repair</span>
-                  <span class="font-semibold text-zinc-100">
-                    {{ formatCurrency(item.repairAmount) }}
-                  </span>
-                </div>
+              <!-- Cost -->
+              <div class="border-t border-zinc-800 pt-3 mt-1 text-right">
+                <p class="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Est. Cost</p>
+                <p class="font-mono font-medium text-zinc-200 text-sm">
+                  {{ formatCurrency(item.repairAmount) }}
+                </p>
               </div>
             </div>
-          </article>
+
+          </div>
         </div>
 
-        <!-- Observations section -->
-        <div class="p-4 border-t border-zinc-800">
-          <h4 class="text-sm font-semibold text-zinc-100 mb-2">
-            Observations & Comments
-          </h4>
-          <p 
-            v-if="displayData.observations"
-            class="text-xs text-zinc-400 leading-relaxed italic"
-          >
-            "{{ displayData.observations }}"
-          </p>
-          <p v-else class="text-xs text-zinc-500 italic">
-            No observations recorded.
-          </p>
+        <!-- Observations -->
+        <div class="pt-2">
+          <h4 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Observations</h4>
+          <div class="bg-zinc-900/30 border-l-2 border-blue-500/50 pl-3 py-1">
+            <p class="text-sm text-zinc-400 italic leading-relaxed">
+              "{{ displayData.observations }}"
+            </p>
+          </div>
         </div>
+
       </div>
 
-      <!-- Footer: Photos -->
-      <div class="flex-shrink-0 p-3 border-t border-zinc-800 bg-zinc-950/50">
-        <button
-          type="button"
-          class="w-full flex items-center justify-between p-3 bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      <!-- Bottom Actions -->
+      <div class="flex-shrink-0 p-4 border-t border-zinc-800 bg-zinc-950">
+        <button 
           @click="emit('view-photos')"
+          class="w-full flex items-center justify-between p-3 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all group"
         >
           <div class="flex items-center gap-3">
-            <div class="w-9 h-9 flex items-center justify-center bg-zinc-700 rounded-lg">
-              <svg class="w-4 h-4 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <div class="w-10 h-10 rounded-md bg-zinc-950 flex items-center justify-center border border-zinc-800 group-hover:border-zinc-600">
+              <svg class="w-5 h-5 text-zinc-400 group-hover:text-zinc-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
             <div class="text-left">
-              <span class="block text-sm font-medium text-zinc-200">Site Photos</span>
-              <span class="block text-xs text-zinc-500">{{ displayData.photoCount }} photos attached</span>
+              <div class="text-sm font-medium text-zinc-200">Site Photos</div>
+              <div class="text-xs text-zinc-500">{{ displayData.photoCount }} images attached</div>
             </div>
           </div>
-          <svg class="w-5 h-5 text-zinc-500 group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <svg class="w-5 h-5 text-zinc-600 group-hover:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -264,20 +216,20 @@ function getTypeColumns(types: string[]): [string[], string[]] {
 </template>
 
 <style scoped>
-.notes-panel ::-webkit-scrollbar {
-  width: 6px;
+.writing-mode-vertical {
+  writing-mode: vertical-rl;
 }
-
-.notes-panel ::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-
-.notes-panel ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
-  border-radius: 3px;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
 }
-
-.notes-panel ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
 }
 </style>
