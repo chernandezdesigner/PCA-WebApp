@@ -15,12 +15,10 @@ const emit = defineEmits<{
   'update:modelValue': [value: Record<BlockType, FormData>];
 }>();
 
-// Get field value from nested structure
 function getFieldValue(block: BlockType, fieldId: string): string | null {
   return props.modelValue[block]?.[fieldId] ?? null;
 }
 
-// Update field value in nested structure
 function updateFieldValue(block: BlockType, fieldId: string, value: string | null) {
   const newData = {
     ...props.modelValue,
@@ -32,18 +30,15 @@ function updateFieldValue(block: BlockType, fieldId: string, value: string | nul
   emit('update:modelValue', newData);
 }
 
-// Check if block has fields
 function hasBlock(block: BlockType): boolean {
   const fields = props.config[block];
   return Array.isArray(fields) && fields.length > 0;
 }
 
-// Get fields for a block
 function getBlockFields(block: BlockType): FieldConfig[] {
   return props.config[block] || [];
 }
 
-// Get form data for a block
 function getBlockFormData(block: BlockType): FormData {
   return props.modelValue[block] || {};
 }
@@ -58,70 +53,74 @@ function getBlockIcon(block: BlockType): string {
   }
 }
 
-// More sophisticated block styling
-function getBlockStyles(block: BlockType) {
+function getBlockTheme(block: BlockType) {
   switch (block) {
     case 'description':
       return { 
-        header: 'text-blue-400', 
-        bg: 'bg-blue-500/5', 
-        border: 'border-blue-500/20' 
+        text: 'text-blue-400',
+        wrapper: 'border-l-blue-600/30'
       };
     case 'observations':
       return { 
-        header: 'text-purple-400', 
-        bg: 'bg-purple-500/5', 
-        border: 'border-purple-500/20' 
+        text: 'text-purple-400',
+        wrapper: 'border-l-purple-600/30'
       };
     case 'concerns':
       return { 
-        header: 'text-amber-400', 
-        bg: 'bg-amber-500/5', 
-        border: 'border-amber-500/20' 
+        text: 'text-amber-400',
+        wrapper: 'border-l-amber-600/30'
       };
     case 'recommendations':
       return { 
-        header: 'text-emerald-400', 
-        bg: 'bg-emerald-500/5', 
-        border: 'border-emerald-500/20' 
+        text: 'text-emerald-400',
+        wrapper: 'border-l-emerald-600/30'
       };
     default:
       return { 
-        header: 'text-zinc-400', 
-        bg: 'bg-zinc-800/20', 
-        border: 'border-zinc-800' 
+        text: 'text-zinc-400',
+        wrapper: 'border-l-zinc-600/30'
       };
   }
 }
 </script>
 
 <template>
-  <div class="dynamic-report-section space-y-6">
+  <div class="dynamic-report-section space-y-12">
     <div 
       v-for="block in BLOCK_TYPES"
       :key="block"
       v-show="hasBlock(block)"
-      class="section-block rounded-xl border overflow-hidden transition-all duration-300"
-      :class="[getBlockStyles(block).bg, getBlockStyles(block).border]"
+      class="section-block relative"
     >
-      <!-- Block Header -->
-      <div class="px-5 py-4 flex items-center gap-3 border-b border-zinc-800/50 bg-zinc-900/30">
-        <svg 
-          class="w-5 h-5" 
-          :class="getBlockStyles(block).header"
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getBlockIcon(block)" />
-        </svg>
-        <h3 class="text-sm font-bold uppercase tracking-wide text-zinc-200">
+      <!-- Header Row -->
+      <div class="flex items-center gap-3 mb-6">
+        <!-- Icon -->
+        <div class="p-2 rounded-lg bg-zinc-900 border border-zinc-800">
+          <svg 
+            class="w-5 h-5" 
+            :class="getBlockTheme(block).text"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getBlockIcon(block)" />
+          </svg>
+        </div>
+
+        <!-- Title -->
+        <h3 class="text-lg font-bold tracking-tight text-zinc-100">
           {{ BLOCK_LABELS[block] }}
         </h3>
+
+        <!-- Line -->
+        <div class="flex-1 h-px bg-zinc-800/60 self-center ml-2"></div>
       </div>
 
       <!-- Fields Container -->
-      <div class="p-5 space-y-6">
+      <div 
+        class="pl-6 ml-3 space-y-10 border-l-2"
+        :class="getBlockTheme(block).wrapper"
+      >
         <DynamicField
           v-for="field in getBlockFields(block)"
           :key="field.id"
