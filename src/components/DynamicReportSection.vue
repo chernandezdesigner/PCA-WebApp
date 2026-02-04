@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import DynamicField from './DynamicField.vue';
 import type { SectionConfig, FormData, BlockType, FieldConfig } from '@/types/section';
 import { BLOCK_TYPES, BLOCK_LABELS } from '@/types/section';
+import { useTheme } from '@/composables/useTheme';
 
 const props = defineProps<{
   config: SectionConfig;
@@ -14,6 +15,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: Record<BlockType, FormData>];
 }>();
+
+const { theme } = useTheme();
 
 function getFieldValue(block: BlockType, fieldId: string): string | null {
   return props.modelValue[block]?.[fieldId] ?? null;
@@ -56,30 +59,15 @@ function getBlockIcon(block: BlockType): string {
 function getBlockTheme(block: BlockType) {
   switch (block) {
     case 'description':
-      return { 
-        text: 'text-blue-400',
-        wrapper: 'border-l-blue-600/30'
-      };
+      return { text: 'text-blue-500', wrapperDark: 'border-l-blue-600/30', wrapperLight: 'border-l-blue-400/50' };
     case 'observations':
-      return { 
-        text: 'text-purple-400',
-        wrapper: 'border-l-purple-600/30'
-      };
+      return { text: 'text-purple-500', wrapperDark: 'border-l-purple-600/30', wrapperLight: 'border-l-purple-400/50' };
     case 'concerns':
-      return { 
-        text: 'text-amber-400',
-        wrapper: 'border-l-amber-600/30'
-      };
+      return { text: 'text-amber-500', wrapperDark: 'border-l-amber-600/30', wrapperLight: 'border-l-amber-400/50' };
     case 'recommendations':
-      return { 
-        text: 'text-emerald-400',
-        wrapper: 'border-l-emerald-600/30'
-      };
+      return { text: 'text-emerald-500', wrapperDark: 'border-l-emerald-600/30', wrapperLight: 'border-l-emerald-400/50' };
     default:
-      return { 
-        text: 'text-zinc-400',
-        wrapper: 'border-l-zinc-600/30'
-      };
+      return { text: 'text-zinc-400', wrapperDark: 'border-l-zinc-600/30', wrapperLight: 'border-l-slate-300' };
   }
 }
 </script>
@@ -95,7 +83,10 @@ function getBlockTheme(block: BlockType) {
       <!-- Header Row -->
       <div class="flex items-center gap-3 mb-6">
         <!-- Icon -->
-        <div class="p-2 rounded-lg bg-zinc-900 border border-zinc-800">
+        <div 
+          class="p-2 rounded-lg border"
+          :class="theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'"
+        >
           <svg 
             class="w-5 h-5" 
             :class="getBlockTheme(block).text"
@@ -108,18 +99,24 @@ function getBlockTheme(block: BlockType) {
         </div>
 
         <!-- Title -->
-        <h3 class="text-lg font-bold tracking-tight text-zinc-100">
+        <h3 
+          class="text-lg font-bold tracking-tight"
+          :class="theme === 'dark' ? 'text-zinc-100' : 'text-slate-900'"
+        >
           {{ BLOCK_LABELS[block] }}
         </h3>
 
         <!-- Line -->
-        <div class="flex-1 h-px bg-zinc-800/60 self-center ml-2"></div>
+        <div 
+          class="flex-1 h-px self-center ml-2"
+          :class="theme === 'dark' ? 'bg-zinc-800/60' : 'bg-slate-200'"
+        ></div>
       </div>
 
       <!-- Fields Container -->
       <div 
         class="pl-6 ml-3 space-y-10 border-l-2"
-        :class="getBlockTheme(block).wrapper"
+        :class="theme === 'dark' ? getBlockTheme(block).wrapperDark : getBlockTheme(block).wrapperLight"
       >
         <DynamicField
           v-for="field in getBlockFields(block)"

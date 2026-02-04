@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, useId } from 'vue';
 import type { FieldConfig, FieldValue, FormData } from '@/types/section';
+import { useTheme } from '@/composables/useTheme';
 
 const props = defineProps<{
   field: FieldConfig;
@@ -13,6 +14,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: FieldValue];
 }>();
 
+const { theme } = useTheme();
 const fieldId = useId();
 const value = computed({
   get: () => props.modelValue,
@@ -55,7 +57,8 @@ function isConditionSelected(option: string): boolean {
 
 function getConditionButtonClass(option: string): string {
   const isSelected = isConditionSelected(option);
-  const baseClass = 'relative flex-1 inline-flex items-center justify-center px-4 py-3 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 focus-visible:ring-blue-500';
+  const isDark = theme.value === 'dark';
+  const baseClass = 'relative flex-1 inline-flex items-center justify-center px-4 py-3 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500';
   
   if (isSelected) {
     if (option === 'Good') return `${baseClass} bg-emerald-600 text-white shadow-lg shadow-emerald-900/50 z-10`;
@@ -64,7 +67,10 @@ function getConditionButtonClass(option: string): string {
     return `${baseClass} bg-blue-600 text-white`;
   }
   
-  return `${baseClass} bg-zinc-900 border-y border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 first:border-l first:rounded-l-lg last:border-r last:rounded-r-lg border-x-px border-x-zinc-800`;
+  if (isDark) {
+    return `${baseClass} bg-zinc-900 border-y border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 first:border-l first:rounded-l-lg last:border-r last:rounded-r-lg border-x-px border-x-zinc-800 focus-visible:ring-offset-zinc-950`;
+  }
+  return `${baseClass} bg-white border-y border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 first:border-l first:rounded-l-lg last:border-r last:rounded-r-lg border-x-px border-x-slate-200 focus-visible:ring-offset-white`;
 }
 </script>
 
@@ -79,7 +85,8 @@ function getConditionButtonClass(option: string): string {
       <div class="space-y-3">
         <label 
           :for="fieldId"
-          class="block text-sm font-medium text-zinc-200 group-hover:text-zinc-100 transition-colors"
+          class="block text-sm font-medium transition-colors"
+          :class="theme === 'dark' ? 'text-zinc-200 group-hover:text-zinc-100' : 'text-slate-700 group-hover:text-slate-900'"
         >
           {{ renderField.label }}
         </label>
@@ -91,7 +98,10 @@ function getConditionButtonClass(option: string): string {
             :rows="renderField.rows || 3"
             :placeholder="renderField.placeholder"
             :disabled="disabled"
-            class="block w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-600 shadow-sm transition-all duration-200 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 hover:border-zinc-700"
+            class="block w-full px-4 py-3 rounded-lg text-sm shadow-sm transition-all duration-200 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            :class="theme === 'dark' 
+              ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
+              : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
             @focus="isFocused = true"
             @blur="isFocused = false"
           />
@@ -107,11 +117,15 @@ function getConditionButtonClass(option: string): string {
               v-for="(option, index) in renderField.quickOptions"
               :key="index"
               type="button"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-zinc-800/50 border border-zinc-700/50 text-zinc-300 hover:bg-blue-600/20 hover:text-blue-200 hover:border-blue-500/30 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500/50 group/chip"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500/50 group/chip"
+              :class="theme === 'dark'
+                ? 'bg-zinc-800/50 border border-zinc-700/50 text-zinc-300 hover:bg-blue-600/20 hover:text-blue-200 hover:border-blue-500/30'
+                : 'bg-slate-100 border border-slate-200 text-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300'"
               @click="insertQuickOption(option.text)"
             >
               <svg 
-                class="w-3 h-3 opacity-60 group-hover/chip:opacity-100 transition-opacity text-zinc-400 group-hover/chip:text-blue-400" 
+                class="w-3 h-3 opacity-60 group-hover/chip:opacity-100 transition-opacity" 
+                :class="theme === 'dark' ? 'text-zinc-400 group-hover/chip:text-blue-400' : 'text-slate-400 group-hover/chip:text-blue-600'"
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -128,7 +142,10 @@ function getConditionButtonClass(option: string): string {
     <!-- Condition Selector -->
     <template v-else-if="renderField.type === 'condition-selector'">
       <fieldset class="space-y-3">
-        <legend class="block text-sm font-medium text-zinc-200">
+        <legend 
+          class="block text-sm font-medium"
+          :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-700'"
+        >
           {{ renderField.label }}
         </legend>
         
@@ -157,7 +174,8 @@ function getConditionButtonClass(option: string): string {
       <div class="space-y-2">
         <label 
           :for="fieldId"
-          class="block text-sm font-medium text-zinc-200"
+          class="block text-sm font-medium"
+          :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-700'"
         >
           {{ renderField.label }}
         </label>
@@ -168,7 +186,10 @@ function getConditionButtonClass(option: string): string {
           type="text"
           :placeholder="renderField.placeholder"
           :disabled="disabled"
-          class="block w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-600 shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 hover:border-zinc-700"
+          class="block w-full px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          :class="theme === 'dark' 
+            ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
+            : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
         />
       </div>
     </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useTheme } from '@/composables/useTheme';
 
 export interface NavSubsection {
   id: string;
@@ -24,9 +25,9 @@ const emit = defineEmits<{
   'navigate': [sectionId: string, step: number];
 }>();
 
+const { theme } = useTheme();
 const expandedSections = ref<Set<string>>(new Set());
 
-// Auto-expand logic
 watch(
   () => props.currentStep,
   () => {
@@ -62,13 +63,17 @@ function isCompleted(step: number): boolean {
 
 <template>
   <nav
-    class="sidebar-nav h-full flex flex-col bg-zinc-950 border-r border-zinc-800"
+    class="sidebar-nav h-full flex flex-col transition-colors duration-300"
+    :class="theme === 'dark' ? 'bg-zinc-950 border-r border-zinc-800' : 'bg-slate-50 border-r border-slate-200'"
     role="navigation"
     aria-label="Progress tracker"
   >
     <!-- Header -->
     <div class="flex-shrink-0 px-5 pt-6 pb-2">
-      <h2 class="text-[11px] font-extrabold uppercase tracking-widest text-zinc-500 mb-4 pl-1">
+      <h2 
+        class="text-[11px] font-extrabold uppercase tracking-widest mb-4 pl-1"
+        :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+      >
         Assessment Progress
       </h2>
     </div>
@@ -77,8 +82,11 @@ function isCompleted(step: number): boolean {
     <div class="flex-1 overflow-y-auto px-5 pb-6 custom-scrollbar">
       <div class="relative">
         
-        <!-- Continuous vertical rail line behind everything -->
-        <div class="absolute left-[11px] top-2 bottom-2 w-px bg-zinc-800/60 z-0"></div>
+        <!-- Continuous vertical rail line -->
+        <div 
+          class="absolute left-[11px] top-2 bottom-2 w-px z-0"
+          :class="theme === 'dark' ? 'bg-zinc-800/60' : 'bg-slate-300'"
+        ></div>
 
         <div v-for="section in sections" :key="section.id" class="relative z-10 mb-1">
           
@@ -90,13 +98,13 @@ function isCompleted(step: number): boolean {
             >
               <!-- Section Anchor Dot -->
               <div class="relative flex items-center justify-center flex-shrink-0 w-6 h-6">
-                <!-- Halo effect for section header -->
                 <div 
-                  class="w-2.5 h-2.5 rounded-full border-2 transition-all duration-300 bg-zinc-950"
+                  class="w-2.5 h-2.5 rounded-full border-2 transition-all duration-300"
                   :class="[
+                    theme === 'dark' ? 'bg-zinc-950' : 'bg-slate-50',
                     isExpanded(section.id) 
-                      ? 'border-zinc-100 bg-zinc-100 scale-110' 
-                      : 'border-zinc-600 group-hover:border-zinc-400'
+                      ? (theme === 'dark' ? 'border-zinc-100 bg-zinc-100 scale-110' : 'border-slate-900 bg-slate-900 scale-110')
+                      : (theme === 'dark' ? 'border-zinc-600 group-hover:border-zinc-400' : 'border-slate-400 group-hover:border-slate-600')
                   ]"
                 ></div>
               </div>
@@ -105,14 +113,20 @@ function isCompleted(step: number): boolean {
               <div class="flex-1 flex items-center justify-between">
                 <span 
                   class="text-sm font-semibold transition-colors duration-200"
-                  :class="isExpanded(section.id) ? 'text-zinc-100' : 'text-zinc-400 group-hover:text-zinc-300'"
+                  :class="[
+                    isExpanded(section.id) 
+                      ? (theme === 'dark' ? 'text-zinc-100' : 'text-slate-900')
+                      : (theme === 'dark' ? 'text-zinc-400 group-hover:text-zinc-300' : 'text-slate-500 group-hover:text-slate-700')
+                  ]"
                 >
                   {{ section.title }}
                 </span>
-                <!-- Chevron -->
                 <svg
-                  class="w-3.5 h-3.5 text-zinc-600 transition-transform duration-200"
-                  :class="{ 'rotate-180': isExpanded(section.id) }"
+                  class="w-3.5 h-3.5 transition-transform duration-200"
+                  :class="[
+                    { 'rotate-180': isExpanded(section.id) },
+                    theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'
+                  ]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -136,22 +150,22 @@ function isCompleted(step: number): boolean {
             >
               <!-- Timeline Dot Container -->
               <div class="relative flex items-center justify-center flex-shrink-0 w-6 h-6">
-                
-                <!-- The Dot -->
                 <div 
-                  class="relative z-10 w-2.5 h-2.5 rounded-full transition-all duration-300 flex items-center justify-center"
+                  class="relative z-10 rounded-full transition-all duration-300 flex items-center justify-center"
                   :class="[
                     isActive(sub.step) 
                       ? 'w-3.5 h-3.5 bg-blue-600 ring-2 ring-blue-500/30 shadow-[0_0_8px_rgba(37,99,235,0.5)]' 
                       : isCompleted(sub.step)
                         ? 'w-3 h-3 bg-emerald-500'
-                        : 'w-1.5 h-1.5 bg-zinc-700 group-hover:bg-zinc-500 ring-4 ring-zinc-950' // smaller dot for inactive
+                        : theme === 'dark'
+                          ? 'w-1.5 h-1.5 bg-zinc-700 group-hover:bg-zinc-500 ring-4 ring-zinc-950'
+                          : 'w-1.5 h-1.5 bg-slate-400 group-hover:bg-slate-500 ring-4 ring-slate-50'
                   ]"
                 >
-                  <!-- Checkmark for completed -->
                   <svg 
                     v-if="isCompleted(sub.step) && !isActive(sub.step)"
-                    class="w-2 h-2 text-zinc-950"
+                    class="w-2 h-2"
+                    :class="theme === 'dark' ? 'text-zinc-950' : 'text-white'"
                     viewBox="0 0 24 24"
                     fill="none" 
                     stroke="currentColor" 
@@ -165,7 +179,11 @@ function isCompleted(step: number): boolean {
               <!-- Label Container -->
               <div 
                 class="flex-1 py-1.5 px-3 rounded-md transition-all duration-200"
-                :class="isActive(sub.step) ? 'bg-zinc-900' : 'group-hover:bg-zinc-900/50'"
+                :class="[
+                  isActive(sub.step) 
+                    ? (theme === 'dark' ? 'bg-zinc-900' : 'bg-blue-50')
+                    : (theme === 'dark' ? 'group-hover:bg-zinc-900/50' : 'group-hover:bg-slate-100')
+                ]"
               >
                 <span 
                   class="text-xs font-medium transition-colors duration-200 block truncate"
@@ -173,8 +191,8 @@ function isCompleted(step: number): boolean {
                     isActive(sub.step) 
                       ? 'text-blue-400' 
                       : isCompleted(sub.step)
-                        ? 'text-zinc-300'
-                        : 'text-zinc-500 group-hover:text-zinc-400'
+                        ? (theme === 'dark' ? 'text-zinc-300' : 'text-slate-700')
+                        : (theme === 'dark' ? 'text-zinc-500 group-hover:text-zinc-400' : 'text-slate-500 group-hover:text-slate-700')
                   ]"
                 >
                   {{ sub.title }}
@@ -201,5 +219,12 @@ function isCompleted(step: number): boolean {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
+}
+
+:global(.light) .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+:global(.light) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>
