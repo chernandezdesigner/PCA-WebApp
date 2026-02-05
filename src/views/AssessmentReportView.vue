@@ -4,33 +4,45 @@ import { useRoute, useRouter } from 'vue-router';
 import SidebarNavigation from '@/components/SidebarNavigation.vue';
 import AssessorNotesPanel from '@/components/AssessorNotesPanel.vue';
 import DynamicReportSection from '@/components/DynamicReportSection.vue';
+import PropertyInfoSection from '@/components/PropertyInfoSection.vue';
 import { useReportForm } from '@/composables/useReportForm';
 import { useTheme } from '@/composables/useTheme';
-import type { SectionConfig, BlockType, FormData } from '@/types/section';
-import type { NavSection } from '@/components/SidebarNavigation.vue';
+import type { SectionConfig, PropertyInfoConfig, BlockType, FormData, AnySection } from '@/types/section';
+import type { NavSection, NavSubsection } from '@/components/SidebarNavigation.vue';
 
-// Import all section configs from group1
+// Import Section 1-4 configs (group2 - property info style)
 import { 
-  // Section 5: Site & Grounds
+  generalDescription,
+  generalPhysicalCondition,
+  opinionOfProbableCost,
+  generalPropertyReconnaissanceInformation,
+  locationAndDescription,
+  tenantAndLeaseInformation,
+  utilityAndServiceProviders,
+  propertyQuestionnaire,
+  interviews,
+  buildingAndFireDepartments,
+  zoningDepartment,
+  previousReports,
+} from '@/data/templates/group2';
+
+// Import Section 5-9 configs (group1 - report style)
+import { 
   accessEgress,
   pavingCurbingParking,
   flatwork,
   landscapingAppurtenances,
   ancillaryStructures,
-  // Section 6: Building Envelope
   foundation,
   buildingFrame,
   facadesCurtainWall,
   roofing,
-  // Section 7: Mechanical Systems
   heatingAndCooling,
   electrical,
   plumbing,
   elevatorsAndEscalators,
-  // Section 8: Interior Elements
   commonAreas,
   tenantSpaces,
-  // Section 9: Fire Protection
   sprinklersAndStandpipes,
   alarmSystems,
 } from '@/data/templates/group1';
@@ -42,92 +54,145 @@ const { theme, toggleTheme } = useTheme();
 const assessmentId = computed(() => (route.params.id as string) || 'demo');
 const isDemoMode = computed(() => assessmentId.value === 'demo');
 
+// Section type indicator
+type SectionType = 'property-info' | 'report';
+
 // Map step numbers to section configs
-// Total: 17 steps across 5 major sections
-const allSectionConfigs: Record<number, { id: string; title: string; config: SectionConfig }> = {
+// Total: 29 steps (12 from group2 + 17 from group1)
+const allSectionConfigs: Record<number, { 
+  id: string; 
+  title: string; 
+  config: AnySection;
+  type: SectionType;
+}> = {
+  // Section 1: Summary (3 steps)
+  1:  { id: '1.1', title: 'General Description', config: generalDescription as PropertyInfoConfig, type: 'property-info' },
+  2:  { id: '1.2', title: 'Physical Condition', config: generalPhysicalCondition as PropertyInfoConfig, type: 'property-info' },
+  3:  { id: '1.3', title: 'Probable Cost', config: opinionOfProbableCost as PropertyInfoConfig, type: 'property-info' },
+  // Section 2: Introduction (1 step)
+  4:  { id: '2.4', title: 'Reconnaissance Info', config: generalPropertyReconnaissanceInformation as PropertyInfoConfig, type: 'property-info' },
+  // Section 3: Property Characteristics (3 steps)
+  5:  { id: '3.1', title: 'Location & Description', config: locationAndDescription as PropertyInfoConfig, type: 'property-info' },
+  6:  { id: '3.2', title: 'Tenant & Lease Info', config: tenantAndLeaseInformation as PropertyInfoConfig, type: 'property-info' },
+  7:  { id: '3.3', title: 'Utilities & Services', config: utilityAndServiceProviders as PropertyInfoConfig, type: 'property-info' },
+  // Section 4: Document Review (5 steps)
+  8:  { id: '4.1', title: 'Property Questionnaire', config: propertyQuestionnaire as PropertyInfoConfig, type: 'property-info' },
+  9:  { id: '4.2', title: 'Interviews', config: interviews as PropertyInfoConfig, type: 'property-info' },
+  10: { id: '4.3', title: 'Building & Fire Depts', config: buildingAndFireDepartments as PropertyInfoConfig, type: 'property-info' },
+  11: { id: '4.4', title: 'Zoning Department', config: zoningDepartment as PropertyInfoConfig, type: 'property-info' },
+  12: { id: '4.5', title: 'Previous Reports', config: previousReports as PropertyInfoConfig, type: 'property-info' },
   // Section 5: Site & Grounds (5 steps)
-  1:  { id: '5.2', title: 'Access & Egress', config: accessEgress as SectionConfig },
-  2:  { id: '5.3', title: 'Paving, Curbing & Parking', config: pavingCurbingParking as SectionConfig },
-  3:  { id: '5.4', title: 'Flatwork', config: flatwork as SectionConfig },
-  4:  { id: '5.5', title: 'Landscaping & Appurtenances', config: landscapingAppurtenances as SectionConfig },
-  5:  { id: '5.6', title: 'Ancillary Structures', config: ancillaryStructures as SectionConfig },
+  13: { id: '5.2', title: 'Access & Egress', config: accessEgress as SectionConfig, type: 'report' },
+  14: { id: '5.3', title: 'Paving & Parking', config: pavingCurbingParking as SectionConfig, type: 'report' },
+  15: { id: '5.4', title: 'Flatwork', config: flatwork as SectionConfig, type: 'report' },
+  16: { id: '5.5', title: 'Landscaping', config: landscapingAppurtenances as SectionConfig, type: 'report' },
+  17: { id: '5.6', title: 'Ancillary Structures', config: ancillaryStructures as SectionConfig, type: 'report' },
   // Section 6: Building Envelope (4 steps)
-  6:  { id: '6.1', title: 'Foundation', config: foundation as SectionConfig },
-  7:  { id: '6.2', title: 'Building Frame', config: buildingFrame as SectionConfig },
-  8:  { id: '6.3', title: 'Facades & Curtain Wall', config: facadesCurtainWall as SectionConfig },
-  9:  { id: '6.4', title: 'Roofing', config: roofing as SectionConfig },
+  18: { id: '6.1', title: 'Foundation', config: foundation as SectionConfig, type: 'report' },
+  19: { id: '6.2', title: 'Building Frame', config: buildingFrame as SectionConfig, type: 'report' },
+  20: { id: '6.3', title: 'Facades', config: facadesCurtainWall as SectionConfig, type: 'report' },
+  21: { id: '6.4', title: 'Roofing', config: roofing as SectionConfig, type: 'report' },
   // Section 7: Mechanical Systems (4 steps)
-  10: { id: '7.1', title: 'Heating & Cooling', config: heatingAndCooling as SectionConfig },
-  11: { id: '7.2', title: 'Electrical', config: electrical as SectionConfig },
-  12: { id: '7.3', title: 'Plumbing', config: plumbing as SectionConfig },
-  13: { id: '7.4', title: 'Elevators & Escalators', config: elevatorsAndEscalators as SectionConfig },
+  22: { id: '7.1', title: 'HVAC', config: heatingAndCooling as SectionConfig, type: 'report' },
+  23: { id: '7.2', title: 'Electrical', config: electrical as SectionConfig, type: 'report' },
+  24: { id: '7.3', title: 'Plumbing', config: plumbing as SectionConfig, type: 'report' },
+  25: { id: '7.4', title: 'Elevators', config: elevatorsAndEscalators as SectionConfig, type: 'report' },
   // Section 8: Interior Elements (2 steps)
-  14: { id: '8.1', title: 'Common Areas', config: commonAreas as SectionConfig },
-  15: { id: '8.2', title: 'Tenant Spaces', config: tenantSpaces as SectionConfig },
+  26: { id: '8.1', title: 'Common Areas', config: commonAreas as SectionConfig, type: 'report' },
+  27: { id: '8.2', title: 'Tenant Spaces', config: tenantSpaces as SectionConfig, type: 'report' },
   // Section 9: Fire Protection (2 steps)
-  16: { id: '9.1', title: 'Sprinklers & Standpipes', config: sprinklersAndStandpipes as SectionConfig },
-  17: { id: '9.2', title: 'Alarm Systems', config: alarmSystems as SectionConfig },
+  28: { id: '9.1', title: 'Sprinklers', config: sprinklersAndStandpipes as SectionConfig, type: 'report' },
+  29: { id: '9.2', title: 'Alarms', config: alarmSystems as SectionConfig, type: 'report' },
 };
 
 // Navigation structure for sidebar
 const navSections: NavSection[] = [
   {
+    id: 'section-1',
+    title: 'Section 1: Summary',
+    subsections: [
+      { id: '1.1', title: '1.1 General Description', step: 1 },
+      { id: '1.2', title: '1.2 Physical Condition', step: 2 },
+      { id: '1.3', title: '1.3 Probable Cost', step: 3 },
+    ],
+  },
+  {
+    id: 'section-2',
+    title: 'Section 2: Introduction',
+    subsections: [
+      { id: '2.4', title: '2.4 Reconnaissance', step: 4 },
+    ],
+  },
+  {
+    id: 'section-3',
+    title: 'Section 3: Property',
+    subsections: [
+      { id: '3.1', title: '3.1 Location', step: 5 },
+      { id: '3.2', title: '3.2 Tenants & Leases', step: 6 },
+      { id: '3.3', title: '3.3 Utilities', step: 7 },
+    ],
+  },
+  {
+    id: 'section-4',
+    title: 'Section 4: Documents',
+    subsections: [
+      { id: '4.1', title: '4.1 Questionnaire', step: 8 },
+      { id: '4.2', title: '4.2 Interviews', step: 9 },
+      { id: '4.3', title: '4.3 Building & Fire', step: 10 },
+      { id: '4.4', title: '4.4 Zoning', step: 11 },
+      { id: '4.5', title: '4.5 Previous Reports', step: 12 },
+    ],
+  },
+  {
     id: 'section-5',
     title: 'Section 5: Site & Grounds',
     subsections: [
-      { id: '5.2', title: '5.2 Access & Egress', step: 1 },
-      { id: '5.3', title: '5.3 Paving & Parking', step: 2 },
-      { id: '5.4', title: '5.4 Flatwork', step: 3 },
-      { id: '5.5', title: '5.5 Landscaping', step: 4 },
-      { id: '5.6', title: '5.6 Ancillary Structures', step: 5 },
+      { id: '5.2', title: '5.2 Access & Egress', step: 13 },
+      { id: '5.3', title: '5.3 Paving', step: 14 },
+      { id: '5.4', title: '5.4 Flatwork', step: 15 },
+      { id: '5.5', title: '5.5 Landscaping', step: 16 },
+      { id: '5.6', title: '5.6 Ancillary', step: 17 },
     ],
   },
   {
     id: 'section-6',
     title: 'Section 6: Building Envelope',
     subsections: [
-      { id: '6.1', title: '6.1 Foundation', step: 6 },
-      { id: '6.2', title: '6.2 Building Frame', step: 7 },
-      { id: '6.3', title: '6.3 Facades', step: 8 },
-      { id: '6.4', title: '6.4 Roofing', step: 9 },
+      { id: '6.1', title: '6.1 Foundation', step: 18 },
+      { id: '6.2', title: '6.2 Frame', step: 19 },
+      { id: '6.3', title: '6.3 Facades', step: 20 },
+      { id: '6.4', title: '6.4 Roofing', step: 21 },
     ],
   },
   {
     id: 'section-7',
-    title: 'Section 7: Mechanical Systems',
+    title: 'Section 7: Mechanical',
     subsections: [
-      { id: '7.1', title: '7.1 HVAC', step: 10 },
-      { id: '7.2', title: '7.2 Electrical', step: 11 },
-      { id: '7.3', title: '7.3 Plumbing', step: 12 },
-      { id: '7.4', title: '7.4 Elevators', step: 13 },
+      { id: '7.1', title: '7.1 HVAC', step: 22 },
+      { id: '7.2', title: '7.2 Electrical', step: 23 },
+      { id: '7.3', title: '7.3 Plumbing', step: 24 },
+      { id: '7.4', title: '7.4 Elevators', step: 25 },
     ],
   },
   {
     id: 'section-8',
-    title: 'Section 8: Interior Elements',
+    title: 'Section 8: Interior',
     subsections: [
-      { id: '8.1', title: '8.1 Common Areas', step: 14 },
-      { id: '8.2', title: '8.2 Tenant Spaces', step: 15 },
+      { id: '8.1', title: '8.1 Common Areas', step: 26 },
+      { id: '8.2', title: '8.2 Tenant Spaces', step: 27 },
     ],
   },
   {
     id: 'section-9',
     title: 'Section 9: Fire Protection',
     subsections: [
-      { id: '9.1', title: '9.1 Sprinklers', step: 16 },
-      { id: '9.2', title: '9.2 Alarms', step: 17 },
+      { id: '9.1', title: '9.1 Sprinklers', step: 28 },
+      { id: '9.2', title: '9.2 Alarms', step: 29 },
     ],
   },
 ];
 
-const TOTAL_STEPS = 17;
-
-// Determine which Supabase table to use based on current step
-function getTableForStep(step: number): string {
-  if (step <= 5) return 'site_grounds';
-  if (step <= 9) return 'building_envelope';
-  return 'mechanical_systems'; // Sections 7, 8, 9
-}
+const TOTAL_STEPS = 29;
 
 const {
   currentStep,
@@ -138,7 +203,7 @@ const {
   error,
   lastSaved,
   isDirty,
-  initializeForm,
+  // initializeForm - available but not used in demo mode
   nextStep,
   prevStep,
   goToStep,
@@ -147,7 +212,7 @@ const {
   cleanup,
 } = useReportForm({
   assessmentId: assessmentId.value,
-  tableName: getTableForStep(1), // Will be dynamically updated
+  tableName: 'project_summaries', // Primary table, will need multi-table support later
   autoSaveDelay: 2000,
 });
 
@@ -155,7 +220,7 @@ const currentConfig = computed(() => allSectionConfigs[currentStep.value]);
 
 const currentSectionId = computed(() => {
   for (const section of navSections) {
-    const found = section.subsections.find((sub) => sub.step === currentStep.value);
+    const found = section.subsections.find((sub: NavSubsection) => sub.step === currentStep.value);
     if (found) return section.id;
   }
   return '';
@@ -164,11 +229,16 @@ const currentSectionId = computed(() => {
 const completedSteps = ref<Set<number>>(new Set());
 const isNotesPanelCollapsed = ref(false);
 
-function handleSectionUpdate(data: Record<BlockType, FormData>) {
+// Handle both section types
+function handleReportSectionUpdate(data: Record<BlockType, FormData>) {
   currentStepData.value = data;
 }
 
-function handleNavigate(sectionId: string, step: number) {
+function handlePropertyInfoUpdate(data: FormData) {
+  currentStepData.value = data;
+}
+
+function handleNavigate(_sectionId: string, step: number) {
   if (currentStepData.value && Object.keys(currentStepData.value).length > 0) {
     completedSteps.value.add(currentStep.value);
   }
@@ -207,9 +277,8 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 onMounted(async () => {
-  const configs = Object.values(allSectionConfigs).map((c) => c.config);
   totalSteps.value = TOTAL_STEPS;
-  initializeForm(configs);
+  // Initialize with empty data for now - configs will provide structure
   
   if (!isDemoMode.value) {
     await loadFromSupabase();
@@ -240,9 +309,13 @@ watch(isDirty, (dirty) => {
   }
 });
 
-// Calculate completion percentage
 const completionPercentage = computed(() => {
   return Math.round((completedSteps.value.size / TOTAL_STEPS) * 100);
+});
+
+// Determine if current section is property-info or report style
+const isPropertyInfoSection = computed(() => {
+  return currentConfig.value?.type === 'property-info';
 });
 </script>
 
@@ -435,6 +508,7 @@ const completionPercentage = computed(() => {
         </div>
 
         <div v-else class="max-w-4xl mx-auto px-6 py-8">
+          <!-- Section Header -->
           <div class="mb-8">
             <div 
               class="flex items-center gap-2 text-sm mb-2"
@@ -452,13 +526,23 @@ const completionPercentage = computed(() => {
             </h2>
           </div>
 
-          <DynamicReportSection
-            v-if="currentConfig"
-            :config="currentConfig.config"
-            :model-value="(currentStepData as Record<BlockType, FormData>)"
-            @update:model-value="handleSectionUpdate"
+          <!-- Property Info Section (Sections 1-4) -->
+          <PropertyInfoSection
+            v-if="currentConfig && isPropertyInfoSection"
+            :config="(currentConfig.config as PropertyInfoConfig)"
+            :model-value="(currentStepData as FormData) || {}"
+            @update:model-value="handlePropertyInfoUpdate"
           />
 
+          <!-- Report Section (Sections 5-9) -->
+          <DynamicReportSection
+            v-else-if="currentConfig && !isPropertyInfoSection"
+            :config="(currentConfig.config as SectionConfig)"
+            :model-value="(currentStepData as Record<BlockType, FormData>) || {}"
+            @update:model-value="handleReportSectionUpdate"
+          />
+
+          <!-- Navigation -->
           <nav 
             class="flex items-center justify-between mt-10 pt-6 border-t"
             :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'"

@@ -1,81 +1,113 @@
-// Section configuration types for dynamic form generation
+// Field types for dynamic form generation
 
 export interface QuickOption {
   label: string;
   text: string;
 }
 
-export interface BaseField {
+// Base field properties
+interface BaseField {
   id: string;
   label: string;
+  placeholder?: string;
+  defaultValue?: string;
+  helperText?: string;
 }
 
+// Textarea field
 export interface TextareaField extends BaseField {
   type: 'textarea';
-  rows: number;
-  defaultValue?: string;
-  placeholder?: string;
+  rows?: number;
   quickOptions?: QuickOption[] | null;
 }
 
+// Condition selector (Good/Fair/Poor buttons)
 export interface ConditionSelectorField extends BaseField {
   type: 'condition-selector';
-  options: string[]; // e.g., ['Good', 'Fair', 'Poor']
+  options: string[];
 }
 
-export interface ConditionalField extends BaseField {
+// Text field (can have source fields or additional fields)
+export interface TextField extends BaseField {
+  type: 'text';
+  sourceLabel?: string;
+  sourcePlaceholder?: string;
+  additionalFields?: { id: string; placeholder: string }[];
+}
+
+// Conditional field (shows based on another field's value)
+export interface ConditionalField {
+  id: string;
   type: 'conditional';
   condition: {
     field: string;
     value: string | string[];
   };
   showWhen: boolean;
-  innerField: TextareaField | ConditionSelectorField;
+  innerField: TextareaField | ConditionSelectorField | TextField;
 }
 
-export interface TextField extends BaseField {
-  type: 'text';
-  placeholder?: string;
-  defaultValue?: string;
-  sourceLabel?: string;
-  sourcePlaceholder?: string;
-  additionalFields?: { id: string; placeholder: string }[];
+// Repeating text field (multiple text inputs)
+export interface RepeatingTextField extends BaseField {
+  type: 'repeating-text';
+  items: { id: string; placeholder: string }[];
 }
 
-export type FieldConfig = TextareaField | ConditionSelectorField | ConditionalField | TextField;
-
-export interface SectionConfig {
-  description?: FieldConfig[];
-  observations?: FieldConfig[];
-  concerns?: FieldConfig[];
-  recommendations?: FieldConfig[];
-  // For summary-style sections that don't follow the 4-block pattern
-  fields?: FieldConfig[];
-  introText?: string;
+// Boolean select (yes/no with associated text)
+export interface BooleanSelectField extends BaseField {
+  type: 'boolean-select';
+  options: { value: string; label: string; text: string }[];
 }
 
-// Form data types
-export type FieldValue = string | null;
+// Union of all field types
+export type FieldConfig = 
+  | TextareaField 
+  | ConditionSelectorField 
+  | TextField 
+  | ConditionalField
+  | RepeatingTextField
+  | BooleanSelectField;
 
-export interface FormData {
-  [fieldId: string]: FieldValue;
-}
+export type FieldValue = string | null | Record<string, string>;
 
-export interface SectionFormData {
-  description: FormData;
-  observations: FormData;
-  concerns: FormData;
-  recommendations: FormData;
-}
+export type FormData = Record<string, FieldValue>;
 
-// Block type for iteration
-export type BlockType = 'description' | 'observations' | 'concerns' | 'recommendations';
-
-export const BLOCK_TYPES: BlockType[] = ['description', 'observations', 'concerns', 'recommendations'];
-
+// Block types for report sections (group1 style)
+export const BLOCK_TYPES = ['description', 'observations', 'concerns', 'recommendations'] as const;
+export type BlockType = typeof BLOCK_TYPES[number];
 export const BLOCK_LABELS: Record<BlockType, string> = {
   description: 'Description',
   observations: 'Observations',
   concerns: 'Concerns',
   recommendations: 'Recommendations',
 };
+
+// Section config for report-style sections (group1)
+export interface SectionConfig {
+  description?: FieldConfig[];
+  observations?: FieldConfig[];
+  concerns?: FieldConfig[];
+  recommendations?: FieldConfig[];
+}
+
+// Property info config for flat field sections (group2)
+export interface PropertyInfoConfig {
+  introText?: string;
+  fields?: FieldConfig[];
+  interviewBlocks?: {
+    id: string;
+    fields: FieldConfig[];
+  }[];
+}
+
+// Generic section that can be either type
+export type AnySection = SectionConfig | PropertyInfoConfig;
+
+// Helper to check section type
+export function isSectionConfig(config: AnySection): config is SectionConfig {
+  return 'description' in config || 'observations' in config || 'concerns' in config || 'recommendations' in config;
+}
+
+export function isPropertyInfoConfig(config: AnySection): config is PropertyInfoConfig {
+  return 'fields' in config || 'interviewBlocks' in config;
+}

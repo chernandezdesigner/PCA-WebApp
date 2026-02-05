@@ -16,10 +16,41 @@ const emit = defineEmits<{
 
 const { theme } = useTheme();
 const fieldId = useId();
+
+// Get the default value from field config
+const fieldDefaultValue = computed(() => {
+  const field = props.field.type === 'conditional' ? props.field.innerField : props.field;
+  return (field as any).defaultValue || '';
+});
+
+// For simple string values - use defaultValue as fallback
 const value = computed({
-  get: () => props.modelValue,
+  get: () => {
+    // If modelValue is explicitly set (even empty string from user clearing), use it
+    if (props.modelValue !== null && props.modelValue !== undefined) {
+      return props.modelValue as string;
+    }
+    // Otherwise fall back to defaultValue
+    return fieldDefaultValue.value;
+  },
   set: (val) => emit('update:modelValue', val),
 });
+
+// For compound values (text with source, additional fields)
+const compoundValue = computed({
+  get: () => {
+    if (typeof props.modelValue === 'object' && props.modelValue !== null) {
+      return props.modelValue as Record<string, string>;
+    }
+    return { main: (props.modelValue as string) || '' };
+  },
+  set: (val) => emit('update:modelValue', val),
+});
+
+function updateCompoundField(key: string, newValue: string) {
+  const updated = { ...compoundValue.value, [key]: newValue };
+  emit('update:modelValue', updated);
+}
 
 const isFocused = ref(false);
 
@@ -47,8 +78,21 @@ function setCondition(option: string) {
   value.value = option;
 }
 
+function setBooleanOption(optionValue: string) {
+  value.value = optionValue;
+}
+
 const renderField = computed(() => {
   return props.field.type === 'conditional' ? props.field.innerField : props.field;
+});
+
+// Normalize quickOptions to always be an array (handles both single object and array formats)
+const normalizedQuickOptions = computed(() => {
+  const field = renderField.value as any;
+  if (!field.quickOptions) return [];
+  if (Array.isArray(field.quickOptions)) return field.quickOptions;
+  // Single object format - wrap in array
+  return [field.quickOptions];
 });
 
 function isConditionSelected(option: string): boolean {
@@ -83,13 +127,22 @@ function getConditionButtonClass(option: string): string {
     <!-- Textarea Field -->
     <template v-if="renderField.type === 'textarea'">
       <div class="space-y-3">
-        <label 
-          :for="fieldId"
-          class="block text-sm font-medium transition-colors"
-          :class="theme === 'dark' ? 'text-zinc-200 group-hover:text-zinc-100' : 'text-slate-700 group-hover:text-slate-900'"
-        >
-          {{ renderField.label }}
-        </label>
+        <div>
+          <label 
+            :for="fieldId"
+            class="block text-sm font-medium transition-colors"
+            :class="theme === 'dark' ? 'text-zinc-200 group-hover:text-zinc-100' : 'text-slate-700 group-hover:text-slate-900'"
+          >
+            {{ renderField.label }}
+          </label>
+          <p 
+            v-if="renderField.helperText"
+            class="mt-1 text-xs"
+            :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+          >
+            {{ renderField.helperText }}
+          </p>
+        </div>
         
         <div class="relative">
           <textarea
@@ -107,14 +160,14 @@ function getConditionButtonClass(option: string): string {
           />
         </div>
 
-        <!-- Quick Options (Below Textarea) -->
+        <!-- Quick Options -->
         <div 
-          v-if="renderField.quickOptions?.length" 
+          v-if="normalizedQuickOptions.length" 
           class="pt-1"
         >
           <div class="flex flex-wrap gap-2">
             <button
-              v-for="(option, index) in renderField.quickOptions"
+              v-for="(option, index) in normalizedQuickOptions"
               :key="index"
               type="button"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500/50 group/chip"
@@ -169,7 +222,7 @@ function getConditionButtonClass(option: string): string {
       </fieldset>
     </template>
 
-    <!-- Text Field -->
+    <!-- Text Field (with optional source and additional fields) -->
     <template v-else-if="renderField.type === 'text'">
       <div class="space-y-2">
         <label 
@@ -180,24 +233,158 @@ function getConditionButtonClass(option: string): string {
           {{ renderField.label }}
         </label>
         
-        <input
-          :id="fieldId"
-          v-model="value"
-          type="text"
-          :placeholder="renderField.placeholder"
-          :disabled="disabled"
-          class="block w-full px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          :class="theme === 'dark' 
-            ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
-            : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
-        />
+        <!-- Main field row -->
+        <div class="flex gap-3">
+          <input
+            :id="fieldId"
+            :value="renderField.sourceLabel ? compoundValue.main : value"
+            type="text"
+            :placeholder="renderField.placeholder"
+            :disabled="disabled"
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            :class="theme === 'dark' 
+              ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
+              : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
+            @input="renderField.sourceLabel ? updateCompoundField('main', ($event.target as HTMLInputElement).value) : (value = ($event.target as HTMLInputElement).value)"
+          />
+          
+          <!-- Source field -->
+          <div v-if="renderField.sourceLabel" class="flex items-center gap-2 flex-shrink-0">
+            <span 
+              class="text-xs font-medium"
+              :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+            >
+              {{ renderField.sourceLabel }}
+            </span>
+            <input
+              :value="compoundValue.source || ''"
+              type="text"
+              :placeholder="renderField.sourcePlaceholder"
+              :disabled="disabled"
+              class="w-32 px-3 py-2 rounded-lg text-xs shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              :class="theme === 'dark' 
+                ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50' 
+                : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50'"
+              @input="updateCompoundField('source', ($event.target as HTMLInputElement).value)"
+            />
+          </div>
+        </div>
+
+        <!-- Additional fields (like # Spaces, # ADA Spaces) -->
+        <div v-if="renderField.additionalFields?.length" class="flex gap-3 mt-2">
+          <div 
+            v-for="addField in renderField.additionalFields" 
+            :key="addField.id"
+            class="flex-1"
+          >
+            <input
+              :value="compoundValue[addField.id] || ''"
+              type="text"
+              :placeholder="addField.placeholder"
+              :disabled="disabled"
+              class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              :class="theme === 'dark' 
+                ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50' 
+                : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50'"
+              @input="updateCompoundField(addField.id, ($event.target as HTMLInputElement).value)"
+            />
+          </div>
+        </div>
       </div>
+    </template>
+
+    <!-- Repeating Text Field -->
+    <template v-else-if="renderField.type === 'repeating-text'">
+      <fieldset class="space-y-3">
+        <legend 
+          class="block text-sm font-medium"
+          :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-700'"
+        >
+          {{ renderField.label }}
+        </legend>
+        
+        <div class="space-y-2">
+          <div 
+            v-for="(item, index) in renderField.items" 
+            :key="item.id"
+            class="flex items-center gap-2"
+          >
+            <span 
+              class="w-6 text-center text-xs font-medium"
+              :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+            >
+              {{ index + 1 }}
+            </span>
+            <input
+              :value="compoundValue[item.id] || ''"
+              type="text"
+              :placeholder="item.placeholder"
+              :disabled="disabled"
+              class="flex-1 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              :class="theme === 'dark' 
+                ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
+                : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
+              @input="updateCompoundField(item.id, ($event.target as HTMLInputElement).value)"
+            />
+          </div>
+        </div>
+      </fieldset>
+    </template>
+
+    <!-- Boolean Select -->
+    <template v-else-if="renderField.type === 'boolean-select'">
+      <fieldset class="space-y-3">
+        <legend 
+          class="block text-sm font-medium"
+          :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-700'"
+        >
+          {{ renderField.label }}
+        </legend>
+        
+        <div class="space-y-2">
+          <label 
+            v-for="option in renderField.options" 
+            :key="option.value"
+            class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all"
+            :class="[
+              value === option.value
+                ? (theme === 'dark' ? 'bg-blue-600/10 border-blue-500/50' : 'bg-blue-50 border-blue-300')
+                : (theme === 'dark' ? 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700' : 'bg-white border-slate-200 hover:border-slate-300')
+            ]"
+          >
+            <input
+              type="radio"
+              :name="fieldId"
+              :value="option.value"
+              :checked="value === option.value"
+              :disabled="disabled"
+              class="mt-0.5 w-4 h-4 text-blue-600 border-zinc-600 focus:ring-blue-500 focus:ring-offset-0"
+              :class="theme === 'dark' ? 'bg-zinc-900' : 'bg-white'"
+              @change="setBooleanOption(option.value)"
+            />
+            <div class="flex-1 min-w-0">
+              <span 
+                class="block text-sm font-medium"
+                :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-800'"
+              >
+                {{ option.label }}
+              </span>
+              <span 
+                class="block mt-1 text-xs leading-relaxed"
+                :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+              >
+                {{ option.text }}
+              </span>
+            </div>
+          </label>
+        </div>
+      </fieldset>
     </template>
   </div>
 </template>
 
 <style scoped>
 textarea {
-  min-height: 100px;
+  min-height: 80px;
 }
 </style>
