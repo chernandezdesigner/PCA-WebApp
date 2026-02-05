@@ -292,7 +292,7 @@ async function handleCreateReport(assessmentId: string) {
   if (result.success && result.reportId) {
     // Refresh lists and navigate to report editor
     await Promise.all([fetchPendingAssessments(), fetchReports()]);
-    router.push({ name: 'assessment-report', params: { id: result.reportId } });
+    router.push({ name: 'report-editor', params: { id: result.reportId } });
   } else {
     // Show error (you could add a toast notification here)
     console.error('Failed to create report:', result.error);
@@ -302,12 +302,12 @@ async function handleCreateReport(assessmentId: string) {
 
 function handleContinueEditing(reportId: string) {
   console.log('Continue editing report:', reportId);
-  router.push({ name: 'assessment-report', params: { id: reportId } });
+  router.push({ name: 'report-editor', params: { id: reportId } });
 }
 
 function handleViewReport(reportId: string) {
   console.log('View report:', reportId);
-  router.push({ name: 'assessment-report', params: { id: reportId } });
+  router.push({ name: 'report-editor', params: { id: reportId } });
 }
 
 function handleExportPdf(reportId: string) {

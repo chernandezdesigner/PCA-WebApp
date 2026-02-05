@@ -28,16 +28,22 @@ const router = createRouter({
       meta: { requiresAuth: false },
     },
     {
-      // Full assessment report (Sections 5-9)
-      path: '/assessment/:id/report',
-      name: 'assessment-report',
+      // Report editor - main route for editing reports
+      path: '/report/:id',
+      name: 'report-editor',
       component: AssessmentReportView,
       meta: { requiresAuth: true },
     },
     {
+      // Legacy route - redirect to new report route
+      path: '/assessment/:id/report',
+      name: 'assessment-report',
+      redirect: to => `/report/${to.params.id}`,
+    },
+    {
       // Demo route for testing without auth
       path: '/demo/report',
-      name: 'assessment-report-demo',
+      name: 'report-demo',
       component: AssessmentReportView,
       meta: { requiresAuth: false },
     },
@@ -49,7 +55,7 @@ const router = createRouter({
     {
       // Legacy route redirect
       path: '/assessment/:id/building-envelope',
-      redirect: to => `/assessment/${to.params.id}/report`,
+      redirect: to => `/report/${to.params.id}`,
     },
   ],
 });

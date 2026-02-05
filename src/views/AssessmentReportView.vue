@@ -5,7 +5,7 @@ import SidebarNavigation from '@/components/SidebarNavigation.vue';
 import AssessorNotesPanel from '@/components/AssessorNotesPanel.vue';
 import DynamicReportSection from '@/components/DynamicReportSection.vue';
 import PropertyInfoSection from '@/components/PropertyInfoSection.vue';
-import { useReportForm } from '@/composables/useReportForm';
+import { useWebReportForm } from '@/composables/useWebReportForm';
 import { useTheme } from '@/composables/useTheme';
 import type { SectionConfig, PropertyInfoConfig, BlockType, FormData, AnySection } from '@/types/section';
 import type { NavSection, NavSubsection } from '@/components/SidebarNavigation.vue';
@@ -51,8 +51,8 @@ const route = useRoute();
 const router = useRouter();
 const { theme, toggleTheme } = useTheme();
 
-const assessmentId = computed(() => (route.params.id as string) || 'demo');
-const isDemoMode = computed(() => assessmentId.value === 'demo');
+const reportId = computed(() => (route.params.id as string) || 'demo');
+const isDemoMode = computed(() => reportId.value === 'demo');
 
 // Section type indicator
 type SectionType = 'property-info' | 'report';
@@ -203,16 +203,17 @@ const {
   error,
   lastSaved,
   isDirty,
+  completedSteps: completedStepsFromDb,
   // initializeForm - available but not used in demo mode
   nextStep,
   prevStep,
   goToStep,
+  markStepComplete,
   loadFromSupabase,
   forceSave,
   cleanup,
-} = useReportForm({
-  assessmentId: assessmentId.value,
-  tableName: 'project_summaries', // Primary table, will need multi-table support later
+} = useWebReportForm({
+  reportId: reportId.value,
   autoSaveDelay: 2000,
 });
 
@@ -226,7 +227,8 @@ const currentSectionId = computed(() => {
   return '';
 });
 
-const completedSteps = ref<Set<number>>(new Set());
+// Use completedSteps from composable (loaded from DB)
+const completedSteps = completedStepsFromDb;
 const isNotesPanelCollapsed = ref(false);
 
 // Handle both section types
@@ -240,13 +242,13 @@ function handlePropertyInfoUpdate(data: FormData) {
 
 function handleNavigate(_sectionId: string, step: number) {
   if (currentStepData.value && Object.keys(currentStepData.value).length > 0) {
-    completedSteps.value.add(currentStep.value);
+    markStepComplete(currentStep.value);
   }
   goToStep(step);
 }
 
 function handleNext() {
-  completedSteps.value.add(currentStep.value);
+  markStepComplete(currentStep.value);
   if (currentStep.value < TOTAL_STEPS) {
     nextStep();
   } else {
