@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import LoginView from '@/views/LoginView.vue';
+import DashboardView from '@/views/DashboardView.vue';
 import HomeView from '@/views/HomeView.vue';
 import AssessmentReportView from '@/views/AssessmentReportView.vue';
 
@@ -9,6 +10,13 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'dashboard',
+      component: DashboardView,
+      meta: { requiresAuth: true },
+    },
+    {
+      // Legacy home route - redirects to dashboard
+      path: '/home',
       name: 'home',
       component: HomeView,
       meta: { requiresAuth: true },

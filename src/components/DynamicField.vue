@@ -241,7 +241,7 @@ function getConditionButtonClass(option: string): string {
             type="text"
             :placeholder="renderField.placeholder"
             :disabled="disabled"
-            class="flex-1 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            class="flex-[2] min-w-0 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             :class="theme === 'dark' 
               ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
               : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
@@ -249,9 +249,9 @@ function getConditionButtonClass(option: string): string {
           />
           
           <!-- Source field -->
-          <div v-if="renderField.sourceLabel" class="flex items-center gap-2 flex-shrink-0">
+          <div v-if="renderField.sourceLabel" class="flex items-center gap-2 flex-1 min-w-0">
             <span 
-              class="text-xs font-medium"
+              class="text-xs font-medium whitespace-nowrap"
               :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
             >
               {{ renderField.sourceLabel }}
@@ -261,7 +261,7 @@ function getConditionButtonClass(option: string): string {
               type="text"
               :placeholder="renderField.sourcePlaceholder"
               :disabled="disabled"
-              class="w-32 px-3 py-2 rounded-lg text-xs shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               :class="theme === 'dark' 
                 ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50' 
                 : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50'"

@@ -160,3 +160,173 @@ export interface AssessmentListItem {
   year_built?: number;
   number_of_buildings?: number;
 }
+
+// ============================================================================
+// WEB APP TABLES - Report Authoring
+// ============================================================================
+
+export type ReportStatus = 'draft' | 'in_progress' | 'review' | 'final' | 'exported';
+
+// Reports table types
+export interface Reports {
+  Row: {
+    id: string;
+    source_assessment_id: string | null;
+    author_id: string;
+    status: ReportStatus;
+    pdf_generated_at: string | null;
+    pdf_storage_path: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+  Insert: {
+    id?: string;
+    source_assessment_id?: string | null;
+    author_id: string;
+    status?: ReportStatus;
+    pdf_generated_at?: string | null;
+    pdf_storage_path?: string | null;
+    created_at?: string;
+    updated_at?: string;
+  };
+  Update: {
+    id?: string;
+    source_assessment_id?: string | null;
+    author_id?: string;
+    status?: ReportStatus;
+    pdf_generated_at?: string | null;
+    pdf_storage_path?: string | null;
+    created_at?: string;
+    updated_at?: string;
+  };
+}
+
+// Report content section data type (JSONB columns)
+export type SectionData = Record<string, unknown>;
+
+// Report content table types
+export interface ReportContent {
+  Row: {
+    id: string;
+    report_id: string;
+    section_1_summary: SectionData;
+    section_2_introduction: SectionData;
+    section_3_property: SectionData;
+    section_4_documents: SectionData;
+    section_5_site_grounds: SectionData;
+    section_6_building_envelope: SectionData;
+    section_7_mechanical: SectionData;
+    section_8_interior: SectionData;
+    section_9_fire_protection: SectionData;
+    current_step: number;
+    completed_steps: number[];
+    last_modified: string;
+  };
+  Insert: {
+    id?: string;
+    report_id: string;
+    section_1_summary?: SectionData;
+    section_2_introduction?: SectionData;
+    section_3_property?: SectionData;
+    section_4_documents?: SectionData;
+    section_5_site_grounds?: SectionData;
+    section_6_building_envelope?: SectionData;
+    section_7_mechanical?: SectionData;
+    section_8_interior?: SectionData;
+    section_9_fire_protection?: SectionData;
+    current_step?: number;
+    completed_steps?: number[];
+    last_modified?: string;
+  };
+  Update: {
+    id?: string;
+    report_id?: string;
+    section_1_summary?: SectionData;
+    section_2_introduction?: SectionData;
+    section_3_property?: SectionData;
+    section_4_documents?: SectionData;
+    section_5_site_grounds?: SectionData;
+    section_6_building_envelope?: SectionData;
+    section_7_mechanical?: SectionData;
+    section_8_interior?: SectionData;
+    section_9_fire_protection?: SectionData;
+    current_step?: number;
+    completed_steps?: number[];
+    last_modified?: string;
+  };
+}
+
+// Convenience type aliases
+export type Report = Reports['Row'];
+export type ReportInsert = Reports['Insert'];
+export type ReportUpdate = Reports['Update'];
+
+export type ReportContentRow = ReportContent['Row'];
+export type ReportContentInsert = ReportContent['Insert'];
+export type ReportContentUpdate = ReportContent['Update'];
+
+// Combined report with content
+export interface ReportWithContent extends Report {
+  report_content?: ReportContentRow;
+}
+
+// For report list display
+export interface ReportListItem {
+  id: string;
+  status: ReportStatus;
+  created_at: string;
+  updated_at: string;
+  author_id: string;
+  source_assessment_id: string | null;
+  pdf_generated_at: string | null;
+  // Joined from source assessment (if linked)
+  project_name?: string;
+  property_address?: string;
+  property_city?: string;
+  property_state?: string;
+  // Joined from report_content
+  current_step?: number;
+  completed_steps?: number[];
+}
+
+// Database schema interface (Supabase pattern)
+export interface Database {
+  public: {
+    Tables: {
+      // Mobile app tables (read-only from web app)
+      assessments: {
+        Row: Assessment;
+        Insert: never; // Web app should never insert
+        Update: never; // Web app should never update
+      };
+      project_summaries: {
+        Row: ProjectSummary;
+        Insert: never;
+        Update: never;
+      };
+      site_grounds: {
+        Row: SiteGrounds;
+        Insert: never;
+        Update: never;
+      };
+      building_envelope: {
+        Row: BuildingEnvelope;
+        Insert: never;
+        Update: never;
+      };
+      mechanical_systems: {
+        Row: MechanicalSystems;
+        Insert: never;
+        Update: never;
+      };
+      photos: {
+        Row: Photo;
+        Insert: never;
+        Update: never;
+      };
+      // Web app tables (full access)
+      reports: Reports;
+      report_content: ReportContent;
+    };
+  };
+}
