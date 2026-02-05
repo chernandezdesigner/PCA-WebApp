@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTheme } from '@/composables/useTheme';
+import { useReportCreation } from '@/composables/useReportCreation';
 import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/services/supabase';
 import type { ReportStatus } from '@/types/database';
@@ -9,6 +10,7 @@ import type { ReportStatus } from '@/types/database';
 const router = useRouter();
 const authStore = useAuthStore();
 const { theme, toggleTheme } = useTheme();
+const { createReportFromAssessment, loading: creatingReport, error: createError } = useReportCreation();
 
 // Loading states
 const loadingAssessments = ref(true);
@@ -284,10 +286,18 @@ function formatDateRelative(dateString: string): string {
 }
 
 // Actions
-function handleCreateReport(assessmentId: string) {
-  console.log('Create report from assessment:', assessmentId);
-  // TODO: Implement report creation
-  // router.push({ name: 'report-editor', params: { id: newReportId } });
+async function handleCreateReport(assessmentId: string) {
+  const result = await createReportFromAssessment(assessmentId);
+
+  if (result.success && result.reportId) {
+    // Refresh lists and navigate to report editor
+    await Promise.all([fetchPendingAssessments(), fetchReports()]);
+    router.push({ name: 'assessment-report', params: { id: result.reportId } });
+  } else {
+    // Show error (you could add a toast notification here)
+    console.error('Failed to create report:', result.error);
+    alert(result.error || 'Failed to create report');
+  }
 }
 
 function handleContinueEditing(reportId: string) {
@@ -515,15 +525,19 @@ onMounted(() => {
               </div>
               <button
                 @click="handleCreateReport(assessment.id)"
-                :disabled="assessment.status !== 'submitted'"
-                class="px-4 py-2 text-sm font-medium rounded-lg transition-colors flex-shrink-0"
-                :class="assessment.status === 'submitted'
+                :disabled="assessment.status !== 'submitted' || creatingReport"
+                class="px-4 py-2 text-sm font-medium rounded-lg transition-colors flex-shrink-0 flex items-center gap-2"
+                :class="assessment.status === 'submitted' && !creatingReport
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
                   : theme === 'dark'
                     ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                     : 'bg-slate-100 text-slate-400 cursor-not-allowed'"
               >
-                Create Report
+                <svg v-if="creatingReport" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {{ creatingReport ? 'Creating...' : 'Create Report' }}
               </button>
             </div>
           </div>
