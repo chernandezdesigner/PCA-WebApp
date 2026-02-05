@@ -7,6 +7,7 @@ import type { ReportContentRow, ReportContentUpdate, SectionData, ReportStatus }
 interface WebReportFormOptions {
   reportId: string;
   autoSaveDelay?: number;
+  isDemo?: boolean;
 }
 
 interface StepData {
@@ -70,6 +71,9 @@ const STEP_TO_KEY: Record<number, string> = {
 
 export function useWebReportForm(options: WebReportFormOptions) {
   const { reportId, autoSaveDelay = 2000 } = options;
+  
+  // Demo mode: skip all database operations
+  const isDemo = options.isDemo ?? reportId === 'demo' ?? !reportId;
 
   // State
   const currentStep = ref(1);
@@ -176,6 +180,13 @@ export function useWebReportForm(options: WebReportFormOptions) {
 
   // Save to Supabase
   async function saveToSupabase() {
+    // Skip database operations in demo mode
+    if (isDemo) {
+      isDirty.value = false;
+      lastSaved.value = new Date();
+      return;
+    }
+
     if (!isDirty.value || !reportId) return;
 
     saving.value = true;
@@ -241,6 +252,12 @@ export function useWebReportForm(options: WebReportFormOptions) {
 
   // Load from Supabase
   async function loadFromSupabase() {
+    // Skip database operations in demo mode
+    if (isDemo) {
+      loading.value = false;
+      return;
+    }
+
     if (!reportId) {
       error.value = 'No report ID provided';
       return;
@@ -372,8 +389,8 @@ export function useWebReportForm(options: WebReportFormOptions) {
     if (saveTimeout) {
       clearTimeout(saveTimeout);
     }
-    // Final save if dirty
-    if (isDirty.value) {
+    // Final save if dirty (skip in demo mode)
+    if (isDirty.value && !isDemo) {
       saveToSupabase();
     }
   }
@@ -391,6 +408,7 @@ export function useWebReportForm(options: WebReportFormOptions) {
     isDirty,
     completedSteps,
     reportStatus,
+    isDemo,
 
     // Methods
     initializeForm,
