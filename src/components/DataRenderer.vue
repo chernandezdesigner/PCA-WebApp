@@ -6,6 +6,7 @@ const props = defineProps<{
   data: Record<string, unknown> | null;
   depth?: number;
   sectionTitle?: string;
+  layoutMode?: 'default' | 'two-column' | 'documentation';
 }>();
 
 const { theme } = useTheme();
@@ -163,6 +164,11 @@ function parseSection(key: string, data: Record<string, unknown>): ParsedSection
 
     const keyLower = propKey.toLowerCase();
     
+    // Skip documents and problematic_materials at section level (handled at root level as pills)
+    if (keyLower === 'documents' || keyLower === 'problematic_materials') {
+      continue;
+    }
+    
     // Extract assessment metrics
     if (keyLower === 'conditions' || keyLower === 'condition' || keyLower === 'rating') {
       result.conditions = String(propValue);
@@ -186,16 +192,13 @@ function parseSection(key: string, data: Record<string, unknown>): ParsedSection
       result.tags.push(...propValue.map(String));
       result.hasContent = true;
     }
-    // Nested objects become nested sections
-    else if (isObject(propValue)) {
-      const nestedSection = parseSection(propKey, propValue);
-      if (nestedSection.hasContent) {
-        result.nestedSections.push(nestedSection);
-        result.hasContent = true;
-      }
-    }
-    // Arrays of objects
+    // Skip arrays of objects like personnel_interviewed and commercial_tenants (handled at root level)
     else if (Array.isArray(propValue) && propValue.length > 0 && isObject(propValue[0])) {
+      // Check if it's personnel/tenants
+      if (keyLower === 'personnel_interviewed' || keyLower === 'commercial_tenants') {
+        continue; // These are handled as root tag groups
+      }
+      // Other arrays of objects become nested sections
       propValue.forEach((item, idx) => {
         if (isObject(item)) {
           const nestedSection = parseSection(`${propKey} ${idx + 1}`, item);
@@ -205,6 +208,14 @@ function parseSection(key: string, data: Record<string, unknown>): ParsedSection
           }
         }
       });
+    }
+    // Nested objects become nested sections
+    else if (isObject(propValue)) {
+      const nestedSection = parseSection(propKey, propValue);
+      if (nestedSection.hasContent) {
+        result.nestedSections.push(nestedSection);
+        result.hasContent = true;
+      }
     }
     // Simple fields
     else {
@@ -229,6 +240,16 @@ const parsedSections = computed(() => {
   for (const [key, value] of Object.entries(props.data)) {
     if (skipKeys.has(key) || !hasContent(value)) continue;
     
+    const keyLower = key.toLowerCase();
+    
+    // Skip fields that are handled as pills/tags
+    if (keyLower === 'documents' || 
+        keyLower === 'problematic_materials' || 
+        keyLower === 'personnel_interviewed' || 
+        keyLower === 'commercial_tenants') {
+      continue;
+    }
+    
     if (isObject(value)) {
       const section = parseSection(key, value);
       if (section.hasContent) {
@@ -244,48 +265,124 @@ const parsedSections = computed(() => {
 const rootSimpleFields = computed(() => {
   if (!props.data) return [];
   
-  const fields: Array<{ key: string; label: string; value: unknown; type: string }> = [];
+  const fields: Array<{ key: string; label: string; value: unknown; type: string; fullWidth?: boolean }> = [];
   
   for (const [key, value] of Object.entries(props.data)) {
     if (skipKeys.has(key) || !hasContent(value)) continue;
     
-    if (!isObject(value) && !Array.isArray(value)) {
-      const keyLower = key.toLowerCase();
-      let type = 'text';
-      
-      if (keyLower.includes('condition') || keyLower.includes('rating')) type = 'condition';
-      else if (keyLower.includes('cost') || keyLower.includes('estimate')) type = 'cost';
-      else if (keyLower.includes('repair_status')) type = 'status';
-      else if (typeof value === 'boolean') type = 'boolean';
-      
-      fields.push({
-        key,
-        label: formatKey(key),
-        value,
-        type,
-      });
+    const keyLower = key.toLowerCase();
+    
+    // Skip fields that are handled as pills/tags or nested sections
+    if (keyLower === 'documents' || 
+        keyLower === 'problematic_materials' || 
+        keyLower === 'personnel_interviewed' || 
+        keyLower === 'commercial_tenants' ||
+        isObject(value) || 
+        Array.isArray(value)) {
+      continue;
     }
+    
+    let type = 'text';
+    let fullWidth = false;
+    
+    if (keyLower.includes('condition') || keyLower.includes('rating')) type = 'condition';
+    else if (keyLower.includes('cost') || keyLower.includes('estimate')) type = 'cost';
+    else if (keyLower.includes('repair_status')) type = 'status';
+    else if (typeof value === 'boolean') type = 'boolean';
+    
+    // Full width for long text fields like recent_capital_improvements
+    if (keyLower.includes('recent_capital') || keyLower.includes('surrounding_properties')) {
+      fullWidth = true;
+    }
+    
+    fields.push({
+      key,
+      label: formatKey(key),
+      value,
+      type,
+      fullWidth,
+    });
   }
   
   return fields;
 });
 
-// Get root level tags (arrays of primitives at root)
-const rootTags = computed(() => {
-  if (!props.data) return { label: '', items: [] as string[] };
+// Get root level tags (arrays and objects that should be displayed as pills)
+const rootTagGroups = computed(() => {
+  if (!props.data) return [];
+  
+  const groups: Array<{ key: string; label: string; items: string[] }> = [];
   
   for (const [key, value] of Object.entries(props.data)) {
     if (skipKeys.has(key)) continue;
     
+    const keyLower = key.toLowerCase();
+    
+    // Skip personnel and commercial tenants (they get their own card display)
+    if (keyLower === 'personnel_interviewed' || keyLower === 'commercial_tenants') {
+      continue;
+    }
+    
+    // Handle arrays of primitives
     if (Array.isArray(value) && isPrimitiveArray(value) && value.length > 0) {
-      return {
+      groups.push({
+        key,
         label: formatKey(key),
         items: value.map(String),
-      };
+      });
+    }
+    // Handle objects with boolean values (documents, problematic_materials)
+    else if (isObject(value)) {
+      const items: string[] = [];
+      
+      // For documents - show keys where value is true
+      if (keyLower === 'documents') {
+        for (const [docKey, docValue] of Object.entries(value)) {
+          if (docValue === true) {
+            items.push(formatKey(docKey));
+          }
+        }
+      }
+      // For problematic_materials - show keys where provided is true
+      else if (keyLower === 'problematic_materials') {
+        for (const [matKey, matValue] of Object.entries(value)) {
+          if (isObject(matValue) && 'provided' in matValue && matValue.provided === true) {
+            items.push(formatKey(matKey));
+          }
+        }
+      }
+      
+      if (items.length > 0) {
+        groups.push({
+          key,
+          label: formatKey(key),
+          items,
+        });
+      }
     }
   }
   
-  return { label: '', items: [] };
+  return groups;
+});
+
+// Get personnel interviewed data
+const personnelInterviewed = computed(() => {
+  if (!props.data || !('personnel_interviewed' in props.data)) return [];
+  
+  const value = props.data.personnel_interviewed;
+  if (!Array.isArray(value)) return [];
+  
+  return value.filter(item => isObject(item) && 'name' in item) as Array<Record<string, unknown>>;
+});
+
+// Get commercial tenants data
+const commercialTenants = computed(() => {
+  if (!props.data || !('commercial_tenants' in props.data)) return [];
+  
+  const value = props.data.commercial_tenants;
+  if (!Array.isArray(value)) return [];
+  
+  return value.filter(item => isObject(item) && 'name' in item) as Array<Record<string, unknown>>;
 });
 
 // Get root level comments
@@ -333,9 +430,9 @@ function formatValue(value: unknown): string {
       </p>
     </div>
 
-    <!-- Root Simple Fields as Assessment Row -->
+    <!-- Root Simple Fields as Assessment Row or Two Column -->
     <div 
-      v-if="rootSimpleFields.length > 0"
+      v-if="rootSimpleFields.length > 0 && layoutMode !== 'two-column'"
       class="flex flex-wrap items-center gap-3"
     >
       <template v-for="field in rootSimpleFields" :key="field.key">
@@ -428,25 +525,159 @@ function formatValue(value: unknown): string {
       </template>
     </div>
 
-    <!-- Root Tags -->
-    <div v-if="rootTags.items.length > 0">
+    <!-- Two Column Layout for Project Summary -->
+    <div 
+      v-if="rootSimpleFields.length > 0 && layoutMode === 'two-column'"
+      class="grid grid-cols-2 gap-x-4 gap-y-3"
+    >
+      <div
+        v-for="field in rootSimpleFields"
+        :key="field.key"
+        :class="field.fullWidth ? 'col-span-2' : 'col-span-1'"
+        class="space-y-1"
+      >
+        <div 
+          class="text-xs font-medium uppercase tracking-wide"
+          :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+        >
+          {{ field.label }}
+        </div>
+        <div 
+          class="text-sm font-medium overflow-x-auto scrollbar-thin"
+          :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-800'"
+        >
+          {{ formatValue(field.value) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Root Tags (multiple groups) -->
+    <div v-if="rootTagGroups.length > 0" class="space-y-3">
+      <div v-for="group in rootTagGroups" :key="group.key">
+        <div 
+          class="text-[10px] font-medium uppercase tracking-wide mb-2"
+          :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+        >
+          {{ group.label }}
+        </div>
+        <div class="flex flex-wrap gap-1.5">
+          <span
+            v-for="(tag, idx) in group.items"
+            :key="idx"
+            class="px-2.5 py-1 text-xs font-medium rounded-md"
+            :class="theme === 'dark' 
+              ? 'bg-zinc-800 text-zinc-300 border border-zinc-700'
+              : 'bg-slate-100 text-slate-700 border border-slate-200'"
+          >
+            {{ tag }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personnel Interviewed Cards -->
+    <div v-if="personnelInterviewed.length > 0">
       <div 
         class="text-[10px] font-medium uppercase tracking-wide mb-2"
         :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
       >
-        {{ rootTags.label }}
+        Personnel Interviewed
       </div>
-      <div class="flex flex-wrap gap-1.5">
-        <span
-          v-for="(tag, idx) in rootTags.items"
+      <div class="grid grid-cols-2 gap-2">
+        <div
+          v-for="(person, idx) in personnelInterviewed"
           :key="idx"
-          class="px-2.5 py-1 text-xs font-medium rounded-md"
+          class="rounded-lg border p-3 space-y-1.5"
           :class="theme === 'dark' 
-            ? 'bg-zinc-800 text-zinc-300 border border-zinc-700'
-            : 'bg-slate-100 text-slate-700 border border-slate-200'"
+            ? 'bg-zinc-800/50 border-zinc-700'
+            : 'bg-slate-50 border-slate-200'"
         >
-          {{ tag }}
-        </span>
+          <div 
+            class="font-semibold text-sm"
+            :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-800'"
+          >
+            {{ person.name }}
+          </div>
+          <div 
+            v-if="person.title"
+            class="text-xs"
+            :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'"
+          >
+            {{ person.title }}
+          </div>
+          <div 
+            v-if="person.phoneNumber"
+            class="text-xs flex items-center gap-1"
+            :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'"
+          >
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+            {{ person.phoneNumber }}
+          </div>
+          <div 
+            v-if="person.yearsAtProperty"
+            class="text-xs"
+            :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+          >
+            {{ person.yearsAtProperty }} {{ person.yearsAtProperty === 1 ? 'year' : 'years' }} at property
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Commercial Tenants Cards -->
+    <div v-if="commercialTenants.length > 0">
+      <div 
+        class="text-[10px] font-medium uppercase tracking-wide mb-2"
+        :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+      >
+        Commercial Tenants
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div
+          v-for="(tenant, idx) in commercialTenants"
+          :key="idx"
+          class="rounded-lg border p-3 space-y-1.5"
+          :class="theme === 'dark' 
+            ? 'bg-zinc-800/50 border-zinc-700'
+            : 'bg-slate-50 border-slate-200'"
+        >
+          <div 
+            class="font-semibold text-sm"
+            :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-800'"
+          >
+            {{ tenant.name }}
+          </div>
+          <div 
+            v-if="tenant.addressOrUnit"
+            class="text-xs flex items-center gap-1"
+            :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'"
+          >
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {{ tenant.addressOrUnit }}
+          </div>
+          <div 
+            v-if="'accessed' in tenant"
+            class="flex items-center gap-1.5 text-xs"
+          >
+            <span 
+              class="px-2 py-0.5 rounded text-[10px] font-medium"
+              :class="tenant.accessed 
+                ? theme === 'dark' 
+                  ? 'bg-emerald-500/20 text-emerald-400'
+                  : 'bg-emerald-100 text-emerald-700'
+                : theme === 'dark'
+                  ? 'bg-zinc-700 text-zinc-400'
+                  : 'bg-slate-200 text-slate-600'"
+            >
+              {{ tenant.accessed ? 'Accessed' : 'Not Accessed' }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
 

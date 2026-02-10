@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, toRef } from 'vue';
+import { ref, toRef, computed } from 'vue';
 import { useTheme } from '@/composables/useTheme';
-import { useFieldNotes, type FieldPhoto } from '@/composables/useFieldNotes';
+import { useFieldNotes, type FieldPhoto, type SearchResult } from '@/composables/useFieldNotes';
 import DataRenderer from '@/components/DataRenderer.vue';
 
 const props = defineProps<{
@@ -16,7 +16,7 @@ const emit = defineEmits<{
 
 const { theme } = useTheme();
 const isCollapsedInternal = ref(props.isCollapsed ?? false);
-const searchQuery = ref('');
+const showSearchResults = ref(false);
 
 // Use field notes composable
 const reportIdRef = toRef(props, 'reportId');
@@ -41,7 +41,12 @@ const {
   canGoPrev,
   getThumbnailUrl,
   allPhotos,
+  searchQuery,
+  searchResults,
 } = useFieldNotes(reportIdRef);
+
+// Show search results dropdown when there's a query and results
+const hasSearchResults = computed(() => searchQuery.value.length >= 2 && searchResults.value.length > 0);
 
 
 function toggleCollapse() {
@@ -66,6 +71,40 @@ function viewAllPhotos() {
 
 function clearSearch() {
   searchQuery.value = '';
+  showSearchResults.value = false;
+}
+
+function getLayoutMode(sectionTitle: string): 'default' | 'two-column' | 'documentation' {
+  const title = sectionTitle.toLowerCase();
+  if (title.includes('general info') || title.includes('unit info')) {
+    return 'two-column';
+  }
+  if (title.includes('documentation')) {
+    return 'documentation';
+  }
+  return 'default';
+}
+
+function handleSearchFocus() {
+  if (searchQuery.value.length >= 2 && searchResults.value.length > 0) {
+    showSearchResults.value = true;
+  }
+}
+
+function handleSearchInput() {
+  showSearchResults.value = searchQuery.value.length >= 2;
+}
+
+function selectSearchResult(result: SearchResult) {
+  goToSection(result.categoryIndex, result.sectionIndex);
+  showSearchResults.value = false;
+}
+
+function closeSearchResults() {
+  // Small delay to allow click events to register
+  setTimeout(() => {
+    showSearchResults.value = false;
+  }, 150);
 }
 </script>
 
@@ -142,7 +181,7 @@ function clearSearch() {
 
       <!-- Search Bar -->
       <div 
-        class="flex-shrink-0 px-4 py-3 border-b"
+        class="flex-shrink-0 px-4 py-3 border-b relative"
         :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'"
       >
         <div class="relative">
@@ -160,11 +199,14 @@ function clearSearch() {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search"
+            placeholder="Search sections and data..."
             class="w-full pl-9 pr-8 py-2 rounded-lg text-sm border-0 focus:ring-2 transition-colors"
             :class="theme === 'dark' 
               ? 'bg-zinc-900 text-zinc-200 placeholder-zinc-500 focus:ring-zinc-700'
               : 'bg-slate-100 text-slate-800 placeholder-slate-400 focus:ring-slate-300'"
+            @focus="handleSearchFocus"
+            @blur="closeSearchResults"
+            @input="handleSearchInput"
           />
           <button
             v-if="searchQuery"
@@ -176,6 +218,93 @@ function clearSearch() {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
+        </div>
+
+        <!-- Search Results Dropdown -->
+        <div 
+          v-if="showSearchResults && hasSearchResults"
+          class="absolute left-4 right-4 top-full mt-1 rounded-lg shadow-lg border overflow-hidden z-50 max-h-[400px] overflow-y-auto"
+          :class="theme === 'dark' ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-slate-200'"
+        >
+          <div 
+            class="px-3 py-2 text-xs font-medium border-b"
+            :class="theme === 'dark' ? 'bg-zinc-800/50 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600'"
+          >
+            {{ searchResults.length }} result{{ searchResults.length !== 1 ? 's' : '' }} found
+          </div>
+          
+          <div class="py-1">
+            <button
+              v-for="(result, idx) in searchResults"
+              :key="`${result.categoryIndex}-${result.sectionIndex}-${idx}`"
+              @mousedown.prevent="selectSearchResult(result)"
+              class="w-full px-3 py-2.5 text-left transition-colors flex flex-col gap-1 border-b last:border-b-0"
+              :class="theme === 'dark'
+                ? 'hover:bg-zinc-800 border-zinc-800/50'
+                : 'hover:bg-slate-50 border-slate-100'"
+            >
+              <!-- Section/Category info -->
+              <div class="flex items-center gap-2">
+                <span 
+                  class="px-2 py-0.5 rounded text-[10px] font-medium uppercase"
+                  :class="result.matchType === 'section'
+                    ? theme === 'dark' ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-100 text-blue-600'
+                    : theme === 'dark' ? 'bg-emerald-600/20 text-emerald-400' : 'bg-emerald-100 text-emerald-600'"
+                >
+                  {{ result.matchType === 'section' ? 'Section' : 'Data' }}
+                </span>
+                <span 
+                  class="text-xs font-medium"
+                  :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
+                >
+                  {{ result.categoryTitle }}
+                </span>
+                <span 
+                  class="text-xs"
+                  :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+                >
+                  •
+                </span>
+                <span 
+                  class="text-xs"
+                  :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-500'"
+                >
+                  {{ result.sectionTitle }}
+                </span>
+              </div>
+              
+              <!-- Match preview -->
+              <div 
+                v-if="result.preview"
+                class="text-sm line-clamp-2"
+                :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'"
+              >
+                {{ result.preview }}
+              </div>
+            </button>
+          </div>
+
+          <!-- No results state -->
+          <div 
+            v-if="searchQuery.length >= 2 && searchResults.length === 0"
+            class="px-4 py-8 text-center"
+          >
+            <svg 
+              class="w-8 h-8 mx-auto mb-2 opacity-30"
+              :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <p 
+              class="text-sm"
+              :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+            >
+              No results found
+            </p>
+          </div>
         </div>
       </div>
 
@@ -360,7 +489,11 @@ function clearSearch() {
           </div>
 
           <!-- Data Renderer -->
-          <DataRenderer :data="currentSection.rawData" :section-title="currentSection.title" />
+          <DataRenderer 
+            :data="currentSection.rawData" 
+            :section-title="currentSection.title"
+            :layout-mode="getLayoutMode(currentSection.title)"
+          />
 
           <!-- Photos -->
           <div 

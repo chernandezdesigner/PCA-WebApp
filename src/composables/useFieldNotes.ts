@@ -32,6 +32,17 @@ export interface FieldNotesCategory {
   comingSoon?: boolean;
 }
 
+export interface SearchResult {
+  categoryIndex: number;
+  sectionIndex: number;
+  categoryTitle: string;
+  sectionTitle: string;
+  matchType: 'section' | 'data';
+  matchedField?: string;
+  matchedValue?: string;
+  preview?: string;
+}
+
 // ============================================================================
 // Configuration - Matches Mobile App Navigation
 // ============================================================================
@@ -130,6 +141,10 @@ export function useFieldNotes(reportId: Ref<string>) {
   // Navigation state
   const currentCategoryIndex = ref(0);
   const currentSectionIndex = ref(0);
+
+  // Search state
+  const searchQuery = ref('');
+  const searchResults = ref<SearchResult[]>([]);
 
   // Computed
   const currentCategory = computed(() => categories.value[currentCategoryIndex.value] || null);
@@ -236,6 +251,160 @@ export function useFieldNotes(reportId: Ref<string>) {
     }
     return false;
   }
+
+  // Search through categories, sections, and data
+  function performSearch(query: string): SearchResult[] {
+    const results: SearchResult[] = [];
+    const normalizedQuery = query.toLowerCase().trim();
+
+    if (!normalizedQuery || normalizedQuery.length < 2) {
+      return [];
+    }
+
+    categories.value.forEach((category, catIdx) => {
+      if (category.comingSoon) return;
+
+      category.sections.forEach((section, secIdx) => {
+        // Search in section title
+        if (section.title.toLowerCase().includes(normalizedQuery)) {
+          results.push({
+            categoryIndex: catIdx,
+            sectionIndex: secIdx,
+            categoryTitle: category.title,
+            sectionTitle: section.title,
+            matchType: 'section',
+            preview: section.title,
+          });
+        }
+
+        // Search in category title (show the section as result)
+        if (category.title.toLowerCase().includes(normalizedQuery) && !results.some(r => r.categoryIndex === catIdx && r.sectionIndex === secIdx)) {
+          results.push({
+            categoryIndex: catIdx,
+            sectionIndex: secIdx,
+            categoryTitle: category.title,
+            sectionTitle: section.title,
+            matchType: 'section',
+            preview: `${category.title} - ${section.title}`,
+          });
+        }
+
+        // Search in data fields
+        if (section.rawData) {
+          searchInData(section.rawData, catIdx, secIdx, category.title, section.title, normalizedQuery, results);
+        }
+      });
+    });
+
+    // Limit results to top 10
+    return results.slice(0, 10);
+  }
+
+  // Recursive function to search through data
+  function searchInData(
+    data: Record<string, unknown>,
+    catIdx: number,
+    secIdx: number,
+    catTitle: string,
+    secTitle: string,
+    query: string,
+    results: SearchResult[],
+    prefix = ''
+  ): void {
+    const skipKeys = new Set(['id', 'assessment_id', 'created_at', 'updated_at', 'last_modified', 'current_step']);
+
+    for (const [key, value] of Object.entries(data)) {
+      if (skipKeys.has(key)) continue;
+
+      const fieldPath = prefix ? `${prefix}.${key}` : key;
+      const fieldLabel = formatFieldLabel(key);
+
+      // Search in field name
+      if (fieldLabel.toLowerCase().includes(query)) {
+        const valueStr = formatValueForSearch(value);
+        if (valueStr) {
+          results.push({
+            categoryIndex: catIdx,
+            sectionIndex: secIdx,
+            categoryTitle: catTitle,
+            sectionTitle: secTitle,
+            matchType: 'data',
+            matchedField: fieldLabel,
+            matchedValue: valueStr,
+            preview: `${fieldLabel}: ${valueStr}`,
+          });
+        }
+      }
+
+      // Search in field value
+      if (typeof value === 'string' && value.toLowerCase().includes(query)) {
+        results.push({
+          categoryIndex: catIdx,
+          sectionIndex: secIdx,
+          categoryTitle: catTitle,
+          sectionTitle: secTitle,
+          matchType: 'data',
+          matchedField: fieldLabel,
+          matchedValue: value,
+          preview: `${fieldLabel}: ${value}`,
+        });
+      }
+
+      // Search in arrays
+      if (Array.isArray(value)) {
+        value.forEach((item, idx) => {
+          if (typeof item === 'string' && item.toLowerCase().includes(query)) {
+            results.push({
+              categoryIndex: catIdx,
+              sectionIndex: secIdx,
+              categoryTitle: catTitle,
+              sectionTitle: secTitle,
+              matchType: 'data',
+              matchedField: fieldLabel,
+              matchedValue: item,
+              preview: `${fieldLabel}: ${item}`,
+            });
+          } else if (typeof item === 'object' && item !== null) {
+            searchInData(item as Record<string, unknown>, catIdx, secIdx, catTitle, secTitle, query, results, `${fieldPath}[${idx}]`);
+          }
+        });
+      }
+
+      // Search in nested objects
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        searchInData(value as Record<string, unknown>, catIdx, secIdx, catTitle, secTitle, query, results, fieldPath);
+      }
+    }
+  }
+
+  // Format field label for display
+  function formatFieldLabel(key: string): string {
+    return key
+      .replace(/_/g, ' ')
+      .replace(/([A-Z])/g, ' $1')
+      .trim()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  // Format value for search results preview
+  function formatValueForSearch(value: unknown): string {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === 'number') return value.toLocaleString();
+    if (typeof value === 'string') return value.length > 50 ? value.substring(0, 50) + '...' : value;
+    if (Array.isArray(value)) {
+      const primitives = value.filter(v => typeof v === 'string' || typeof v === 'number');
+      return primitives.slice(0, 3).join(', ');
+    }
+    return '';
+  }
+
+  // Update search results when query changes
+  watch(searchQuery, (newQuery) => {
+    searchResults.value = performSearch(newQuery);
+  });
 
   // Fetch all field notes data
   async function fetchFieldNotes() {
@@ -427,6 +596,10 @@ export function useFieldNotes(reportId: Ref<string>) {
     currentSectionIndex,
     currentCategory,
     currentSection,
+    
+    // Search state
+    searchQuery,
+    searchResults,
     
     // Computed
     hasData,
