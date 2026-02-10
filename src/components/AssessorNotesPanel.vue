@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, toRef } from 'vue';
+import { ref, toRef, watch } from 'vue';
 import { useTheme } from '@/composables/useTheme';
 import { useFieldNotes, type FieldPhoto } from '@/composables/useFieldNotes';
 import DataRenderer from '@/components/DataRenderer.vue';
@@ -16,6 +16,11 @@ const emit = defineEmits<{
 
 const { theme } = useTheme();
 const isCollapsedInternal = ref(props.isCollapsed ?? false);
+
+// Sync internal collapsed state if prop changes
+watch(() => props.isCollapsed, (newVal) => {
+  if (newVal !== undefined) isCollapsedInternal.value = newVal;
+});
 
 // Use field notes composable
 const reportIdRef = toRef(props, 'reportId');
@@ -65,18 +70,18 @@ function viewAllPhotos() {
 
 <template>
   <aside
-    class="h-full flex flex-col border-l transition-all duration-300"
+    class="h-full flex flex-col border-l transition-all duration-300 shadow-xl z-20"
     :class="[
-      isCollapsedInternal ? 'w-14' : 'w-[420px]',
-      theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'
+      isCollapsedInternal ? 'w-14' : 'w-[450px]', // Increased width slightly
+      theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200'
     ]"
   >
     <!-- Collapsed State -->
     <div v-if="isCollapsedInternal" class="flex flex-col items-center py-4 h-full">
       <button 
         @click="toggleCollapse"
-        class="p-2 rounded-md transition-colors"
-        :class="theme === 'dark' ? 'text-zinc-400 hover:bg-zinc-800' : 'text-slate-400 hover:bg-slate-200'"
+        class="p-2 rounded-lg transition-colors hover:bg-opacity-80"
+        :class="theme === 'dark' ? 'text-zinc-400 hover:bg-zinc-800' : 'text-slate-400 hover:bg-slate-100'"
         aria-label="Expand field notes panel"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,15 +89,15 @@ function viewAllPhotos() {
         </svg>
       </button>
       <div 
-        class="mt-8 writing-mode-vertical rotate-180 text-xs font-bold tracking-widest uppercase"
-        :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+        class="mt-12 writing-mode-vertical rotate-180 text-xs font-bold tracking-[0.2em] uppercase"
+        :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
       >
         Field Notes
       </div>
       <div 
         v-if="totalPhotos > 0"
-        class="mt-auto mb-4 w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold"
-        :class="theme === 'dark' ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-100 text-blue-600'"
+        class="mt-auto mb-6 w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold shadow-sm"
+        :class="theme === 'dark' ? 'bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20' : 'bg-blue-50 text-blue-600 ring-1 ring-blue-100'"
       >
         {{ totalPhotos }}
       </div>
@@ -102,20 +107,29 @@ function viewAllPhotos() {
     <template v-else>
       <!-- Header -->
       <div 
-        class="flex-shrink-0 px-4 py-3 border-b"
-        :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-950' : 'border-slate-200 bg-white'"
+        class="flex-shrink-0 px-5 py-4 border-b flex flex-col gap-3"
+        :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-950' : 'border-slate-100 bg-white'"
       >
-        <div class="flex items-center justify-between mb-2">
-          <h2 
-            class="text-sm font-bold uppercase tracking-wide"
-            :class="theme === 'dark' ? 'text-zinc-100' : 'text-slate-900'"
-          >
-            Field Notes
-          </h2>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h2 
+              class="text-base font-bold tracking-tight"
+              :class="theme === 'dark' ? 'text-zinc-100' : 'text-slate-900'"
+            >
+              Field Notes
+            </h2>
+            <span 
+              v-if="hasData" 
+              class="px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wide"
+              :class="theme === 'dark' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-700'"
+            >
+              Live Data
+            </span>
+          </div>
           <button 
             @click="toggleCollapse"
-            class="p-1.5 rounded transition-colors"
-            :class="theme === 'dark' ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'"
+            class="p-1.5 rounded-md transition-colors"
+            :class="theme === 'dark' ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'"
             aria-label="Collapse field notes panel"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,246 +137,217 @@ function viewAllPhotos() {
             </svg>
           </button>
         </div>
+
+        <!-- Inspector Info -->
         <div 
           v-if="inspectorName || inspectionDate"
-          class="flex items-center gap-2 text-xs"
+          class="flex items-center gap-3 text-xs"
           :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
         >
-          <span v-if="inspectorName" class="font-medium">{{ inspectorName }}</span>
-          <span v-if="inspectorName && inspectionDate">•</span>
-          <span v-if="inspectionDate">{{ inspectionDate }}</span>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span class="font-medium">{{ inspectorName || 'Unknown Inspector' }}</span>
+          </div>
+          <div v-if="inspectionDate" class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>{{ inspectionDate }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- Category Tabs -->
+      <!-- Navigation Tabs (Categories) -->
       <div 
-        class="flex-shrink-0 border-b overflow-x-auto"
-        :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-900/50' : 'border-slate-200 bg-slate-100/50'"
+        class="flex-shrink-0 border-b overflow-x-auto no-scrollbar"
+        :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-900/50' : 'border-slate-100 bg-slate-50'"
       >
-        <div class="flex px-2 py-2 gap-1">
+        <div class="flex px-4 py-2 gap-2 min-w-max">
           <button
             v-for="(category, idx) in categories"
             :key="category.id"
             @click="goToCategory(idx)"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors"
+            class="group flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-all min-w-[70px]"
             :class="[
               currentCategoryIndex === idx
                 ? theme === 'dark'
-                  ? 'bg-zinc-800 text-zinc-100'
-                  : 'bg-white text-slate-900 shadow-sm'
+                  ? 'bg-zinc-800 text-zinc-100 shadow-sm ring-1 ring-zinc-700'
+                  : 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200'
                 : theme === 'dark'
                   ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
             ]"
           >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getCategoryIcon(category.icon)" />
-            </svg>
-            {{ category.title.split(' ')[0] }}
-            <span 
-              v-if="category.comingSoon"
-              class="ml-0.5 px-1.5 py-0.5 rounded text-[10px]"
-              :class="theme === 'dark' ? 'bg-amber-600/20 text-amber-400' : 'bg-amber-100 text-amber-600'"
-            >
-              Soon
-            </span>
-            <span 
-              v-else-if="category.totalPhotos > 0"
-              class="ml-0.5 px-1.5 py-0.5 rounded text-[10px]"
-              :class="theme === 'dark' ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-100 text-blue-600'"
-            >
-              {{ category.totalPhotos }}
-            </span>
+            <div class="relative">
+              <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getCategoryIcon(category.icon)" />
+              </svg>
+              <span 
+                v-if="category.totalPhotos > 0"
+                class="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold px-1"
+                :class="theme === 'dark' ? 'bg-blue-500 text-white' : 'bg-blue-600 text-white'"
+              >
+                {{ category.totalPhotos }}
+              </span>
+            </div>
+            <span>{{ category.title.split(' ')[0] }}</span>
           </button>
         </div>
       </div>
 
-      <!-- Section Selector -->
+      <!-- Section Navigator (Sticky-ish) -->
       <div 
-        v-if="currentCategory && currentCategory.sections.length > 1 && !currentCategory.comingSoon"
-        class="flex-shrink-0 px-4 py-2 border-b"
-        :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'"
+        v-if="currentCategory && !currentCategory.comingSoon"
+        class="flex-shrink-0 px-5 py-3 border-b flex items-center justify-between gap-4"
+        :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-900' : 'border-slate-100 bg-white'"
       >
-        <select
-          :value="currentSectionIndex"
-          @change="(e) => goToSection(currentCategoryIndex, parseInt((e.target as HTMLSelectElement).value))"
-          class="w-full px-3 py-1.5 rounded-md text-sm border transition-colors"
-          :class="theme === 'dark'
-            ? 'bg-zinc-900 border-zinc-700 text-zinc-200 focus:border-zinc-600'
-            : 'bg-white border-slate-200 text-slate-700 focus:border-slate-400'"
+        <button
+          @click="prevSection"
+          :disabled="!canGoPrev()"
+          class="p-1.5 rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          :class="theme === 'dark' ? 'hover:bg-zinc-800 text-zinc-400' : 'hover:bg-slate-100 text-slate-500'"
         >
-          <option
-            v-for="(section, idx) in currentCategory.sections"
-            :key="section.id"
-            :value="idx"
-          >
-            {{ section.title }}
-            {{ section.hasData ? '' : '(empty)' }}
-          </option>
-        </select>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <div class="flex-1 text-center overflow-hidden">
+          <div class="text-[10px] uppercase tracking-wider font-semibold mb-0.5 opacity-60">
+            {{ currentCategory.title }}
+          </div>
+          <div class="text-sm font-semibold truncate">
+            {{ currentSection?.title }}
+          </div>
+           <!-- Optional: Dots Indicator for sections -->
+           <div class="flex justify-center gap-1 mt-1.5">
+             <button 
+              v-for="(_, idx) in currentCategory.sections" 
+              :key="idx"
+              @click="goToSection(currentCategoryIndex, idx)"
+              class="w-1.5 h-1.5 rounded-full transition-all duration-300"
+              :class="[
+                idx === currentSectionIndex 
+                  ? theme === 'dark' ? 'bg-zinc-200 scale-125' : 'bg-blue-600 scale-125'
+                  : theme === 'dark' ? 'bg-zinc-800 hover:bg-zinc-600' : 'bg-slate-200 hover:bg-slate-300'
+              ]"
+              :aria-label="`Go to section ${idx + 1}`"
+             ></button>
+           </div>
+        </div>
+
+        <button
+          @click="nextSection"
+          :disabled="!canGoNext()"
+          class="p-1.5 rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          :class="theme === 'dark' ? 'hover:bg-zinc-800 text-zinc-400' : 'hover:bg-slate-100 text-slate-500'"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
 
       <!-- Content Area -->
-      <div class="flex-1 overflow-y-auto">
+      <div class="flex-1 overflow-y-auto min-h-0 bg-opacity-50" :class="theme === 'dark' ? 'bg-zinc-950' : 'bg-slate-50'">
         <!-- Loading State -->
-        <div v-if="loading" class="flex flex-col items-center justify-center py-12 px-4">
+        <div v-if="loading" class="flex flex-col items-center justify-center py-20 px-4">
           <svg 
-            class="w-8 h-8 animate-spin mb-4"
-            :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+            class="w-10 h-10 animate-spin mb-4 opacity-50"
+            :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-400'"
             fill="none" 
             viewBox="0 0 24 24"
           >
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          <p 
-            class="text-xs"
-            :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-          >
-            Loading field notes...
-          </p>
+          <p class="text-sm font-medium opacity-60">Syncing data...</p>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="flex flex-col items-center justify-center py-12 px-4">
-          <div 
-            class="w-12 h-12 rounded-full flex items-center justify-center mb-4"
-            :class="theme === 'dark' ? 'bg-red-950' : 'bg-red-50'"
-          >
-            <svg 
-              class="w-6 h-6"
-              :class="theme === 'dark' ? 'text-red-400' : 'text-red-500'"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
+        <div v-else-if="error" class="flex flex-col items-center justify-center py-20 px-8 text-center">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-red-500/10 text-red-500">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h3 
-            class="text-sm font-medium mb-1"
-            :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
-          >
-            Failed to load
-          </h3>
-          <p 
-            class="text-xs text-center max-w-[200px]"
-            :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-          >
-            {{ error }}
-          </p>
+          <p class="text-sm font-medium mb-1">Unable to load notes</p>
+          <p class="text-xs opacity-60">{{ error }}</p>
         </div>
 
         <!-- Coming Soon State -->
-        <div v-else-if="currentCategory?.comingSoon" class="flex flex-col items-center justify-center py-12 px-4">
+        <div v-else-if="currentCategory?.comingSoon" class="flex flex-col items-center justify-center py-20 px-8 text-center">
           <div 
-            class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-            :class="theme === 'dark' ? 'bg-amber-950/50' : 'bg-amber-50'"
+            class="w-16 h-16 rounded-full flex items-center justify-center mb-6"
+            :class="theme === 'dark' ? 'bg-amber-900/20 text-amber-500' : 'bg-amber-50 text-amber-600'"
           >
-            <svg 
-              class="w-8 h-8"
-              :class="theme === 'dark' ? 'text-amber-400' : 'text-amber-500'"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
-          <h3 
-            class="text-sm font-semibold mb-1"
-            :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-800'"
-          >
-            Coming Soon
-          </h3>
-          <p 
-            class="text-xs text-center max-w-[220px]"
-            :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-          >
-            Interior conditions forms are still being developed in the mobile app.
-          </p>
+          <h3 class="text-base font-semibold mb-2">Coming Soon</h3>
+          <p class="text-sm opacity-60">This section is being developed for the mobile app.</p>
         </div>
 
         <!-- Section Content -->
-        <div v-else-if="currentSection" class="px-4 py-4 space-y-4">
-          <!-- Section Header -->
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 
-                class="text-sm font-semibold"
-                :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-800'"
-              >
-                {{ currentSection.title }}
-              </h3>
-              <p 
-                class="text-xs mt-0.5"
-                :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-              >
-                {{ currentCategory?.title }}
-              </p>
-            </div>
-            <div 
-              v-if="!currentSection.hasData"
-              class="px-2 py-1 rounded text-xs"
-              :class="theme === 'dark' ? 'bg-zinc-800 text-zinc-500' : 'bg-slate-100 text-slate-500'"
-            >
-              No data
-            </div>
+        <div v-else-if="currentSection" class="p-5 space-y-8">
+          <!-- Data Renderer -->
+          <div v-if="currentSection.hasData">
+            <DataRenderer :data="currentSection.rawData" />
+          </div>
+          <div v-else class="py-8 text-center rounded-xl border border-dashed" :class="theme === 'dark' ? 'border-zinc-800 text-zinc-500' : 'border-slate-300 text-slate-500'">
+            <p class="text-sm">No data recorded for this section</p>
           </div>
 
-          <!-- Data Renderer -->
-          <DataRenderer :data="currentSection.rawData" />
-
-          <!-- Photos -->
-          <div v-if="currentSection.photos.length > 0" class="pt-4 border-t" :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'">
-            <div class="flex items-center justify-between mb-3">
+          <!-- Photos Grid -->
+          <div v-if="currentSection.photos.length > 0">
+             <div class="flex items-center justify-between mb-4">
               <h4 
-                class="text-xs font-semibold uppercase tracking-wide"
+                class="text-xs font-bold uppercase tracking-wider"
                 :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'"
               >
-                Photos
+                Photos ({{ currentSection.photos.length }})
               </h4>
-              <span 
-                class="text-xs"
-                :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-              >
-                {{ currentSection.photos.length }}
-              </span>
-            </div>
-            <div class="grid grid-cols-4 gap-2">
+             </div>
+            
+            <div class="grid grid-cols-3 gap-3">
               <div
-                v-for="(photo, idx) in currentSection.photos.slice(0, 8)"
+                v-for="(photo, idx) in currentSection.photos.slice(0, 6)"
                 :key="photo.id"
-                class="aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-                :class="theme === 'dark' ? 'bg-zinc-800' : 'bg-slate-200'"
+                class="group relative aspect-square rounded-lg overflow-hidden cursor-pointer ring-1 ring-black/5"
+                @click="emit('view-photos', currentSection.photos)"
               >
                 <img
                   :src="getThumbnailUrl(photo)"
-                  :alt="photo.filename || `Photo ${idx + 1}`"
-                  class="w-full h-full object-cover"
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
               </div>
+              
+              <!-- More Photos Indicator -->
               <div
-                v-if="currentSection.photos.length > 8"
-                class="aspect-square rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer hover:opacity-80 transition-opacity"
-                :class="theme === 'dark' ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-200 text-slate-500'"
+                v-if="currentSection.photos.length > 6"
+                class="aspect-square rounded-lg flex flex-col items-center justify-center text-xs font-bold cursor-pointer transition-colors border-2 border-dashed"
+                :class="theme === 'dark' ? 'border-zinc-700 bg-zinc-900/50 text-zinc-400 hover:text-zinc-200' : 'border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-700'"
                 @click="emit('view-photos', currentSection.photos)"
               >
-                +{{ currentSection.photos.length - 8 }}
+                <span class="text-lg mb-1">+{{ currentSection.photos.length - 6 }}</span>
+                <span>More</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- No Data State -->
-        <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-12 px-4">
+        <!-- No Data State (Global) -->
+        <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-20 px-8 text-center">
           <div 
-            class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-            :class="theme === 'dark' ? 'bg-zinc-800' : 'bg-slate-100'"
+            class="w-16 h-16 rounded-full flex items-center justify-center mb-6"
+            :class="theme === 'dark' ? 'bg-zinc-900' : 'bg-slate-100'"
           >
             <svg 
-              class="w-8 h-8"
-              :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+              class="w-8 h-8 opacity-40"
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -370,61 +355,32 @@ function viewAllPhotos() {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h3 
-            class="text-sm font-semibold mb-1"
-            :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
-          >
-            No Field Data
-          </h3>
-          <p 
-            class="text-xs text-center max-w-[200px]"
-            :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-          >
-            This report doesn't have linked field assessment data yet.
+          <h3 class="text-sm font-semibold mb-2">No Data Available</h3>
+          <p class="text-xs opacity-60">
+            This report doesn't have any field data associated with it yet.
           </p>
         </div>
       </div>
 
-      <!-- Footer Navigation -->
+      <!-- Footer Actions -->
       <div 
         v-if="!loading && !error && hasData && !currentCategory?.comingSoon"
-        class="flex-shrink-0 px-4 py-3 border-t"
-        :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-950' : 'border-slate-200 bg-white'"
+        class="flex-shrink-0 px-5 py-3 border-t flex items-center justify-between gap-4"
+        :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-950' : 'border-slate-100 bg-white'"
       >
-        <div class="flex items-center justify-between">
-          <button
-            @click="prevSection"
-            :disabled="!canGoPrev()"
-            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            :class="theme === 'dark'
-              ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
-              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'"
-          >
-            ← Previous
-          </button>
-          
-          <button
-            v-if="totalPhotos > 0"
-            @click="viewAllPhotos"
-            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
-            :class="theme === 'dark'
-              ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30'
-              : 'bg-blue-100 text-blue-600 hover:bg-blue-200'"
-          >
-            All Photos ({{ totalPhotos }})
-          </button>
-
-          <button
-            @click="nextSection"
-            :disabled="!canGoNext()"
-            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            :class="theme === 'dark'
-              ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
-              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'"
-          >
-            Next →
-          </button>
-        </div>
+        <button
+          v-if="totalPhotos > 0"
+          @click="viewAllPhotos"
+          class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors"
+          :class="theme === 'dark'
+            ? 'bg-blue-600/10 text-blue-400 hover:bg-blue-600/20'
+            : 'bg-blue-50 text-blue-600 hover:bg-blue-100'"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Gallery View ({{ totalPhotos }})
+        </button>
       </div>
     </template>
   </aside>
@@ -433,5 +389,14 @@ function viewAllPhotos() {
 <style scoped>
 .writing-mode-vertical {
   writing-mode: vertical-rl;
+}
+
+/* Hide scrollbar for category tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
