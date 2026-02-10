@@ -617,9 +617,7 @@ const isPropertyInfoSection = computed(() => {
 
       <AssessorNotesPanel
         :report-id="reportId"
-        :current-step="currentStep"
         :is-collapsed="isNotesPanelCollapsed"
-        :current-section-id="currentConfig?.id"
         @toggle-collapse="isNotesPanelCollapsed = !isNotesPanelCollapsed"
         @view-photos="handleViewPhotos"
       />

@@ -1,9 +1,8 @@
-import { ref, watch, type Ref } from 'vue';
+import { ref, computed, watch, type Ref } from 'vue';
 import { supabase } from '@/services/supabase';
-import type { FieldNoteData, FieldInspectionItem, ConditionRating, RepairStatus } from '@/types/fieldNotes';
 
 // ============================================================================
-// Types
+// Types - Simplified
 // ============================================================================
 
 export interface FieldPhoto {
@@ -15,287 +14,233 @@ export interface FieldPhoto {
   filename?: string;
 }
 
-interface StepMapping {
-  table: 'site_grounds' | 'building_envelope' | 'mechanical_systems';
-  stepKey: string;
-  formType: string;
-  formStep: number;
+export interface FieldNoteSection {
+  id: string;
+  title: string;
+  category: string;
+  rawData: Record<string, unknown> | null;
+  photos: FieldPhoto[];
+  hasData: boolean;
+}
+
+export interface FieldNotesCategory {
+  id: string;
+  title: string;
+  icon: string;
+  sections: FieldNoteSection[];
+  totalPhotos: number;
+  comingSoon?: boolean;
 }
 
 // ============================================================================
-// Step to Mobile Table Mapping
-// Maps web app steps to mobile database tables and columns
+// Configuration - Matches Mobile App Navigation
 // ============================================================================
 
-const STEP_MAPPING: Record<number, StepMapping | null> = {
-  // Steps 1-12: Property info sections - no field notes
-  1: null, 2: null, 3: null, 4: null, 5: null, 6: null,
-  7: null, 8: null, 9: null, 10: null, 11: null, 12: null,
-
-  // Section 5: Site & Grounds (steps 13-17) → site_grounds table
-  13: { table: 'site_grounds', stepKey: 'step1', formType: 'site_grounds', formStep: 1 },
-  14: { table: 'site_grounds', stepKey: 'step2', formType: 'site_grounds', formStep: 2 },
-  15: { table: 'site_grounds', stepKey: 'step3', formType: 'site_grounds', formStep: 3 },
-  16: { table: 'site_grounds', stepKey: 'step4', formType: 'site_grounds', formStep: 4 },
-  17: { table: 'site_grounds', stepKey: 'step4', formType: 'site_grounds', formStep: 4 }, // Ancillary shares step4
-
-  // Section 6: Building Envelope (steps 18-21) → building_envelope table
-  18: { table: 'building_envelope', stepKey: 'step1', formType: 'building_envelope', formStep: 1 },
-  19: { table: 'building_envelope', stepKey: 'step2', formType: 'building_envelope', formStep: 2 },
-  20: { table: 'building_envelope', stepKey: 'step3', formType: 'building_envelope', formStep: 3 },
-  21: { table: 'building_envelope', stepKey: 'step4', formType: 'building_envelope', formStep: 4 },
-
-  // Section 7: Mechanical Systems (steps 22-25) → mechanical_systems table
-  22: { table: 'mechanical_systems', stepKey: 'step1', formType: 'mechanical_systems', formStep: 1 },
-  23: { table: 'mechanical_systems', stepKey: 'step2', formType: 'mechanical_systems', formStep: 2 },
-  24: { table: 'mechanical_systems', stepKey: 'step3', formType: 'mechanical_systems', formStep: 3 },
-  25: { table: 'mechanical_systems', stepKey: 'step4', formType: 'mechanical_systems', formStep: 4 },
-
-  // Section 8: Interior (steps 26-27) → mechanical_systems table (continued)
-  26: { table: 'mechanical_systems', stepKey: 'step5', formType: 'mechanical_systems', formStep: 5 },
-  27: { table: 'mechanical_systems', stepKey: 'step6', formType: 'mechanical_systems', formStep: 6 },
-
-  // Section 9: Fire Protection (steps 28-29) → mechanical_systems table (continued)
-  28: { table: 'mechanical_systems', stepKey: 'step7', formType: 'mechanical_systems', formStep: 7 },
-  29: { table: 'mechanical_systems', stepKey: 'step8', formType: 'mechanical_systems', formStep: 8 },
-};
-
-// Section titles for display
-const SECTION_TITLES: Record<number, string> = {
-  13: 'Access & Egress',
-  14: 'Paving & Parking',
-  15: 'Flatwork',
-  16: 'Landscaping',
-  17: 'Ancillary Structures',
-  18: 'Foundation',
-  19: 'Building Frame',
-  20: 'Facades',
-  21: 'Roofing',
-  22: 'HVAC',
-  23: 'Electrical',
-  24: 'Plumbing',
-  25: 'Elevators',
-  26: 'Common Areas',
-  27: 'Tenant Spaces',
-  28: 'Sprinklers',
-  29: 'Alarm Systems',
-};
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Transform raw JSONB data into FieldInspectionItem format
- */
-function transformToFieldItems(data: Record<string, unknown>, sectionTitle: string): FieldInspectionItem[] {
-  const items: FieldInspectionItem[] = [];
-
-  // Try to extract common field patterns from mobile app data
-  // The mobile app stores data in various formats, we'll try to normalize
-
-  // Check for observation/assessment objects
-  if (data.observation || data.assessment || data.inspection) {
-    const obs = (data.observation || data.assessment || data.inspection) as Record<string, unknown>;
-    
-    const item: FieldInspectionItem = {
-      id: `item-${Date.now()}`,
-      title: sectionTitle,
-      typeLabel: 'Type',
-      types: extractTypes(obs),
-      condition: extractCondition(obs),
-      repairStatus: extractRepairStatus(obs),
-      repairAmount: extractRepairAmount(obs),
-    };
-    
-    if (item.types.length > 0 || item.condition) {
-      items.push(item);
-    }
-  }
-
-  // Check for direct condition/type fields
-  if (data.condition || data.type || data.types || data.materials) {
-    const item: FieldInspectionItem = {
-      id: `item-direct-${Date.now()}`,
-      title: sectionTitle,
-      typeLabel: 'Materials/Type',
-      types: extractTypes(data),
-      condition: extractCondition(data),
-      repairStatus: extractRepairStatus(data),
-      repairAmount: extractRepairAmount(data),
-    };
-
-    if (item.types.length > 0 || item.condition) {
-      items.push(item);
-    }
-  }
-
-  // Check for array of items (some mobile forms have multiple entries)
-  if (Array.isArray(data.items)) {
-    for (const entry of data.items) {
-      if (typeof entry === 'object' && entry !== null) {
-        const entryData = entry as Record<string, unknown>;
-        items.push({
-          id: `item-${items.length}-${Date.now()}`,
-          title: (entryData.name as string) || (entryData.title as string) || sectionTitle,
-          typeLabel: 'Type',
-          types: extractTypes(entryData),
-          condition: extractCondition(entryData),
-          repairStatus: extractRepairStatus(entryData),
-          repairAmount: extractRepairAmount(entryData),
-        });
-      }
-    }
-  }
-
-  return items;
-}
-
-function extractTypes(data: Record<string, unknown>): string[] {
-  const types: string[] = [];
-
-  // Check various field patterns
-  const typeFields = ['type', 'types', 'materials', 'material', 'surfaceType', 'roofType', 'wallType'];
-  
-  for (const field of typeFields) {
-    const value = data[field];
-    if (typeof value === 'string' && value.trim()) {
-      types.push(value.trim());
-    } else if (Array.isArray(value)) {
-      types.push(...value.filter(v => typeof v === 'string' && v.trim()));
-    }
-  }
-
-  return [...new Set(types)]; // Remove duplicates
-}
-
-function extractCondition(data: Record<string, unknown>): ConditionRating {
-  const conditionFields = ['condition', 'overallCondition', 'rating'];
-  
-  for (const field of conditionFields) {
-    const value = data[field];
-    if (typeof value === 'string') {
-      const normalized = value.toLowerCase();
-      if (normalized.includes('good')) return 'Good';
-      if (normalized.includes('fair')) return 'Fair';
-      if (normalized.includes('poor')) return 'Poor';
-    }
-  }
-  
-  return null;
-}
-
-function extractRepairStatus(data: Record<string, unknown>): RepairStatus {
-  const statusFields = ['repairStatus', 'status', 'priority', 'repairPriority'];
-  
-  for (const field of statusFields) {
-    const value = data[field];
-    if (typeof value === 'string') {
-      const upper = value.toUpperCase();
-      if (upper === 'IR' || upper.includes('IMMEDIATE')) return 'IR';
-      if (upper === 'ST' || upper.includes('SHORT')) return 'ST';
-      if (upper === 'LT' || upper.includes('LONG')) return 'LT';
-      if (upper === 'RM' || upper.includes('ROUTINE') || upper.includes('MAINTENANCE')) return 'RM';
-      if (upper === 'NA' || upper.includes('NOT APPLICABLE')) return 'NA';
-    }
-  }
-  
-  return null;
-}
-
-function extractRepairAmount(data: Record<string, unknown>): number | null {
-  const amountFields = ['repairAmount', 'estimatedCost', 'cost', 'amount', 'repairCost'];
-  
-  for (const field of amountFields) {
-    const value = data[field];
-    if (typeof value === 'number' && value > 0) return value;
-    if (typeof value === 'string') {
-      const parsed = parseFloat(value.replace(/[^0-9.-]/g, ''));
-      if (!isNaN(parsed) && parsed > 0) return parsed;
-    }
-  }
-  
-  return null;
-}
-
-function extractObservations(data: Record<string, unknown>): string {
-  const obsFields = ['observations', 'notes', 'comments', 'description', 'remarks'];
-  
-  for (const field of obsFields) {
-    const value = data[field];
-    if (typeof value === 'string' && value.trim()) {
-      return value.trim();
-    }
-  }
-  
-  return '';
-}
+const FIELD_NOTES_CONFIG = [
+  {
+    id: 'project-summary',
+    title: 'Project Summary',
+    icon: 'clipboard',
+    table: 'project_summaries' as const,
+    formType: 'project_summaries',
+    sections: [
+      { id: 'ps-1', stepKey: null, formStep: 1, title: 'General Info', fields: ['project_name', 'project_number', 'property_address', 'property_city', 'property_state', 'property_zip', 'weather', 'temperature', 'inspection_date', 'inspection_time', 'inspector_name', 'inspector_number', 'surrounding_properties'] },
+      { id: 'ps-2', stepKey: null, formStep: 2, title: 'Unit Info', fields: ['acreage', 'number_sign_down', 'year_renovated', 'number_of_buildings', 'net_sq_ft', 'number_of_units', 'gsf', 'number_of_vacant_units', 'year_built', 'lease_type', 'recent_capital_improvements'] },
+      { id: 'ps-3', stepKey: null, formStep: 3, title: 'Documentation & Personnel', fields: ['documents', 'personnel_interviewed', 'commercial_tenants'] },
+      { id: 'ps-4', stepKey: null, formStep: 4, title: 'Red Flags & Utilities', fields: ['problematic_materials', 'domestic_water', 'domestic_sewage', 'storm_water_drainage', 'electricity', 'natural_gas', 'heating_oil', 'propane', 'well_system', 'septic_system', 'wastewater_treatment_plant'] },
+    ],
+  },
+  {
+    id: 'site-grounds',
+    title: 'Site Grounds',
+    icon: 'landscape',
+    table: 'site_grounds' as const,
+    formType: 'site_grounds',
+    sections: [
+      { id: 'sg-1', stepKey: 'step1', formStep: 1, title: 'Drainage & Erosion' },
+      { id: 'sg-2', stepKey: 'step2', formStep: 2, title: 'Topography' },
+      { id: 'sg-3', stepKey: 'step3', formStep: 3, title: 'Site Elements' },
+      { id: 'sg-4', stepKey: 'step4', formStep: 4, title: 'Other Structures' },
+    ],
+  },
+  {
+    id: 'building-envelope',
+    title: 'Building Envelope',
+    icon: 'building',
+    table: 'building_envelope' as const,
+    formType: 'building_envelope',
+    sections: [
+      { id: 'be-1', stepKey: 'step1', formStep: 1, title: 'Foundation & Substructure' },
+      { id: 'be-2', stepKey: 'step2', formStep: 2, title: 'Superstructure' },
+      { id: 'be-3', stepKey: 'step3', formStep: 3, title: 'Primary & Secondary Roofing' },
+      { id: 'be-4', stepKey: 'step4', formStep: 4, title: 'Exterior Walls' },
+      { id: 'be-5', stepKey: 'step5', formStep: 5, title: 'Parking, Paving, Sidewalks' },
+      { id: 'be-6', stepKey: 'step6', formStep: 6, title: 'Parking Garage Structure' },
+      { id: 'be-7', stepKey: 'step7', formStep: 7, title: 'Building Stairs, Balconies, Patios' },
+      { id: 'be-8', stepKey: 'step8', formStep: 8, title: 'Windows' },
+      { id: 'be-9', stepKey: 'step9', formStep: 9, title: 'Doors' },
+      { id: 'be-10', stepKey: 'step10', formStep: 10, title: 'Pool, Spa' },
+    ],
+  },
+  {
+    id: 'mechanical-systems',
+    title: 'Mechanical Systems',
+    icon: 'settings',
+    table: 'mechanical_systems' as const,
+    formType: 'mechanical_systems',
+    sections: [
+      { id: 'ms-1', stepKey: 'step1', formStep: 1, title: 'HVAC Individual Units' },
+      { id: 'ms-2', stepKey: 'step2', formStep: 2, title: 'Misc Units' },
+      { id: 'ms-3', stepKey: 'step3', formStep: 3, title: 'Chillers & Cooling Towers' },
+      { id: 'ms-4', stepKey: 'step4', formStep: 4, title: 'Boilers' },
+      { id: 'ms-5', stepKey: 'step5', formStep: 5, title: 'Plumbing Systems' },
+      { id: 'ms-6', stepKey: 'step6', formStep: 6, title: 'Water Heaters' },
+      { id: 'ms-7', stepKey: 'step7', formStep: 7, title: 'Electrical' },
+      { id: 'ms-8', stepKey: 'step8', formStep: 8, title: 'Elevators & Conveying Systems' },
+      { id: 'ms-9', stepKey: 'step9', formStep: 9, title: 'Fire Protection' },
+    ],
+  },
+  {
+    id: 'interior-conditions',
+    title: 'Interior Conditions',
+    icon: 'home',
+    table: null,
+    formType: 'interior_conditions',
+    sections: [
+      { id: 'ic-1', stepKey: null, formStep: 1, title: 'Coming Soon' },
+    ],
+    comingSoon: true,
+  },
+];
 
 // ============================================================================
 // Main Composable
 // ============================================================================
 
-export function useFieldNotes(
-  reportId: Ref<string>,
-  currentStep: Ref<number>
-) {
-  const fieldNotes = ref<FieldNoteData | null>(null);
-  const photos = ref<FieldPhoto[]>([]);
+export function useFieldNotes(reportId: Ref<string>) {
+  // State
+  const categories = ref<FieldNotesCategory[]>([]);
+  const allPhotos = ref<FieldPhoto[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
   const sourceAssessmentId = ref<string | null>(null);
-  const hasFieldNotes = ref(false);
+  const inspectorName = ref<string>('');
+  const inspectionDate = ref<string>('');
 
-  /**
-   * Check if current step has field notes (steps 13-29)
-   */
-  function stepHasFieldNotes(step: number): boolean {
-    return STEP_MAPPING[step] !== null;
-  }
+  // Navigation state
+  const currentCategoryIndex = ref(0);
+  const currentSectionIndex = ref(0);
 
-  /**
-   * Fetch source assessment ID from report
-   */
-  async function fetchSourceAssessmentId(): Promise<string | null> {
-    if (!reportId.value || reportId.value === 'demo') {
-      return null;
-    }
+  // Computed
+  const currentCategory = computed(() => categories.value[currentCategoryIndex.value] || null);
+  const currentSection = computed(() => currentCategory.value?.sections[currentSectionIndex.value] || null);
+  
+  const hasData = computed(() => 
+    categories.value.some(cat => cat.sections.some(sec => sec.hasData))
+  );
 
-    try {
-      const { data, error: fetchError } = await supabase
-        .from('reports')
-        .select('source_assessment_id')
-        .eq('id', reportId.value)
-        .single();
+  const totalPhotos = computed(() => allPhotos.value.length);
 
-      if (fetchError) throw fetchError;
-      return data?.source_assessment_id || null;
-    } catch (err) {
-      console.error('Error fetching source assessment:', err);
-      return null;
+  // Navigation methods
+  function goToCategory(index: number) {
+    if (index >= 0 && index < categories.value.length) {
+      currentCategoryIndex.value = index;
+      currentSectionIndex.value = 0;
     }
   }
 
-  /**
-   * Fetch field notes for current step
-   */
+  function goToSection(categoryIndex: number, sectionIndex: number) {
+    if (categoryIndex >= 0 && categoryIndex < categories.value.length) {
+      const category = categories.value[categoryIndex];
+      if (category && sectionIndex >= 0 && sectionIndex < category.sections.length) {
+        currentCategoryIndex.value = categoryIndex;
+        currentSectionIndex.value = sectionIndex;
+      }
+    }
+  }
+
+  function nextSection() {
+    const category = categories.value[currentCategoryIndex.value];
+    if (!category) return;
+
+    if (currentSectionIndex.value < category.sections.length - 1) {
+      currentSectionIndex.value++;
+    } else if (currentCategoryIndex.value < categories.value.length - 1) {
+      currentCategoryIndex.value++;
+      currentSectionIndex.value = 0;
+    }
+  }
+
+  function prevSection() {
+    if (currentSectionIndex.value > 0) {
+      currentSectionIndex.value--;
+    } else if (currentCategoryIndex.value > 0) {
+      currentCategoryIndex.value--;
+      const prevCategory = categories.value[currentCategoryIndex.value];
+      currentSectionIndex.value = prevCategory ? prevCategory.sections.length - 1 : 0;
+    }
+  }
+
+  function canGoNext(): boolean {
+    const category = categories.value[currentCategoryIndex.value];
+    if (!category) return false;
+    return currentSectionIndex.value < category.sections.length - 1 || 
+           currentCategoryIndex.value < categories.value.length - 1;
+  }
+
+  function canGoPrev(): boolean {
+    return currentSectionIndex.value > 0 || currentCategoryIndex.value > 0;
+  }
+
+  // Photo URL helpers
+  function getPhotoUrl(path: string): string {
+    const { data } = supabase.storage.from('photos').getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  function getThumbnailUrl(photo: FieldPhoto): string {
+    return getPhotoUrl(photo.thumbnail_path || photo.storage_path);
+  }
+
+  // Initialize empty categories
+  function initializeEmptyCategories() {
+    categories.value = FIELD_NOTES_CONFIG.map(config => ({
+      id: config.id,
+      title: config.title,
+      icon: config.icon,
+      sections: config.sections.map(sec => ({
+        id: sec.id,
+        title: sec.title,
+        category: config.title,
+        rawData: null,
+        photos: [],
+        hasData: false,
+      })),
+      totalPhotos: 0,
+      comingSoon: (config as { comingSoon?: boolean }).comingSoon,
+    }));
+  }
+
+  // Check if data object has meaningful content
+  function hasContent(data: unknown): boolean {
+    if (data === null || data === undefined) return false;
+    if (typeof data === 'string') return data.trim().length > 0;
+    if (typeof data === 'number') return true;
+    if (typeof data === 'boolean') return true;
+    if (Array.isArray(data)) return data.length > 0;
+    if (typeof data === 'object') {
+      const skipKeys = new Set(['id', 'assessment_id', 'created_at', 'updated_at', 'last_modified', 'current_step']);
+      return Object.entries(data).some(([key, value]) => 
+        !skipKeys.has(key) && hasContent(value)
+      );
+    }
+    return false;
+  }
+
+  // Fetch all field notes data
   async function fetchFieldNotes() {
-    const step = currentStep.value;
-    const mapping = STEP_MAPPING[step];
-
-    // Reset state
-    fieldNotes.value = null;
-    photos.value = [];
-    hasFieldNotes.value = stepHasFieldNotes(step);
-
-    // No field notes for property info sections (steps 1-12)
-    if (!mapping) {
-      loading.value = false;
-      return;
-    }
-
-    // Demo mode - no data to fetch
     if (!reportId.value || reportId.value === 'demo') {
+      initializeEmptyCategories();
       loading.value = false;
       return;
     }
@@ -304,112 +249,198 @@ export function useFieldNotes(
     error.value = null;
 
     try {
-      // Get source assessment ID if not cached
-      if (!sourceAssessmentId.value) {
-        sourceAssessmentId.value = await fetchSourceAssessmentId();
-      }
+      // Get source assessment ID from report
+      const { data: reportData, error: reportError } = await supabase
+        .from('reports')
+        .select('source_assessment_id')
+        .eq('id', reportId.value)
+        .single();
+
+      if (reportError) throw reportError;
+      
+      sourceAssessmentId.value = reportData?.source_assessment_id || null;
 
       if (!sourceAssessmentId.value) {
-        // No linked mobile assessment
+        initializeEmptyCategories();
         loading.value = false;
         return;
       }
 
-      // Fetch mobile data from the appropriate table
-      const { data: mobileData, error: mobileError } = await supabase
-        .from(mapping.table)
-        .select('*')
-        .eq('assessment_id', sourceAssessmentId.value)
-        .maybeSingle();
+      // Fetch all data in parallel
+      const [projectSummaryRes, siteGroundsRes, buildingEnvelopeRes, mechanicalRes, photosRes] = await Promise.all([
+        supabase.from('project_summaries').select('*').eq('assessment_id', sourceAssessmentId.value).maybeSingle(),
+        supabase.from('site_grounds').select('*').eq('assessment_id', sourceAssessmentId.value).maybeSingle(),
+        supabase.from('building_envelope').select('*').eq('assessment_id', sourceAssessmentId.value).maybeSingle(),
+        supabase.from('mechanical_systems').select('*').eq('assessment_id', sourceAssessmentId.value).maybeSingle(),
+        supabase.from('photos').select('*').eq('assessment_id', sourceAssessmentId.value).order('captured_at', { ascending: false }),
+      ]);
 
-      if (mobileError) throw mobileError;
+      // Store raw table data
+      const tableData: Record<string, Record<string, unknown> | null> = {
+        project_summaries: projectSummaryRes.data,
+        site_grounds: siteGroundsRes.data,
+        building_envelope: buildingEnvelopeRes.data,
+        mechanical_systems: mechanicalRes.data,
+      };
 
-      // Fetch photos for this section
-      const { data: photoData, error: photoError } = await supabase
-        .from('photos')
-        .select('id, storage_path, thumbnail_path, notes, captured_at, filename')
-        .eq('assessment_id', sourceAssessmentId.value)
-        .eq('form_type', mapping.formType)
-        .eq('form_step', mapping.formStep)
-        .order('captured_at', { ascending: false });
+      // DEBUG: Log raw data
+      console.group('📋 Field Notes - Raw Data');
+      console.log('project_summaries:', projectSummaryRes.data);
+      console.log('site_grounds:', siteGroundsRes.data);
+      console.log('building_envelope:', buildingEnvelopeRes.data);
+      console.log('mechanical_systems:', mechanicalRes.data);
+      console.log('photos:', photosRes.data?.length || 0);
+      console.groupEnd();
 
-      if (photoError) throw photoError;
-
-      photos.value = (photoData || []) as FieldPhoto[];
-
-      // Extract and transform the step data
-      if (mobileData && mobileData[mapping.stepKey]) {
-        const stepData = mobileData[mapping.stepKey] as Record<string, unknown>;
-        const sectionTitle = SECTION_TITLES[step] || `Step ${step}`;
-
-        // Fetch inspector info from project_summaries
-        const { data: projectData } = await supabase
-          .from('project_summaries')
-          .select('inspector_name, inspection_date')
-          .eq('assessment_id', sourceAssessmentId.value)
-          .maybeSingle();
-
-        const items = transformToFieldItems(stepData, sectionTitle);
-        const observations = extractObservations(stepData);
-
-        fieldNotes.value = {
-          sectionId: `step-${step}`,
-          inspector: projectData?.inspector_name || 'Field Assessor',
-          inspectionDate: projectData?.inspection_date
-            ? new Date(projectData.inspection_date).toLocaleDateString()
-            : 'Date not recorded',
-          location: sectionTitle,
-          items,
-          observations,
-          photoCount: photos.value.length,
-        };
+      // Set inspector info
+      if (projectSummaryRes.data) {
+        inspectorName.value = (projectSummaryRes.data.inspector_name as string) || 'Field Assessor';
+        inspectionDate.value = projectSummaryRes.data.inspection_date
+          ? new Date(projectSummaryRes.data.inspection_date as string).toLocaleDateString()
+          : '';
       }
-    } catch (err) {
-      console.error('Error fetching field notes:', err);
-      error.value = err instanceof Error ? err.message : 'Failed to load field notes';
+
+      // Process photos
+      allPhotos.value = (photosRes.data || []).map((p: Record<string, unknown>) => ({
+        id: p.id as string,
+        storage_path: p.storage_path as string,
+        thumbnail_path: p.thumbnail_path as string | undefined,
+        notes: p.notes as string | undefined,
+        captured_at: p.captured_at as string,
+        filename: p.filename as string | undefined,
+        formType: p.form_type as string,
+        formStep: p.form_step as number,
+      }));
+
+      // Build categories with raw data
+      const builtCategories: FieldNotesCategory[] = FIELD_NOTES_CONFIG.map(config => {
+        // Handle coming soon
+        if ((config as { comingSoon?: boolean }).comingSoon) {
+          return {
+            id: config.id,
+            title: config.title,
+            icon: config.icon,
+            sections: [{
+              id: config.sections[0]?.id || `${config.id}-coming-soon`,
+              title: 'Coming Soon',
+              category: config.title,
+              rawData: null,
+              photos: [],
+              hasData: false,
+            }],
+            totalPhotos: 0,
+            comingSoon: true,
+          };
+        }
+
+        const mobileData = config.table ? tableData[config.table] : null;
+
+        const sections: FieldNoteSection[] = config.sections.map(secConfig => {
+          let rawData: Record<string, unknown> | null = null;
+
+          // For project_summaries, extract specific fields for each step
+          if (config.table === 'project_summaries' && mobileData && 'fields' in secConfig) {
+            const fields = (secConfig as { fields?: string[] }).fields || [];
+            const extracted: Record<string, unknown> = {};
+            for (const field of fields) {
+              if (mobileData[field] !== undefined && mobileData[field] !== null && mobileData[field] !== '') {
+                extracted[field] = mobileData[field];
+              }
+            }
+            rawData = Object.keys(extracted).length > 0 ? extracted : null;
+          }
+          // For JSONB step tables, get the step data directly
+          else if (secConfig.stepKey && mobileData) {
+            const stepData = mobileData[secConfig.stepKey];
+            rawData = (stepData && typeof stepData === 'object') ? stepData as Record<string, unknown> : null;
+          }
+
+          // Get photos for this section
+          const sectionPhotos = allPhotos.value.filter(p => 
+            (p as unknown as { formType: string; formStep: number }).formType === config.formType && 
+            (p as unknown as { formType: string; formStep: number }).formStep === secConfig.formStep
+          );
+
+          return {
+            id: secConfig.id,
+            title: secConfig.title,
+            category: config.title,
+            rawData,
+            photos: sectionPhotos,
+            hasData: hasContent(rawData) || sectionPhotos.length > 0,
+          };
+        });
+
+        return {
+          id: config.id,
+          title: config.title,
+          icon: config.icon,
+          sections,
+          totalPhotos: sections.reduce((sum, s) => sum + s.photos.length, 0),
+        };
+      });
+
+      categories.value = builtCategories;
+
+      // Navigate to first section with data
+      for (let catIdx = 0; catIdx < builtCategories.length; catIdx++) {
+        const cat = builtCategories[catIdx];
+        if (!cat) continue;
+        for (let secIdx = 0; secIdx < cat.sections.length; secIdx++) {
+          const section = cat.sections[secIdx];
+          if (section?.hasData) {
+            currentCategoryIndex.value = catIdx;
+            currentSectionIndex.value = secIdx;
+            return;
+          }
+        }
+      }
+
+    } catch (e) {
+      console.error('Error fetching field notes:', e);
+      error.value = e instanceof Error ? e.message : 'Failed to load field notes';
+      initializeEmptyCategories();
     } finally {
       loading.value = false;
     }
   }
 
-  /**
-   * Get public URL for a photo
-   */
-  function getPhotoUrl(storagePath: string): string {
-    const { data } = supabase.storage.from('photos').getPublicUrl(storagePath);
-    return data.publicUrl;
-  }
-
-  /**
-   * Get thumbnail URL for a photo
-   */
-  function getThumbnailUrl(photo: FieldPhoto): string {
-    const path = photo.thumbnail_path || photo.storage_path;
-    return getPhotoUrl(path);
-  }
-
-  // Watch for step changes and refetch
+  // Watch for reportId changes
   watch(
-    [reportId, currentStep],
-    () => {
-      fetchFieldNotes();
-    },
+    () => reportId.value,
+    () => fetchFieldNotes(),
     { immediate: true }
   );
 
   return {
     // State
-    fieldNotes,
-    photos,
+    categories,
+    allPhotos,
     loading,
     error,
-    hasFieldNotes,
     sourceAssessmentId,
-
+    inspectorName,
+    inspectionDate,
+    
+    // Navigation state
+    currentCategoryIndex,
+    currentSectionIndex,
+    currentCategory,
+    currentSection,
+    
+    // Computed
+    hasData,
+    totalPhotos,
+    
     // Methods
-    fetchFieldNotes,
-    stepHasFieldNotes,
+    goToCategory,
+    goToSection,
+    nextSection,
+    prevSection,
+    canGoNext,
+    canGoPrev,
     getPhotoUrl,
     getThumbnailUrl,
+    fetchFieldNotes,
   };
 }

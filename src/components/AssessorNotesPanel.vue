@@ -1,21 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, toRef } from 'vue';
-import type { ConditionRating } from '@/types/fieldNotes';
-import { formatCurrency, REPAIR_STATUS_LABELS } from '@/types/fieldNotes';
+import { ref, toRef } from 'vue';
 import { useTheme } from '@/composables/useTheme';
 import { useFieldNotes, type FieldPhoto } from '@/composables/useFieldNotes';
+import DataRenderer from '@/components/DataRenderer.vue';
 
 const props = defineProps<{
   reportId: string;
-  currentStep: number;
-  currentSectionId?: string;
   isCollapsed?: boolean;
 }>();
 
 const emit = defineEmits<{
   'toggle-collapse': [];
   'view-photos': [photos: FieldPhoto[]];
-  'view-item': [itemId: string];
 }>();
 
 const { theme } = useTheme();
@@ -23,36 +19,47 @@ const isCollapsedInternal = ref(props.isCollapsed ?? false);
 
 // Use field notes composable
 const reportIdRef = toRef(props, 'reportId');
-const currentStepRef = toRef(props, 'currentStep');
 
 const {
-  fieldNotes,
-  photos,
+  categories,
   loading,
   error,
-  hasFieldNotes,
+  hasData,
+  totalPhotos,
+  inspectorName,
+  inspectionDate,
+  currentCategory,
+  currentSection,
+  currentCategoryIndex,
+  currentSectionIndex,
+  goToCategory,
+  goToSection,
+  nextSection,
+  prevSection,
+  canGoNext,
+  canGoPrev,
   getThumbnailUrl,
-} = useFieldNotes(reportIdRef, currentStepRef);
+  allPhotos,
+} = useFieldNotes(reportIdRef);
 
 function toggleCollapse() {
   isCollapsedInternal.value = !isCollapsedInternal.value;
   emit('toggle-collapse');
 }
 
-// Use fetched data
-const displayData = computed(() => fieldNotes.value);
-const hasData = computed(() => !!displayData.value && displayData.value.items.length > 0);
+function getCategoryIcon(icon: string) {
+  const icons: Record<string, string> = {
+    clipboard: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
+    landscape: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z',
+    building: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+    settings: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z',
+    home: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+  };
+  return icons[icon] || icons.building;
+}
 
-// Check if this is a property info section (no field notes expected)
-const isPropertyInfoSection = computed(() => !hasFieldNotes.value);
-
-function getConditionBadgeStyle(condition: ConditionRating) {
-  switch (condition) {
-    case 'Good': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
-    case 'Fair': return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-    case 'Poor': return 'bg-red-500/10 text-red-500 border-red-500/20';
-    default: return theme.value === 'dark' ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-slate-100 text-slate-500 border-slate-200';
-  }
+function viewAllPhotos() {
+  emit('view-photos', allPhotos.value);
 }
 </script>
 
@@ -60,7 +67,7 @@ function getConditionBadgeStyle(condition: ConditionRating) {
   <aside
     class="h-full flex flex-col border-l transition-all duration-300"
     :class="[
-      isCollapsedInternal ? 'w-14' : 'w-[400px]',
+      isCollapsedInternal ? 'w-14' : 'w-[420px]',
       theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'
     ]"
   >
@@ -80,14 +87,14 @@ function getConditionBadgeStyle(condition: ConditionRating) {
         class="mt-8 writing-mode-vertical rotate-180 text-xs font-bold tracking-widest uppercase"
         :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
       >
-        Field Data
+        Field Notes
       </div>
       <div 
-        v-if="hasData"
+        v-if="totalPhotos > 0"
         class="mt-auto mb-4 w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold"
         :class="theme === 'dark' ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-100 text-blue-600'"
       >
-        {{ displayData?.photoCount || 0 }}
+        {{ totalPhotos }}
       </div>
     </div>
 
@@ -95,7 +102,7 @@ function getConditionBadgeStyle(condition: ConditionRating) {
     <template v-else>
       <!-- Header -->
       <div 
-        class="flex-shrink-0 px-5 py-4 border-b"
+        class="flex-shrink-0 px-4 py-3 border-b"
         :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-950' : 'border-slate-200 bg-white'"
       >
         <div class="flex items-center justify-between mb-2">
@@ -117,35 +124,90 @@ function getConditionBadgeStyle(condition: ConditionRating) {
           </button>
         </div>
         <div 
-          v-if="hasData"
+          v-if="inspectorName || inspectionDate"
           class="flex items-center gap-2 text-xs"
           :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
         >
-          <span 
-            class="font-medium"
-            :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'"
-          >
-            {{ displayData?.inspector }}
-          </span>
-          <span>•</span>
-          <span>{{ displayData?.inspectionDate }}</span>
-        </div>
-        <div 
-          v-else
-          class="text-xs"
-          :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-        >
-          Section {{ currentSectionId || '—' }}
+          <span v-if="inspectorName" class="font-medium">{{ inspectorName }}</span>
+          <span v-if="inspectorName && inspectionDate">•</span>
+          <span v-if="inspectionDate">{{ inspectionDate }}</span>
         </div>
       </div>
 
+      <!-- Category Tabs -->
+      <div 
+        class="flex-shrink-0 border-b overflow-x-auto"
+        :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-900/50' : 'border-slate-200 bg-slate-100/50'"
+      >
+        <div class="flex px-2 py-2 gap-1">
+          <button
+            v-for="(category, idx) in categories"
+            :key="category.id"
+            @click="goToCategory(idx)"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors"
+            :class="[
+              currentCategoryIndex === idx
+                ? theme === 'dark'
+                  ? 'bg-zinc-800 text-zinc-100'
+                  : 'bg-white text-slate-900 shadow-sm'
+                : theme === 'dark'
+                  ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
+            ]"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getCategoryIcon(category.icon)" />
+            </svg>
+            {{ category.title.split(' ')[0] }}
+            <span 
+              v-if="category.comingSoon"
+              class="ml-0.5 px-1.5 py-0.5 rounded text-[10px]"
+              :class="theme === 'dark' ? 'bg-amber-600/20 text-amber-400' : 'bg-amber-100 text-amber-600'"
+            >
+              Soon
+            </span>
+            <span 
+              v-else-if="category.totalPhotos > 0"
+              class="ml-0.5 px-1.5 py-0.5 rounded text-[10px]"
+              :class="theme === 'dark' ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-100 text-blue-600'"
+            >
+              {{ category.totalPhotos }}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section Selector -->
+      <div 
+        v-if="currentCategory && currentCategory.sections.length > 1 && !currentCategory.comingSoon"
+        class="flex-shrink-0 px-4 py-2 border-b"
+        :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'"
+      >
+        <select
+          :value="currentSectionIndex"
+          @change="(e) => goToSection(currentCategoryIndex, parseInt((e.target as HTMLSelectElement).value))"
+          class="w-full px-3 py-1.5 rounded-md text-sm border transition-colors"
+          :class="theme === 'dark'
+            ? 'bg-zinc-900 border-zinc-700 text-zinc-200 focus:border-zinc-600'
+            : 'bg-white border-slate-200 text-slate-700 focus:border-slate-400'"
+        >
+          <option
+            v-for="(section, idx) in currentCategory.sections"
+            :key="section.id"
+            :value="idx"
+          >
+            {{ section.title }}
+            {{ section.hasData ? '' : '(empty)' }}
+          </option>
+        </select>
+      </div>
+
       <!-- Content Area -->
-      <div class="flex-1 overflow-y-auto px-5 py-4 space-y-6 custom-scrollbar">
-        
+      <div class="flex-1 overflow-y-auto">
         <!-- Loading State -->
-        <div v-if="loading" class="flex flex-col items-center justify-center py-12">
+        <div v-if="loading" class="flex flex-col items-center justify-center py-12 px-4">
           <svg 
-            class="w-6 h-6 animate-spin mb-3"
+            class="w-8 h-8 animate-spin mb-4"
             :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
             fill="none" 
             viewBox="0 0 24 24"
@@ -162,7 +224,7 @@ function getConditionBadgeStyle(condition: ConditionRating) {
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="flex flex-col items-center justify-center py-12">
+        <div v-else-if="error" class="flex flex-col items-center justify-center py-12 px-4">
           <div 
             class="w-12 h-12 rounded-full flex items-center justify-center mb-4"
             :class="theme === 'dark' ? 'bg-red-950' : 'bg-red-50'"
@@ -191,44 +253,115 @@ function getConditionBadgeStyle(condition: ConditionRating) {
           </p>
         </div>
 
-        <!-- Property Info Section (no field notes expected) -->
-        <div v-else-if="isPropertyInfoSection" class="flex flex-col items-center justify-center py-12">
+        <!-- Coming Soon State -->
+        <div v-else-if="currentCategory?.comingSoon" class="flex flex-col items-center justify-center py-12 px-4">
           <div 
-            class="w-12 h-12 rounded-full flex items-center justify-center mb-4"
-            :class="theme === 'dark' ? 'bg-zinc-900' : 'bg-slate-100'"
+            class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+            :class="theme === 'dark' ? 'bg-amber-950/50' : 'bg-amber-50'"
           >
             <svg 
-              class="w-6 h-6"
-              :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+              class="w-8 h-8"
+              :class="theme === 'dark' ? 'text-amber-400' : 'text-amber-500'"
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
             >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <h3 
-            class="text-sm font-medium mb-1"
-            :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
+            class="text-sm font-semibold mb-1"
+            :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-800'"
           >
-            No field notes for this section
+            Coming Soon
           </h3>
           <p 
-            class="text-xs text-center max-w-[200px]"
+            class="text-xs text-center max-w-[220px]"
             :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
           >
-            This section contains property information that's authored in the web app, not collected during field inspections.
+            Interior conditions forms are still being developed in the mobile app.
           </p>
         </div>
 
-        <!-- Empty State (field notes section but no data) -->
-        <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-12">
+        <!-- Section Content -->
+        <div v-else-if="currentSection" class="px-4 py-4 space-y-4">
+          <!-- Section Header -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 
+                class="text-sm font-semibold"
+                :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-800'"
+              >
+                {{ currentSection.title }}
+              </h3>
+              <p 
+                class="text-xs mt-0.5"
+                :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+              >
+                {{ currentCategory?.title }}
+              </p>
+            </div>
+            <div 
+              v-if="!currentSection.hasData"
+              class="px-2 py-1 rounded text-xs"
+              :class="theme === 'dark' ? 'bg-zinc-800 text-zinc-500' : 'bg-slate-100 text-slate-500'"
+            >
+              No data
+            </div>
+          </div>
+
+          <!-- Data Renderer -->
+          <DataRenderer :data="currentSection.rawData" />
+
+          <!-- Photos -->
+          <div v-if="currentSection.photos.length > 0" class="pt-4 border-t" :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'">
+            <div class="flex items-center justify-between mb-3">
+              <h4 
+                class="text-xs font-semibold uppercase tracking-wide"
+                :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'"
+              >
+                Photos
+              </h4>
+              <span 
+                class="text-xs"
+                :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+              >
+                {{ currentSection.photos.length }}
+              </span>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+              <div
+                v-for="(photo, idx) in currentSection.photos.slice(0, 8)"
+                :key="photo.id"
+                class="aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                :class="theme === 'dark' ? 'bg-zinc-800' : 'bg-slate-200'"
+              >
+                <img
+                  :src="getThumbnailUrl(photo)"
+                  :alt="photo.filename || `Photo ${idx + 1}`"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div
+                v-if="currentSection.photos.length > 8"
+                class="aspect-square rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                :class="theme === 'dark' ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-200 text-slate-500'"
+                @click="emit('view-photos', currentSection.photos)"
+              >
+                +{{ currentSection.photos.length - 8 }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Data State -->
+        <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-12 px-4">
           <div 
-            class="w-12 h-12 rounded-full flex items-center justify-center mb-4"
-            :class="theme === 'dark' ? 'bg-zinc-900' : 'bg-slate-100'"
+            class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+            :class="theme === 'dark' ? 'bg-zinc-800' : 'bg-slate-100'"
           >
             <svg 
-              class="w-6 h-6"
+              class="w-8 h-8"
               :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
               fill="none" 
               stroke="currentColor" 
@@ -238,224 +371,58 @@ function getConditionBadgeStyle(condition: ConditionRating) {
             </svg>
           </div>
           <h3 
-            class="text-sm font-medium mb-1"
+            class="text-sm font-semibold mb-1"
             :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
           >
-            No field notes yet
+            No Field Data
           </h3>
           <p 
             class="text-xs text-center max-w-[200px]"
             :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
           >
-            Field inspection data will appear here once synced from the mobile assessment.
+            This report doesn't have linked field assessment data yet.
           </p>
         </div>
-        
-        <!-- Inspection Cards (when data exists) -->
-        <template v-else>
-          <div v-for="item in displayData?.items" :key="item.id" class="group">
-            <div 
-              class="relative rounded-xl p-4 border transition-all duration-200 cursor-pointer"
-              :class="theme === 'dark' 
-                ? 'bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700' 
-                : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-md'"
-              @click="emit('view-item', item.id)"
-            >
-              <div class="flex items-start justify-between mb-4">
-                <h3 
-                  class="text-sm font-semibold transition-colors"
-                  :class="theme === 'dark' ? 'text-zinc-200 group-hover:text-blue-400' : 'text-slate-800 group-hover:text-blue-600'"
-                >
-                  {{ item.title }}
-                </h3>
-                <span 
-                  class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded border"
-                  :class="getConditionBadgeStyle(item.condition)"
-                >
-                  {{ item.condition || 'N/A' }}
-                </span>
-              </div>
-
-              <div class="grid grid-cols-2 gap-y-4 gap-x-2 text-xs">
-                <div class="col-span-2">
-                  <p 
-                    class="text-[10px] uppercase tracking-wider mb-1.5"
-                    :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-                  >
-                    {{ item.typeLabel }}
-                  </p>
-                  <div class="flex flex-wrap gap-1.5">
-                    <span 
-                      v-for="type in item.types" 
-                      :key="type"
-                      class="px-2 py-0.5 rounded text-[11px]"
-                      :class="theme === 'dark' ? 'bg-zinc-800 text-zinc-300' : 'bg-slate-100 text-slate-600'"
-                    >
-                      {{ type }}
-                    </span>
-                  </div>
-                </div>
-
-                <div 
-                  class="border-t pt-3 mt-1"
-                  :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-100'"
-                >
-                  <p 
-                    class="text-[10px] uppercase tracking-wider mb-0.5"
-                    :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-                  >
-                    Repair Status
-                  </p>
-                  <p 
-                    class="font-medium"
-                    :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
-                  >
-                    {{ item.repairStatus ? REPAIR_STATUS_LABELS[item.repairStatus] : '—' }}
-                  </p>
-                </div>
-
-                <div 
-                  class="border-t pt-3 mt-1 text-right"
-                  :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-100'"
-                >
-                  <p 
-                    class="text-[10px] uppercase tracking-wider mb-0.5"
-                    :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-                  >
-                    Est. Cost
-                  </p>
-                  <p 
-                    class="font-mono font-medium text-sm"
-                    :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-900'"
-                  >
-                    {{ formatCurrency(item.repairAmount) }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Observations -->
-          <div v-if="displayData?.observations" class="pt-2">
-            <h4 
-              class="text-xs font-bold uppercase tracking-wider mb-3"
-              :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-            >
-              Observations
-            </h4>
-            <div 
-              class="border-l-2 pl-3 py-1"
-              :class="theme === 'dark' ? 'bg-zinc-900/30 border-blue-500/50' : 'bg-blue-50/50 border-blue-400'"
-            >
-              <p 
-                class="text-sm italic leading-relaxed"
-                :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'"
-              >
-                "{{ displayData.observations }}"
-              </p>
-            </div>
-          </div>
-        </template>
       </div>
 
-      <!-- Photos Section -->
+      <!-- Footer Navigation -->
       <div 
-        v-if="hasFieldNotes"
-        class="flex-shrink-0 border-t"
+        v-if="!loading && !error && hasData && !currentCategory?.comingSoon"
+        class="flex-shrink-0 px-4 py-3 border-t"
         :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-950' : 'border-slate-200 bg-white'"
       >
-        <!-- Photo Thumbnails Grid -->
-        <div v-if="photos.length > 0" class="p-4">
-          <div class="flex items-center justify-between mb-3">
-            <h4 
-              class="text-xs font-bold uppercase tracking-wider"
-              :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
-            >
-              Site Photos
-            </h4>
-            <span 
-              class="text-xs"
-              :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
-            >
-              {{ photos.length }} image{{ photos.length === 1 ? '' : 's' }}
-            </span>
-          </div>
-          
-          <div class="grid grid-cols-4 gap-2">
-            <button
-              v-for="(photo, index) in photos.slice(0, 8)"
-              :key="photo.id"
-              @click="emit('view-photos', photos)"
-              class="aspect-square rounded-lg overflow-hidden border transition-all hover:ring-2 hover:ring-blue-500"
-              :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-900' : 'border-slate-200 bg-slate-100'"
-            >
-              <img 
-                :src="getThumbnailUrl(photo)" 
-                :alt="photo.notes || `Photo ${index + 1}`"
-                class="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </button>
-            
-            <!-- Show more indicator -->
-            <button
-              v-if="photos.length > 8"
-              @click="emit('view-photos', photos)"
-              class="aspect-square rounded-lg overflow-hidden border flex items-center justify-center transition-all hover:ring-2 hover:ring-blue-500"
-              :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-900' : 'border-slate-200 bg-slate-100'"
-            >
-              <span 
-                class="text-sm font-medium"
-                :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-500'"
-              >
-                +{{ photos.length - 8 }}
-              </span>
-            </button>
-          </div>
-        </div>
-
-        <!-- No Photos State -->
-        <div v-else class="p-4">
-          <button 
-            @click="emit('view-photos', [])"
-            class="w-full flex items-center justify-between p-3 rounded-lg border transition-all group"
+        <div class="flex items-center justify-between">
+          <button
+            @click="prevSection"
+            :disabled="!canGoPrev()"
+            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             :class="theme === 'dark'
-              ? 'bg-zinc-900 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'
-              : 'bg-slate-50 border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-sm'"
-            disabled
+              ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'"
           >
-            <div class="flex items-center gap-3">
-              <div 
-                class="w-10 h-10 rounded-md flex items-center justify-center border"
-                :class="theme === 'dark' 
-                  ? 'bg-zinc-950 border-zinc-800' 
-                  : 'bg-white border-slate-200'"
-              >
-                <svg 
-                  class="w-5 h-5"
-                  :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div class="text-left">
-                <div 
-                  class="text-sm font-medium"
-                  :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'"
-                >
-                  Site Photos
-                </div>
-                <div 
-                  class="text-xs"
-                  :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
-                >
-                  No photos for this section
-                </div>
-              </div>
-            </div>
+            ← Previous
+          </button>
+          
+          <button
+            v-if="totalPhotos > 0"
+            @click="viewAllPhotos"
+            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
+            :class="theme === 'dark'
+              ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30'
+              : 'bg-blue-100 text-blue-600 hover:bg-blue-200'"
+          >
+            All Photos ({{ totalPhotos }})
+          </button>
+
+          <button
+            @click="nextSection"
+            :disabled="!canGoNext()"
+            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            :class="theme === 'dark'
+              ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'"
+          >
+            Next →
           </button>
         </div>
       </div>
@@ -466,18 +433,5 @@ function getConditionBadgeStyle(condition: ConditionRating) {
 <style scoped>
 .writing-mode-vertical {
   writing-mode: vertical-rl;
-}
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 4px;
-}
-:global(.light) .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
 }
 </style>
