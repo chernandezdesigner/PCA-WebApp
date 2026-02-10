@@ -52,8 +52,6 @@ function mapToSection1(ps: ProjectSummary | null): SectionData {
     'total-acreage': ps.acreage?.toString() || '',
     'dwelling-units-beds': ps.number_of_units?.toString() || '',
 
-    // Step 1.2: Physical Condition
-    'recent-capital-improvements': ps.recent_capital_improvements || '',
   };
 }
 
@@ -100,18 +98,7 @@ function mapToSection3(ps: ProjectSummary | null): SectionData {
     'sanitary-sewer': ps.domestic_sewage || '',
     'storm-water': ps.storm_water_drainage || '',
 
-    // Additional utility fields
-    'heating-oil': ps.heating_oil || '',
-    'propane': ps.propane || '',
-    'well-system': ps.well_system || '',
-    'septic-system': ps.septic_system || '',
-    'wastewater-treatment': ps.wastewater_treatment_plant || '',
 
-    // Property context
-    'surrounding-properties': ps.surrounding_properties || '',
-    'year-renovated': ps.year_renovated?.toString() || '',
-    'lease-type': ps.lease_type || '',
-    'number-vacant-units': ps.number_of_vacant_units?.toString() || '',
 
     // Personnel interviewed (stored as JSON string for display)
     'personnel-interviewed': ps.personnel_interviewed
@@ -120,18 +107,6 @@ function mapToSection3(ps: ProjectSummary | null): SectionData {
   };
 }
 
-/**
- * Section 4: Documents Review
- * - Steps 4.1-4.5: Document checklists (pre-populated from mobile if available)
- */
-function mapToSection4(ps: ProjectSummary | null): SectionData {
-  if (!ps) return {};
-
-  return {
-    // Documents checklist from mobile (if captured)
-    'documents-data': ps.documents ? JSON.stringify(ps.documents) : '',
-  };
-}
 
 /**
  * Sections 5-9: Site & Building Systems
@@ -245,7 +220,6 @@ export function useReportCreation() {
         section_1_summary: mapToSection1(projectSummary),
         section_2_introduction: mapToSection2(projectSummary),
         section_3_property: mapToSection3(projectSummary),
-        section_4_documents: mapToSection4(projectSummary),
         section_5_site_grounds: mapToSection5(projectSummary),
         section_6_building_envelope: mapToSection6(projectSummary),
         section_7_mechanical: mapToSection7(projectSummary),
@@ -348,7 +322,6 @@ export function useReportCreation() {
         section_1_summary: {},
         section_2_introduction: {},
         section_3_property: {},
-        section_4_documents: {},
         section_5_site_grounds: {},
         section_6_building_envelope: {},
         section_7_mechanical: {},
