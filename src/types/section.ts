@@ -42,9 +42,10 @@ export interface ConditionalField {
   condition: {
     field: string;
     value: string | string[];
+    mode?: 'exact' | 'includes';
   };
   showWhen: boolean;
-  innerField: TextareaField | ConditionSelectorField | TextField;
+  innerField: TextareaField | ConditionSelectorField | TextField | RepeatingTextField;
 }
 
 // Repeating text field (multiple text inputs, optionally dynamic)

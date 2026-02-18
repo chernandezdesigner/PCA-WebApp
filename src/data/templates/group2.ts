@@ -246,35 +246,44 @@ export const opinionOfProbableCost = {
 export const recommendations = {
     fields: [
         {
-            id: 'recommendation-a',
+            id: 'recommendations-text',
             type: 'textarea',
-            label: 'Physical Deficiency Assessment',
-            rows: 5,
-            defaultValue: 'No areas of physical deficiency or deferred maintenance were identified that would be considered outside of the normal on-going routine maintenance of a property. No additional assessment is recommended prior to finalizing opinion of probable costs to remedy physical deficiencies/deferred maintenance concerns at the Subject Property or to prepare the Capital Replacement Reserve Schedule.',
+            label: 'Recommendations',
+            rows: 6,
+            quickOptions: [
+                {
+                    label: 'Deficiencies identified',
+                    text: 'The following Physical Deficiency/Deferred Maintenance items were identified that would be considered outside of the normal on-going routine maintenance of a property. No additional assessment is recommended prior to finalizing opinion of probable costs to remedy physical deficiencies/deferred maintenance concerns at the Subject Property or to prepare the Capital Replacement Reserve Schedule.',
+                },
+                {
+                    label: 'No additional assessment needed',
+                    text: 'No other building components or systems were identified that would require additional assessment prior to providing the opinion of probable costs to remedy physical deficiencies/deferred maintenance concerns at the Subject Property or to prepare the Capital Replacement Reserve Schedule.',
+                },
+                {
+                    label: 'Additional costs possible',
+                    text: 'Upon completion of the additional assessment recommended, it is possible that additional costs will be identified that will need to be included in either the opinion of probable cost to remedy physical deficiencies/deferred maintenance concerns at the Subject Property or in the Capital Replacement Reserve Schedule.',
+                },
+            ],
         },
         {
             id: 'physical-deficiency-items',
-            type: 'repeating-text',
-            label: 'Physical Deficiency / Deferred Maintenance Items Identified',
-            dynamic: true,
-            minItems: 0,
-            itemPrefix: 'deficiency',
-            itemPlaceholderTemplate: 'Describe deficiency item {n}',
-            items: [],
-        },
-        {
-            id: 'recommendation-b',
-            type: 'textarea',
-            label: 'Additional Assessment',
-            rows: 5,
-            defaultValue: 'No other building components or systems were identified that would require additional assessment prior to providing the opinion of probable costs to remedy physical deficiencies/deferred maintenance concerns at the Subject Property or to prepare the Capital Replacement Reserve Schedule.',
-        },
-        {
-            id: 'recommendation-c',
-            type: 'textarea',
-            label: 'Additional Cost Implications',
-            rows: 5,
-            defaultValue: 'Upon completion of the additional assessment recommended, it is possible that additional costs will be identified that will need to be included in either the opinion of probable cost to remedy physical deficiencies/deferred maintenance concerns at the Subject Property or in the Capital Replacement Reserve Schedule.',
+            type: 'conditional',
+            condition: {
+                field: 'recommendations-text',
+                value: 'The following Physical Deficiency/Deferred Maintenance items were identified',
+                mode: 'includes',
+            },
+            showWhen: true,
+            innerField: {
+                id: 'physical-deficiency-items',
+                type: 'repeating-text',
+                label: 'Physical Deficiency / Deferred Maintenance Items Identified',
+                dynamic: true,
+                minItems: 0,
+                itemPrefix: 'deficiency',
+                itemPlaceholderTemplate: 'Describe deficiency item {n}',
+                items: [],
+            },
         },
     ]
 }

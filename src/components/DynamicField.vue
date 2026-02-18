@@ -60,11 +60,20 @@ const isVisible = computed(() => {
   
   const conditionField = props.field.condition.field;
   const conditionValue = props.field.condition.value;
+  const conditionMode = props.field.condition.mode || 'exact';
   const currentValue = props.formData[conditionField];
   
-  const matches = Array.isArray(conditionValue)
-    ? conditionValue.includes(currentValue as string)
-    : currentValue === conditionValue;
+  let matches: boolean;
+  if (conditionMode === 'includes') {
+    const currentStr = String(currentValue || '');
+    matches = Array.isArray(conditionValue)
+      ? conditionValue.some(v => currentStr.includes(v))
+      : currentStr.includes(conditionValue);
+  } else {
+    matches = Array.isArray(conditionValue)
+      ? conditionValue.includes(currentValue as string)
+      : currentValue === conditionValue;
+  }
   
   return props.field.showWhen ? matches : !matches;
 });
