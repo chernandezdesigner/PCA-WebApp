@@ -45,7 +45,7 @@ export interface ConditionalField {
     mode?: 'exact' | 'includes';
   };
   showWhen: boolean;
-  innerField: TextareaField | ConditionSelectorField | TextField | RepeatingTextField;
+  innerField: TextareaField | ConditionSelectorField | TextField | RepeatingTextField | DynamicTableField;
 }
 
 // Repeating text field (multiple text inputs, optionally dynamic)
@@ -71,7 +71,8 @@ export type FieldConfig =
   | TextField 
   | ConditionalField
   | RepeatingTextField
-  | BooleanSelectField;
+  | BooleanSelectField
+  | DynamicTableField;
 
 export type FieldValue = string | null | Record<string, string>;
 
@@ -87,22 +88,37 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
   recommendations: 'Recommendations',
 };
 
-// Equipment list field definition (for dynamic table rows)
+// Equipment / dynamic table field definition (for dynamic table rows)
 export interface EquipmentField {
   id: string;
   label: string;
   placeholder?: string;
-  type?: 'text' | 'condition-selector';
+  type?: 'text' | 'condition-selector' | 'checkbox';
   options?: string[];
   width?: string;
 }
 
+export interface EquipmentListMode {
+  id: string;
+  label: string;
+  fields: EquipmentField[];
+}
+
+export interface EquipmentListConfig {
+  label: string;
+  fields: EquipmentField[];
+  modes?: EquipmentListMode[];
+}
+
+// Dynamic table field (inline within property-info sections)
+export interface DynamicTableField extends BaseField {
+  type: 'dynamic-table';
+  columns: EquipmentField[];
+}
+
 // Section config for report-style sections (group1)
 export interface SectionConfig {
-  equipmentList?: {
-    label: string;
-    fields: EquipmentField[];
-  };
+  equipmentList?: EquipmentListConfig;
   description?: FieldConfig[];
   observations?: FieldConfig[];
   concerns?: FieldConfig[];

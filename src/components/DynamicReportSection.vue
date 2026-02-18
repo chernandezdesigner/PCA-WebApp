@@ -73,7 +73,19 @@ function getBlockTheme(block: BlockType) {
 
 // --- Equipment list logic ---
 const hasEquipmentList = computed(() => !!props.config.equipmentList);
-const equipmentFields = computed<EquipmentField[]>(() => props.config.equipmentList?.fields || []);
+const hasModes = computed(() => (props.config.equipmentList?.modes?.length ?? 0) > 0);
+
+const activeMode = ref<string>('');
+
+const activeFields = computed<EquipmentField[]>(() => {
+  const cfg = props.config.equipmentList;
+  if (!cfg) return [];
+  if (hasModes.value && activeMode.value) {
+    const mode = cfg.modes!.find(m => m.id === activeMode.value);
+    if (mode) return mode.fields;
+  }
+  return cfg.fields;
+});
 
 interface EquipmentRow {
   index: number;
@@ -84,17 +96,28 @@ const equipmentRows = ref<EquipmentRow[]>([]);
 
 function initEquipmentRows() {
   if (!hasEquipmentList.value) return;
+  const cfg = props.config.equipmentList!;
+
+  if (hasModes.value) {
+    const eqData = (props.modelValue as Record<string, FormData>).equipmentList || {};
+    const savedMode = (eqData._mode as string) || cfg.modes![0].id;
+    activeMode.value = savedMode;
+  }
+
+  loadRowsFromData();
+}
+
+function loadRowsFromData() {
   const data = (props.modelValue as Record<string, FormData>).equipmentList || {};
   const count = parseInt((data._count as string) || '0');
+  const fields = activeFields.value;
   const rows: EquipmentRow[] = [];
-  if (count > 0) {
-    for (let i = 1; i <= count; i++) {
-      const row: EquipmentRow = { index: i };
-      for (const f of equipmentFields.value) {
-        row[f.id] = (data[`equipment-${i}-${f.id}`] as string) || '';
-      }
-      rows.push(row);
+  for (let i = 1; i <= count; i++) {
+    const row: EquipmentRow = { index: i };
+    for (const f of fields) {
+      row[f.id] = (data[`equipment-${i}-${f.id}`] as string) || '';
     }
+    rows.push(row);
   }
   equipmentRows.value = rows;
 }
@@ -102,9 +125,13 @@ function initEquipmentRows() {
 watch(() => props.config, initEquipmentRows, { immediate: true });
 
 function getEquipmentData(): FormData {
-  const data: FormData = { _count: String(equipmentRows.value.length) };
+  const fields = activeFields.value;
+  const data: FormData = {
+    _count: String(equipmentRows.value.length),
+    ...(hasModes.value ? { _mode: activeMode.value } : {}),
+  };
   for (const row of equipmentRows.value) {
-    for (const f of equipmentFields.value) {
+    for (const f of fields) {
       data[`equipment-${row.index}-${f.id}`] = (row[f.id] as string) || '';
     }
   }
@@ -126,7 +153,7 @@ function updateEquipmentField(rowIdx: number, fieldId: string, value: string) {
 function addEquipmentRow() {
   const maxIdx = equipmentRows.value.reduce((max, r) => r.index > max ? r.index : max, 0);
   const row: EquipmentRow = { index: maxIdx + 1 };
-  for (const f of equipmentFields.value) {
+  for (const f of activeFields.value) {
     row[f.id] = '';
   }
   equipmentRows.value.push(row);
@@ -135,6 +162,13 @@ function addEquipmentRow() {
 
 function removeEquipmentRow(rowIdx: number) {
   equipmentRows.value.splice(rowIdx, 1);
+  emitEquipmentUpdate();
+}
+
+function switchMode(modeId: string) {
+  if (activeMode.value === modeId) return;
+  activeMode.value = modeId;
+  equipmentRows.value = [];
   emitEquipmentUpdate();
 }
 
@@ -182,13 +216,32 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
         ></div>
       </div>
 
+      <!-- Mode Toggle -->
+      <div v-if="hasModes" class="flex rounded-lg shadow-sm mb-6">
+        <button
+          v-for="mode in config.equipmentList!.modes"
+          :key="mode.id"
+          type="button"
+          class="flex-1 px-4 py-2.5 text-sm font-medium transition-all duration-200 first:rounded-l-lg last:rounded-r-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          :class="activeMode === mode.id
+            ? 'bg-blue-600 text-white shadow-sm z-10'
+            : theme === 'dark'
+              ? 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+              : 'bg-white border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50'"
+          :disabled="disabled"
+          @click="switchMode(mode.id)"
+        >
+          {{ mode.label }}
+        </button>
+      </div>
+
       <!-- Column Headers (desktop) -->
       <div 
         v-if="equipmentRows.length > 0"
         class="hidden md:flex items-center gap-2 mb-2 pl-8 pr-10"
       >
         <div
-          v-for="ef in equipmentFields"
+          v-for="ef in activeFields"
           :key="ef.id"
           class="text-xs font-medium"
           :class="[
@@ -215,19 +268,14 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
               {{ rowIdx + 1 }}
             </span>
 
-            <template v-for="ef in equipmentFields" :key="ef.id">
-              <!-- Condition selector inline -->
+            <template v-for="ef in activeFields" :key="ef.id">
+              <!-- Condition selector -->
               <div 
                 v-if="ef.type === 'condition-selector'" 
                 :class="ef.width || 'flex-1'"
                 class="w-full md:w-auto"
               >
-                <label 
-                  class="md:hidden block text-xs font-medium mb-1"
-                  :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'"
-                >
-                  {{ ef.label }}
-                </label>
+                <label class="md:hidden block text-xs font-medium mb-1" :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'">{{ ef.label }}</label>
                 <div class="flex rounded-md shadow-sm">
                   <button
                     v-for="opt in (ef.options || [])"
@@ -242,18 +290,41 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
                 </div>
               </div>
 
+              <!-- Checkbox (custom toggle) -->
+              <div 
+                v-else-if="ef.type === 'checkbox'"
+                :class="ef.width || 'flex-1'"
+                class="w-full md:w-auto flex items-center gap-2 md:justify-center"
+              >
+                <span class="md:hidden text-xs font-medium" :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'">{{ ef.label }}</span>
+                <button
+                  type="button"
+                  role="switch"
+                  :aria-checked="(row[ef.id] as string) === 'true'"
+                  :disabled="disabled"
+                  class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :class="[
+                    (row[ef.id] as string) === 'true'
+                      ? 'bg-blue-600'
+                      : theme === 'dark' ? 'bg-zinc-700' : 'bg-slate-300',
+                    theme === 'dark' ? 'focus-visible:ring-offset-zinc-950' : 'focus-visible:ring-offset-white'
+                  ]"
+                  @click="updateEquipmentField(rowIdx, ef.id, (row[ef.id] as string) === 'true' ? 'false' : 'true')"
+                >
+                  <span
+                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out"
+                    :class="(row[ef.id] as string) === 'true' ? 'translate-x-5' : 'translate-x-0'"
+                  />
+                </button>
+              </div>
+
               <!-- Text input -->
               <div 
                 v-else 
                 :class="ef.width || 'flex-1'"
                 class="w-full md:w-auto"
               >
-                <label 
-                  class="md:hidden block text-xs font-medium mb-1"
-                  :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'"
-                >
-                  {{ ef.label }}
-                </label>
+                <label class="md:hidden block text-xs font-medium mb-1" :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'">{{ ef.label }}</label>
                 <input
                   :value="(row[ef.id] as string) || ''"
                   type="text"
@@ -285,7 +356,7 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
         </TransitionGroup>
       </div>
 
-      <!-- Add Equipment Button -->
+      <!-- Add Row Button -->
       <button
         type="button"
         class="w-full flex items-center justify-center gap-2 px-4 py-2.5 mt-4 rounded-lg border border-dashed text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
@@ -298,7 +369,7 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Add Equipment
+        Add Row
       </button>
     </div>
 
@@ -311,7 +382,6 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
     >
       <!-- Header Row -->
       <div class="flex items-center gap-3 mb-6">
-        <!-- Icon -->
         <div 
           class="p-2 rounded-lg border"
           :class="theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'"
@@ -327,7 +397,6 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
           </svg>
         </div>
 
-        <!-- Title -->
         <h3 
           class="text-lg font-bold tracking-tight"
           :class="theme === 'dark' ? 'text-zinc-100' : 'text-slate-900'"
@@ -335,7 +404,6 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
           {{ BLOCK_LABELS[block] }}
         </h3>
 
-        <!-- Line -->
         <div 
           class="flex-1 h-px self-center ml-2"
           :class="theme === 'dark' ? 'bg-zinc-800/60' : 'bg-slate-200'"

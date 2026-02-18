@@ -55,6 +55,45 @@ export const generalDescription = {
             placeholder: 'Enter number of stories...',
         },
         {
+            id: 'list-individual-buildings',
+            type: 'conditional',
+            condition: {
+                field: 'number-of-buildings',
+                value: ['', '0', '1'],
+            },
+            showWhen: false,
+            innerField: {
+                id: 'list-individual-buildings',
+                type: 'boolean-select',
+                label: 'List individual building details?',
+                options: [
+                    { value: 'yes', label: 'Yes', text: 'Record details for each building individually' },
+                    { value: 'no', label: 'No', text: 'Not needed for this assessment' },
+                ],
+            },
+        },
+        {
+            id: 'building-details',
+            type: 'conditional',
+            condition: {
+                field: 'list-individual-buildings',
+                value: 'yes',
+            },
+            showWhen: true,
+            innerField: {
+                id: 'building-details',
+                type: 'dynamic-table',
+                label: 'Individual Building Details',
+                columns: [
+                    { id: 'building-id', label: 'Building ID', placeholder: 'Bldg A' },
+                    { id: 'address', label: 'Address', placeholder: 'Address', width: 'flex-[2]' },
+                    { id: 'rentable-sf', label: 'Rentable SF', placeholder: 'SF' },
+                    { id: 'stories', label: 'Stories', placeholder: '#' },
+                    { id: 'date-constructed', label: 'Date of Construction', placeholder: 'YYYY' },
+                ],
+            },
+        },
+        {
             id: 'year-constructed',
             type: 'text',
             label: 'Year Constructed',

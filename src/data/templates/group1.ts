@@ -2120,6 +2120,31 @@ export const commonAreas = {
 //sec 8.2 - tenant spaces
 
 export const tenantSpaces = {
+    equipmentList: {
+        label: 'Tenant Spaces / Guest Rooms',
+        fields: [],
+        modes: [
+            {
+                id: 'tenant-spaces',
+                label: 'Tenant Spaces',
+                fields: [
+                    { id: 'space-id', label: 'Space ID', placeholder: 'e.g. Suite 101' },
+                    { id: 'sqft', label: 'Square Footage', placeholder: 'SF' },
+                    { id: 'tenant', label: 'Tenant', placeholder: 'Tenant name', width: 'flex-[2]' },
+                    { id: 'occupied', label: 'Occupied', type: 'checkbox' as const },
+                    { id: 'condition-notes', label: 'Condition Notes', placeholder: 'Notes...', width: 'flex-[2]' },
+                ],
+            },
+            {
+                id: 'guest-rooms',
+                label: 'Guest Rooms',
+                fields: [
+                    { id: 'room-number', label: 'Guest Room #', placeholder: 'e.g. 101' },
+                    { id: 'condition-notes', label: 'Condition Notes', placeholder: 'Notes...', width: 'flex-[3]' },
+                ],
+            },
+        ],
+    },
     //description block
     description: [
         {

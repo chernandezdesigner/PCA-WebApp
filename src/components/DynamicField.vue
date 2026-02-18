@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, useId, watch } from 'vue';
-import type { FieldConfig, FieldValue, FormData, RepeatingTextField } from '@/types/section';
+import type { FieldConfig, FieldValue, FormData, RepeatingTextField, DynamicTableField as DynamicTableFieldType, EquipmentField } from '@/types/section';
 import { useTheme } from '@/composables/useTheme';
 
 const props = defineProps<{
@@ -61,18 +61,18 @@ const isVisible = computed(() => {
   const conditionField = props.field.condition.field;
   const conditionValue = props.field.condition.value;
   const conditionMode = props.field.condition.mode || 'exact';
-  const currentValue = props.formData[conditionField];
+  const rawValue = props.formData[conditionField];
+  const currentStr = (rawValue === null || rawValue === undefined) ? '' : String(rawValue);
   
   let matches: boolean;
   if (conditionMode === 'includes') {
-    const currentStr = String(currentValue || '');
     matches = Array.isArray(conditionValue)
       ? conditionValue.some(v => currentStr.includes(v))
       : currentStr.includes(conditionValue);
   } else {
     matches = Array.isArray(conditionValue)
-      ? conditionValue.includes(currentValue as string)
-      : currentValue === conditionValue;
+      ? conditionValue.includes(currentStr)
+      : currentStr === conditionValue;
   }
   
   return props.field.showWhen ? matches : !matches;
@@ -149,6 +149,72 @@ function removeDynamicItem(index: number) {
   const updated = { ...compoundValue.value };
   delete updated[item.id];
   emit('update:modelValue', updated);
+}
+
+// Dynamic table rows management
+interface TableRow {
+  index: number;
+  [key: string]: string | number;
+}
+const tableRows = ref<TableRow[]>([]);
+
+function initTableRows() {
+  const field = renderField.value;
+  if (field.type !== 'dynamic-table') return;
+  const data = compoundValue.value;
+  const count = parseInt(data._count || '0');
+  const cols = (field as DynamicTableFieldType).columns;
+  const rows: TableRow[] = [];
+  for (let i = 1; i <= count; i++) {
+    const row: TableRow = { index: i };
+    for (const c of cols) row[c.id] = data[`row-${i}-${c.id}`] || '';
+    rows.push(row);
+  }
+  tableRows.value = rows;
+}
+
+watch(renderField, (f) => { if (f.type === 'dynamic-table') initTableRows(); }, { immediate: true });
+
+function getTableData(): Record<string, string> {
+  const field = renderField.value as DynamicTableFieldType;
+  const data: Record<string, string> = { _count: String(tableRows.value.length) };
+  for (const row of tableRows.value) {
+    for (const c of field.columns) data[`row-${row.index}-${c.id}`] = (row[c.id] as string) || '';
+  }
+  return data;
+}
+
+function updateTableCell(rowIdx: number, colId: string, val: string) {
+  tableRows.value[rowIdx][colId] = val;
+  emit('update:modelValue', getTableData());
+}
+
+function addTableRow() {
+  const field = renderField.value as DynamicTableFieldType;
+  const maxIdx = tableRows.value.reduce((m, r) => r.index > m ? r.index : m, 0);
+  const row: TableRow = { index: maxIdx + 1 };
+  for (const c of field.columns) row[c.id] = '';
+  tableRows.value.push(row);
+  emit('update:modelValue', getTableData());
+}
+
+function removeTableRow(rowIdx: number) {
+  tableRows.value.splice(rowIdx, 1);
+  emit('update:modelValue', getTableData());
+}
+
+function getTableConditionClass(option: string, current: string): string {
+  const isSelected = current === option;
+  const isDark = theme.value === 'dark';
+  const base = 'flex-1 inline-flex items-center justify-center px-2 py-1.5 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500';
+  if (isSelected) {
+    if (option === 'Good') return `${base} bg-emerald-600 text-white shadow-sm z-10`;
+    if (option === 'Fair') return `${base} bg-amber-500 text-black shadow-sm z-10`;
+    if (option === 'Poor') return `${base} bg-red-600 text-white shadow-sm z-10`;
+    return `${base} bg-blue-600 text-white`;
+  }
+  if (isDark) return `${base} bg-zinc-900 border-y border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 first:border-l first:rounded-l-md last:border-r last:rounded-r-md border-x-px border-x-zinc-800`;
+  return `${base} bg-white border-y border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50 first:border-l first:rounded-l-md last:border-r last:rounded-r-md border-x-px border-x-slate-200`;
 }
 
 // Normalize quickOptions to always be an array (handles both single object and array formats)
@@ -424,6 +490,134 @@ function getConditionButtonClass(option: string): string {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           Add Item
+        </button>
+      </fieldset>
+    </template>
+
+    <!-- Dynamic Table -->
+    <template v-else-if="renderField.type === 'dynamic-table'">
+      <fieldset class="space-y-3">
+        <legend 
+          class="block text-sm font-medium"
+          :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-700'"
+        >
+          {{ renderField.label }}
+        </legend>
+
+        <!-- Column Headers (desktop) -->
+        <div 
+          v-if="tableRows.length > 0"
+          class="hidden md:flex items-center gap-2 pl-8 pr-10"
+        >
+          <div
+            v-for="col in renderField.columns"
+            :key="col.id"
+            class="text-xs font-medium"
+            :class="[col.width || 'flex-1', theme === 'dark' ? 'text-zinc-500' : 'text-slate-400']"
+          >
+            {{ col.label }}
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <TransitionGroup name="list">
+            <div 
+              v-for="(row, rowIdx) in tableRows"
+              :key="row.index"
+              class="flex flex-col md:flex-row items-start md:items-center gap-2"
+            >
+              <span 
+                class="w-6 text-center text-xs font-medium shrink-0 pt-2 md:pt-0"
+                :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+              >
+                {{ rowIdx + 1 }}
+              </span>
+
+              <template v-for="col in renderField.columns" :key="col.id">
+                <!-- Condition selector column -->
+                <div v-if="col.type === 'condition-selector'" :class="col.width || 'flex-1'" class="w-full md:w-auto">
+                  <label class="md:hidden block text-xs font-medium mb-1" :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'">{{ col.label }}</label>
+                  <div class="flex rounded-md shadow-sm">
+                    <button
+                      v-for="opt in (col.options || [])"
+                      :key="opt"
+                      type="button"
+                      :class="getTableConditionClass(opt, (row[col.id] as string) || '')"
+                      :disabled="disabled"
+                      @click="updateTableCell(rowIdx, col.id, opt)"
+                    >{{ opt }}</button>
+                  </div>
+                </div>
+
+                <!-- Checkbox column (custom toggle) -->
+                <div v-else-if="col.type === 'checkbox'" :class="col.width || 'flex-1'" class="w-full md:w-auto flex items-center gap-2 md:justify-center">
+                  <span class="md:hidden text-xs font-medium" :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'">{{ col.label }}</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    :aria-checked="(row[col.id] as string) === 'true'"
+                    :disabled="disabled"
+                    class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :class="[
+                      (row[col.id] as string) === 'true'
+                        ? 'bg-blue-600'
+                        : theme === 'dark' ? 'bg-zinc-700' : 'bg-slate-300',
+                      theme === 'dark' ? 'focus-visible:ring-offset-zinc-950' : 'focus-visible:ring-offset-white'
+                    ]"
+                    @click="updateTableCell(rowIdx, col.id, (row[col.id] as string) === 'true' ? 'false' : 'true')"
+                  >
+                    <span
+                      class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out"
+                      :class="(row[col.id] as string) === 'true' ? 'translate-x-5' : 'translate-x-0'"
+                    />
+                  </button>
+                </div>
+
+                <!-- Text input column -->
+                <div v-else :class="col.width || 'flex-1'" class="w-full md:w-auto">
+                  <label class="md:hidden block text-xs font-medium mb-1" :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'">{{ col.label }}</label>
+                  <input
+                    :value="(row[col.id] as string) || ''"
+                    type="text"
+                    :placeholder="col.placeholder"
+                    :disabled="disabled"
+                    class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    :class="theme === 'dark' 
+                      ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
+                      : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
+                    @input="updateTableCell(rowIdx, col.id, ($event.target as HTMLInputElement).value)"
+                  />
+                </div>
+              </template>
+
+              <button
+                type="button"
+                class="shrink-0 p-1.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                :class="theme === 'dark' ? 'text-zinc-600 hover:text-red-400 hover:bg-red-500/10' : 'text-slate-400 hover:text-red-500 hover:bg-red-50'"
+                :disabled="disabled"
+                @click="removeTableRow(rowIdx)"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </TransitionGroup>
+        </div>
+
+        <button
+          type="button"
+          class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-dashed text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          :class="theme === 'dark' 
+            ? 'border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/50' 
+            : 'border-slate-300 text-slate-500 hover:border-slate-400 hover:text-slate-600 hover:bg-slate-50'"
+          :disabled="disabled"
+          @click="addTableRow"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Row
         </button>
       </fieldset>
     </template>
