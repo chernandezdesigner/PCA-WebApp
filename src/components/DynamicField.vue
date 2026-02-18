@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, useId } from 'vue';
-import type { FieldConfig, FieldValue, FormData } from '@/types/section';
+import { computed, ref, useId, watch } from 'vue';
+import type { FieldConfig, FieldValue, FormData, RepeatingTextField } from '@/types/section';
 import { useTheme } from '@/composables/useTheme';
 
 const props = defineProps<{
@@ -85,6 +85,62 @@ function setBooleanOption(optionValue: string) {
 const renderField = computed(() => {
   return props.field.type === 'conditional' ? props.field.innerField : props.field;
 });
+
+// Dynamic repeating-text items management
+const dynamicItems = ref<{ id: string; placeholder: string }[]>([]);
+
+function initDynamicItems() {
+  const field = renderField.value;
+  if (field.type !== 'repeating-text') return;
+  const rf = field as RepeatingTextField;
+  const baseItems = [...(rf.items || [])];
+  if (rf.dynamic) {
+    const existing = compoundValue.value;
+    const prefix = rf.itemPrefix || 'item';
+    const knownIds = new Set(baseItems.map(i => i.id));
+    const extraKeys = Object.keys(existing)
+      .filter(k => k.startsWith(prefix + '-') && !knownIds.has(k) && k !== 'main' && existing[k])
+      .sort((a, b) => {
+        const numA = parseInt(a.split('-').pop() || '0');
+        const numB = parseInt(b.split('-').pop() || '0');
+        return numA - numB;
+      });
+    for (const key of extraKeys) {
+      const n = parseInt(key.split('-').pop() || '0');
+      const tpl = rf.itemPlaceholderTemplate || `Item {n}`;
+      baseItems.push({ id: key, placeholder: tpl.replace('{n}', String(n)) });
+    }
+  }
+  dynamicItems.value = baseItems;
+}
+
+watch(renderField, initDynamicItems, { immediate: true });
+
+function addDynamicItem() {
+  const field = renderField.value;
+  if (field.type !== 'repeating-text') return;
+  const rf = field as RepeatingTextField;
+  const prefix = rf.itemPrefix || 'item';
+  const maxN = dynamicItems.value.reduce((max, item) => {
+    const n = parseInt(item.id.split('-').pop() || '0');
+    return n > max ? n : max;
+  }, 0);
+  const newN = maxN + 1;
+  const tpl = rf.itemPlaceholderTemplate || `Item {n}`;
+  dynamicItems.value.push({
+    id: `${prefix}-${newN}`,
+    placeholder: tpl.replace('{n}', String(newN)),
+  });
+}
+
+function removeDynamicItem(index: number) {
+  const item = dynamicItems.value[index];
+  if (!item) return;
+  dynamicItems.value.splice(index, 1);
+  const updated = { ...compoundValue.value };
+  delete updated[item.id];
+  emit('update:modelValue', updated);
+}
 
 // Normalize quickOptions to always be an array (handles both single object and array formats)
 const normalizedQuickOptions = computed(() => {
@@ -304,30 +360,62 @@ function getConditionButtonClass(option: string): string {
         </legend>
         
         <div class="space-y-2">
-          <div 
-            v-for="(item, index) in renderField.items" 
-            :key="item.id"
-            class="flex items-center gap-2"
-          >
-            <span 
-              class="w-6 text-center text-xs font-medium"
-              :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+          <TransitionGroup name="list">
+            <div 
+              v-for="(item, index) in dynamicItems" 
+              :key="item.id"
+              class="flex items-center gap-2"
             >
-              {{ index + 1 }}
-            </span>
-            <input
-              :value="compoundValue[item.id] || ''"
-              type="text"
-              :placeholder="item.placeholder"
-              :disabled="disabled"
-              class="flex-1 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              :class="theme === 'dark' 
-                ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
-                : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
-              @input="updateCompoundField(item.id, ($event.target as HTMLInputElement).value)"
-            />
-          </div>
+              <span 
+                class="w-6 text-center text-xs font-medium shrink-0"
+                :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+              >
+                {{ index + 1 }}
+              </span>
+              <input
+                :value="compoundValue[item.id] || ''"
+                type="text"
+                :placeholder="item.placeholder"
+                :disabled="disabled"
+                class="flex-1 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                :class="theme === 'dark' 
+                  ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
+                  : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
+                @input="updateCompoundField(item.id, ($event.target as HTMLInputElement).value)"
+              />
+              <button
+                v-if="renderField.dynamic && index >= (renderField.minItems ?? renderField.items.length)"
+                type="button"
+                class="shrink-0 p-1.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                :class="theme === 'dark' 
+                  ? 'text-zinc-600 hover:text-red-400 hover:bg-red-500/10' 
+                  : 'text-slate-400 hover:text-red-500 hover:bg-red-50'"
+                :disabled="disabled"
+                @click="removeDynamicItem(index)"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </TransitionGroup>
         </div>
+
+        <button
+          v-if="renderField.dynamic"
+          type="button"
+          class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-dashed text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          :class="theme === 'dark' 
+            ? 'border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/50' 
+            : 'border-slate-300 text-slate-500 hover:border-slate-400 hover:text-slate-600 hover:bg-slate-50'"
+          :disabled="disabled"
+          @click="addDynamicItem"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Item
+        </button>
       </fieldset>
     </template>
 
@@ -386,5 +474,14 @@ function getConditionButtonClass(option: string): string {
 <style scoped>
 textarea {
   min-height: 80px;
+}
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.2s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 </style>

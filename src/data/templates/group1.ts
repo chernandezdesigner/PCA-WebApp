@@ -1298,6 +1298,16 @@ export const roofing = {
 //sec 7.1 HEATING AND COOLING SYSTEMS
 
 export const heatingAndCooling = {
+    equipmentList: {
+        label: 'HVAC Equipment',
+        fields: [
+            { id: 'description', label: 'Equipment Description', placeholder: 'e.g. Rooftop Package Unit', width: 'flex-[2]' },
+            { id: 'model', label: 'Model Number', placeholder: 'Model #' },
+            { id: 'size', label: 'Size', placeholder: 'e.g. 5 ton' },
+            { id: 'mfg-date', label: 'Manufacturer Date', placeholder: 'YYYY' },
+            { id: 'condition', label: 'Condition', type: 'condition-selector' as const, options: ['Good', 'Fair', 'Poor'] },
+        ],
+    },
     //description block
     description: [
         {

@@ -186,6 +186,10 @@ export const generalPhysicalCondition = {
             id: 'recent-capital-improvements',
             type: 'repeating-text',
             label: 'Recent Capital Improvements',
+            dynamic: true,
+            minItems: 5,
+            itemPrefix: 'recent-improvement',
+            itemPlaceholderTemplate: 'Identify improvement {n} and date',
             items: [
                 { id: 'recent-improvement-1', placeholder: 'Identify improvement 1 and date' },
                 { id: 'recent-improvement-2', placeholder: 'Identify improvement 2 and date' },
@@ -198,6 +202,10 @@ export const generalPhysicalCondition = {
             id: 'planned-capital-improvements',
             type: 'repeating-text',
             label: 'Planned Capital Improvements',
+            dynamic: true,
+            minItems: 5,
+            itemPrefix: 'planned-improvement',
+            itemPlaceholderTemplate: 'Identify improvement {n} and date',
             items: [
                 { id: 'planned-improvement-1', placeholder: 'Identify improvement 1 and date' },
                 { id: 'planned-improvement-2', placeholder: 'Identify improvement 2 and date' },
@@ -233,10 +241,43 @@ export const opinionOfProbableCost = {
     ]
 }
 
+// sec 1.5 - recommendations
 
-
-
-
+export const recommendations = {
+    fields: [
+        {
+            id: 'recommendation-a',
+            type: 'textarea',
+            label: 'Physical Deficiency Assessment',
+            rows: 5,
+            defaultValue: 'No areas of physical deficiency or deferred maintenance were identified that would be considered outside of the normal on-going routine maintenance of a property. No additional assessment is recommended prior to finalizing opinion of probable costs to remedy physical deficiencies/deferred maintenance concerns at the Subject Property or to prepare the Capital Replacement Reserve Schedule.',
+        },
+        {
+            id: 'physical-deficiency-items',
+            type: 'repeating-text',
+            label: 'Physical Deficiency / Deferred Maintenance Items Identified',
+            dynamic: true,
+            minItems: 0,
+            itemPrefix: 'deficiency',
+            itemPlaceholderTemplate: 'Describe deficiency item {n}',
+            items: [],
+        },
+        {
+            id: 'recommendation-b',
+            type: 'textarea',
+            label: 'Additional Assessment',
+            rows: 5,
+            defaultValue: 'No other building components or systems were identified that would require additional assessment prior to providing the opinion of probable costs to remedy physical deficiencies/deferred maintenance concerns at the Subject Property or to prepare the Capital Replacement Reserve Schedule.',
+        },
+        {
+            id: 'recommendation-c',
+            type: 'textarea',
+            label: 'Additional Cost Implications',
+            rows: 5,
+            defaultValue: 'Upon completion of the additional assessment recommended, it is possible that additional costs will be identified that will need to be included in either the opinion of probable cost to remedy physical deficiencies/deferred maintenance concerns at the Subject Property or in the Capital Replacement Reserve Schedule.',
+        },
+    ]
+}
 
 
 
@@ -472,6 +513,38 @@ export const propertyQuestionnaire = {
 //sec 4.2 - interviews
 
 export const interviews = {
+    dynamicInterviews: true,
+    interviewTemplate: {
+        fields: [
+            {
+                type: 'text',
+                label: 'Interviewee',
+                placeholder: 'Name/Title/Company',
+            },
+            {
+                type: 'textarea',
+                label: 'Pertinent Information',
+                rows: 2,
+                placeholder: 'XXX provided access and general property information.',
+            },
+            {
+                type: 'textarea',
+                label: 'Concerns',
+                rows: 3,
+                defaultValue: '',
+                quickOptions: [
+                    {
+                        label: 'No major concerns',
+                        text: 'No major concerns regarding the physical condition of the Subject Property and improvements were noted during the interviews conducted.',
+                    },
+                    {
+                        label: 'Concerns noted',
+                        text: 'Concerns regarding ___ were noted during the interviews. These issues are addressed in the applicable sections of this report.',
+                    },
+                ],
+            },
+        ],
+    },
     interviewBlocks: [
         {
             id: 'interview-1',
@@ -491,76 +564,6 @@ export const interviews = {
                 },
                 {
                     id: 'concerns-1',
-                    type: 'textarea',
-                    label: 'Concerns',
-                    rows: 3,
-                    defaultValue: '',
-                    quickOptions: [
-                        {
-                            label: 'No major concerns',
-                            text: 'No major concerns regarding the physical condition of the Subject Property and improvements were noted during the interviews conducted.',
-                        },
-                        {
-                            label: 'Concerns noted',
-                            text: 'Concerns regarding ___ were noted during the interviews. These issues are addressed in the applicable sections of this report.',
-                        },
-                    ],
-                },
-            ],
-        },
-        {
-            id: 'interview-2',
-            fields: [
-                {
-                    id: 'interviewee-2',
-                    type: 'text',
-                    label: 'Interviewee',
-                    placeholder: 'Name/Title/Company-property manager',
-                },
-                {
-                    id: 'pertinent-info-2',
-                    type: 'textarea',
-                    label: 'Pertinent Information',
-                    rows: 2,
-                    placeholder: 'XXX provided access and general property information and did not indicate any major concerns OR list concerns',
-                },
-                {
-                    id: 'concerns-2',
-                    type: 'textarea',
-                    label: 'Concerns',
-                    rows: 3,
-                    defaultValue: '',
-                    quickOptions: [
-                        {
-                            label: 'No major concerns',
-                            text: 'No major concerns regarding the physical condition of the Subject Property and improvements were noted during the interviews conducted.',
-                        },
-                        {
-                            label: 'Concerns noted',
-                            text: 'Concerns regarding ___ were noted during the interviews. These issues are addressed in the applicable sections of this report.',
-                        },
-                    ],
-                },
-            ],
-        },
-        {
-            id: 'interview-3',
-            fields: [
-                {
-                    id: 'interviewee-3',
-                    type: 'text',
-                    label: 'Interviewee',
-                    placeholder: 'Name/Title/Company-tenant',
-                },
-                {
-                    id: 'pertinent-info-3',
-                    type: 'textarea',
-                    label: 'Pertinent Information',
-                    rows: 2,
-                    placeholder: 'XXX provided access and general property information and did not indicate any major concerns OR list concerns',
-                },
-                {
-                    id: 'concerns-3',
                     type: 'textarea',
                     label: 'Concerns',
                     rows: 3,

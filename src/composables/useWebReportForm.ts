@@ -16,57 +16,58 @@ interface StepData {
 
 // Map step numbers to section column names
 const STEP_TO_SECTION: Record<number, keyof ReportContentRow> = {
-  // Section 1: Summary (steps 1-3)
+  // Section 1: Summary (steps 1-4)
   1: 'section_1_summary',
   2: 'section_1_summary',
   3: 'section_1_summary',
-  // Section 2: Introduction (step 4)
-  4: 'section_2_introduction',
-  // Section 3: Property (steps 5-7)
-  5: 'section_3_property',
+  4: 'section_1_summary',
+  // Section 2: Introduction (step 5)
+  5: 'section_2_introduction',
+  // Section 3: Property (steps 6-8)
   6: 'section_3_property',
   7: 'section_3_property',
-  // Section 4: Documents (steps 8-12)
-  8: 'section_4_documents',
+  8: 'section_3_property',
+  // Section 4: Documents (steps 9-13)
   9: 'section_4_documents',
   10: 'section_4_documents',
   11: 'section_4_documents',
   12: 'section_4_documents',
-  // Section 5: Site & Grounds (steps 13-17)
-  13: 'section_5_site_grounds',
+  13: 'section_4_documents',
+  // Section 5: Site & Grounds (steps 14-18)
   14: 'section_5_site_grounds',
   15: 'section_5_site_grounds',
   16: 'section_5_site_grounds',
   17: 'section_5_site_grounds',
-  // Section 6: Building Envelope (steps 18-21)
-  18: 'section_6_building_envelope',
+  18: 'section_5_site_grounds',
+  // Section 6: Building Envelope (steps 19-22)
   19: 'section_6_building_envelope',
   20: 'section_6_building_envelope',
   21: 'section_6_building_envelope',
-  // Section 7: Mechanical (steps 22-25)
-  22: 'section_7_mechanical',
+  22: 'section_6_building_envelope',
+  // Section 7: Mechanical (steps 23-26)
   23: 'section_7_mechanical',
   24: 'section_7_mechanical',
   25: 'section_7_mechanical',
-  // Section 8: Interior (steps 26-27)
-  26: 'section_8_interior',
+  26: 'section_7_mechanical',
+  // Section 8: Interior (steps 27-28)
   27: 'section_8_interior',
-  // Section 9: Fire Protection (steps 28-29)
-  28: 'section_9_fire_protection',
+  28: 'section_8_interior',
+  // Section 9: Fire Protection (steps 29-30)
   29: 'section_9_fire_protection',
+  30: 'section_9_fire_protection',
 };
 
 // Map step numbers to their key within the section
 const STEP_TO_KEY: Record<number, string> = {
-  1: 'step_1', 2: 'step_2', 3: 'step_3',
-  4: 'step_4',
-  5: 'step_5', 6: 'step_6', 7: 'step_7',
-  8: 'step_8', 9: 'step_9', 10: 'step_10', 11: 'step_11', 12: 'step_12',
-  13: 'step_13', 14: 'step_14', 15: 'step_15', 16: 'step_16', 17: 'step_17',
-  18: 'step_18', 19: 'step_19', 20: 'step_20', 21: 'step_21',
-  22: 'step_22', 23: 'step_23', 24: 'step_24', 25: 'step_25',
-  26: 'step_26', 27: 'step_27',
-  28: 'step_28', 29: 'step_29',
+  1: 'step_1', 2: 'step_2', 3: 'step_3', 4: 'step_4',
+  5: 'step_5',
+  6: 'step_6', 7: 'step_7', 8: 'step_8',
+  9: 'step_9', 10: 'step_10', 11: 'step_11', 12: 'step_12', 13: 'step_13',
+  14: 'step_14', 15: 'step_15', 16: 'step_16', 17: 'step_17', 18: 'step_18',
+  19: 'step_19', 20: 'step_20', 21: 'step_21', 22: 'step_22',
+  23: 'step_23', 24: 'step_24', 25: 'step_25', 26: 'step_26',
+  27: 'step_27', 28: 'step_28',
+  29: 'step_29', 30: 'step_30',
 };
 
 export function useWebReportForm(options: WebReportFormOptions) {
@@ -77,7 +78,7 @@ export function useWebReportForm(options: WebReportFormOptions) {
 
   // State
   const currentStep = ref(1);
-  const totalSteps = ref(29);
+  const totalSteps = ref(30);
   const formData = ref<Record<number, StepData>>({});
   const loading = ref(false);
   const saving = ref(false);

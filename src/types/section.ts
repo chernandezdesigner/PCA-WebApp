@@ -47,10 +47,14 @@ export interface ConditionalField {
   innerField: TextareaField | ConditionSelectorField | TextField;
 }
 
-// Repeating text field (multiple text inputs)
+// Repeating text field (multiple text inputs, optionally dynamic)
 export interface RepeatingTextField extends BaseField {
   type: 'repeating-text';
   items: { id: string; placeholder: string }[];
+  dynamic?: boolean;
+  minItems?: number;
+  itemPrefix?: string;
+  itemPlaceholderTemplate?: string;
 }
 
 // Boolean select (yes/no with associated text)
@@ -82,12 +86,31 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
   recommendations: 'Recommendations',
 };
 
+// Equipment list field definition (for dynamic table rows)
+export interface EquipmentField {
+  id: string;
+  label: string;
+  placeholder?: string;
+  type?: 'text' | 'condition-selector';
+  options?: string[];
+  width?: string;
+}
+
 // Section config for report-style sections (group1)
 export interface SectionConfig {
+  equipmentList?: {
+    label: string;
+    fields: EquipmentField[];
+  };
   description?: FieldConfig[];
   observations?: FieldConfig[];
   concerns?: FieldConfig[];
   recommendations?: FieldConfig[];
+}
+
+// Interview block template (fields without suffixed IDs)
+export interface InterviewTemplate {
+  fields: Omit<FieldConfig, 'id'>[];
 }
 
 // Property info config for flat field sections (group2)
@@ -98,6 +121,8 @@ export interface PropertyInfoConfig {
     id: string;
     fields: FieldConfig[];
   }[];
+  dynamicInterviews?: boolean;
+  interviewTemplate?: InterviewTemplate;
 }
 
 // Generic section that can be either type
@@ -105,7 +130,7 @@ export type AnySection = SectionConfig | PropertyInfoConfig;
 
 // Helper to check section type
 export function isSectionConfig(config: AnySection): config is SectionConfig {
-  return 'description' in config || 'observations' in config || 'concerns' in config || 'recommendations' in config;
+  return 'description' in config || 'observations' in config || 'concerns' in config || 'recommendations' in config || 'equipmentList' in config;
 }
 
 export function isPropertyInfoConfig(config: AnySection): config is PropertyInfoConfig {
