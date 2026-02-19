@@ -53,7 +53,7 @@ const FIELD_NOTES_CONFIG = [
     title: 'Project Summary',
     icon: 'clipboard',
     table: 'project_summaries' as const,
-    formType: 'project_summaries',
+    formType: 'project_summary',
     sections: [
       { id: 'ps-1', stepKey: null, formStep: 1, title: 'General Info', fields: ['project_name', 'project_number', 'property_address', 'property_city', 'property_state', 'property_zip', 'weather', 'temperature', 'inspection_date', 'inspection_time', 'inspector_name', 'inspector_number', 'surrounding_properties'] },
       { id: 'ps-2', stepKey: null, formStep: 2, title: 'Unit Info', fields: ['acreage', 'number_sign_down', 'year_renovated', 'number_of_buildings', 'net_sq_ft', 'number_of_units', 'gsf', 'number_of_vacant_units', 'year_built', 'lease_type', 'recent_capital_improvements'] },
@@ -209,7 +209,7 @@ export function useFieldNotes(reportId: Ref<string>) {
 
   // Photo URL helpers
   function getPhotoUrl(path: string): string {
-    const { data } = supabase.storage.from('photos').getPublicUrl(path);
+    const { data } = supabase.storage.from('assessment-photos').getPublicUrl(path);
     return data.publicUrl;
   }
 

@@ -3,6 +3,7 @@ import { ref, toRef, computed } from 'vue';
 import { useTheme } from '@/composables/useTheme';
 import { useFieldNotes, type FieldPhoto, type SearchResult } from '@/composables/useFieldNotes';
 import DataRenderer from '@/components/DataRenderer.vue';
+import PhotoGalleryView from '@/components/PhotoGalleryView.vue';
 
 const props = defineProps<{
   reportId: string;
@@ -11,7 +12,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'toggle-collapse': [];
-  'view-photos': [photos: FieldPhoto[]];
 }>();
 
 const { theme } = useTheme();
@@ -39,6 +39,7 @@ const {
   prevSection,
   canGoNext,
   canGoPrev,
+  getPhotoUrl,
   getThumbnailUrl,
   allPhotos,
   searchQuery,
@@ -47,6 +48,10 @@ const {
 
 // Show search results dropdown when there's a query and results
 const hasSearchResults = computed(() => searchQuery.value.length >= 2 && searchResults.value.length > 0);
+
+// Photo gallery state
+const showGallery = ref(false);
+const galleryPhotos = ref<FieldPhoto[]>([]);
 
 
 function toggleCollapse() {
@@ -65,8 +70,18 @@ function getCategoryIcon(icon: string) {
   return icons[icon] || icons.building;
 }
 
+function openGallery(photos: FieldPhoto[]) {
+  galleryPhotos.value = photos;
+  showGallery.value = true;
+}
+
+function closeGallery() {
+  showGallery.value = false;
+  galleryPhotos.value = [];
+}
+
 function viewAllPhotos() {
-  emit('view-photos', allPhotos.value);
+  openGallery(allPhotos.value);
 }
 
 function clearSearch() {
@@ -375,7 +390,18 @@ function closeSearchResults() {
       </div>
 
       <!-- Content Area -->
-      <div class="flex-1 overflow-y-auto">
+      <div class="flex-1 overflow-hidden">
+        <!-- Photo Gallery View -->
+        <PhotoGalleryView
+          v-if="showGallery"
+          :photos="galleryPhotos"
+          :get-photo-url="getPhotoUrl"
+          :get-thumbnail-url="getThumbnailUrl"
+          @close="closeGallery"
+        />
+
+        <!-- Notes Content -->
+        <div v-else class="h-full overflow-y-auto">
         <!-- Loading State -->
         <div v-if="loading" class="flex flex-col items-center justify-center py-16 px-4">
           <div class="relative">
@@ -521,7 +547,7 @@ function closeSearchResults() {
                 :key="photo.id"
                 class="aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity ring-1"
                 :class="theme === 'dark' ? 'bg-zinc-800 ring-zinc-700' : 'bg-slate-200 ring-slate-300'"
-                @click="emit('view-photos', currentSection.photos)"
+                @click="openGallery(currentSection.photos)"
               >
                 <img
                   :src="getThumbnailUrl(photo)"
@@ -534,7 +560,7 @@ function closeSearchResults() {
                 v-if="currentSection.photos.length > 8"
                 class="aspect-square rounded-lg flex flex-col items-center justify-center text-sm font-bold cursor-pointer hover:opacity-80 transition-opacity"
                 :class="theme === 'dark' ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' : 'bg-slate-200 text-slate-500 hover:bg-slate-300'"
-                @click="emit('view-photos', currentSection.photos)"
+                @click="openGallery(currentSection.photos)"
               >
                 <span class="text-lg">+{{ currentSection.photos.length - 8 }}</span>
                 <span class="text-[10px] opacity-70">more</span>
@@ -572,11 +598,12 @@ function closeSearchResults() {
             This report doesn't have linked field assessment data yet.
           </p>
         </div>
+        </div>
       </div>
 
       <!-- Footer Navigation -->
       <div 
-        v-if="!loading && !error && hasData && !currentCategory?.comingSoon"
+        v-if="!loading && !error && hasData && !currentCategory?.comingSoon && !showGallery"
         class="flex-shrink-0 px-4 py-3 border-t"
         :class="theme === 'dark' ? 'border-zinc-800 bg-zinc-950' : 'border-slate-200 bg-white'"
       >

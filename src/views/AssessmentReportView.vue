@@ -281,11 +281,6 @@ function handlePrev() {
   prevStep();
 }
 
-function handleViewPhotos(photos: unknown[]) {
-  // TODO: Open photo gallery modal
-  console.log('View photos:', photos);
-}
-
 function handleKeydown(event: KeyboardEvent) {
   if ((event.ctrlKey || event.metaKey) && event.key === 's') {
     event.preventDefault();
@@ -651,7 +646,6 @@ const isChecklistSection = computed(() => {
         :report-id="reportId"
         :is-collapsed="isNotesPanelCollapsed"
         @toggle-collapse="isNotesPanelCollapsed = !isNotesPanelCollapsed"
-        @view-photos="handleViewPhotos"
       />
     </div>
   </div>
