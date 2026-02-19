@@ -2564,3 +2564,313 @@ export const alarmSystems = {
         }
     ]
 }
+
+//sec 10 ADDITIONAL CONSIDERATIONS
+
+// SEC 10.1 Natural Hazards
+
+export const naturalHazards = {
+    //description block
+    description: [
+        {
+            id:'seismic-zone',
+            type:'text',
+            label:'Seismic Zone',
+            placeholder:'Zone: ',
+        },
+        {
+            id:'flood-plain-designation',
+            type:'text',
+            label:'Flood Plain Designation',
+            placeholder:'X',
+        },
+        {
+            id:'flood-plain-source',
+            type:'textarea',
+            label:'Flood Plain Source',
+            rows: 2,
+            defaultValue: 'Federal Emergency Management Agency (FEMA), Flood Insurance Rate Map (FIRM) Panel No. XXXX dated XXX',
+            quickOptions: null,
+        },
+        {
+            id:'wind-zone',
+            type:'text',
+            label:'Wind Zone',
+            placeholder:'Wind Zone: III',
+        },
+        {
+            id:'hurricane-susceptible',
+            type:'boolean-select',
+            label:'Hurricane Susceptible Region',
+            options: [
+                { value: 'yes', label: 'Yes', text: 'The Subject Property is located in a Hurricane Susceptible Region.' },
+                { value: 'no', label: 'No', text: 'The Subject Property is not located in a Hurricane Susceptible Region.' },
+            ],
+        },
+    ],
+    //observations block
+    observations: [
+        {
+            id:'age-lastaction',
+            type:'textarea',
+            label:'Age / Last Action',
+            rows:3,
+            defaultValue:'No seismic or wind upgrades were noted or reported at the Subject Property. It is assumed that construction was completed in accordance with the codes applicable as of the date of construction.',
+            quickOptions: null,
+        }
+    ],
+    //concerns block
+    concerns: [
+        {
+            id:'seismic-concerns',
+            type: 'textarea',
+            label: 'Seismic Concerns',
+            rows: 4,
+            defaultValue: '',
+            quickOptions: [
+                {
+                    label: 'Not in elevated seismic zone',
+                    text: 'Properties located in Zones 3 or 4 are considered potentially vulnerable to significant impact from earthquake activity. The Subject Property is not located in one of these zones.',
+                },
+                {
+                    label: 'Located in elevated seismic zone',
+                    text: 'Properties located in Zones 3 or 4 are considered potentially vulnerable to significant impact from earthquake activity. The Subject Property is located in one of these zones of elevated risk of seismic activity.',
+                },
+            ],
+        },
+        {
+            id:'wind-or-hurricane-concerns',
+            type: 'textarea',
+            label: 'Wind or Hurricane Concerns',
+            rows: 4,
+            defaultValue: 'Properties located in high Wind Zones III or IV, a Special Wind Region or a Hurricane Susceptible Region are considered potentially more vulnerable to significant impact from wind and hurricanes (high wind, storm surge, etc).  The subject property is not located in any of these zones. Or The subject property is located in (note Zone or Region). ',
+            quickOptions: null,
+        },
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 5,
+            defaultValue: '',
+            placeholder: 'Or make site specific recommendations...',
+            quickOptions: [
+                {
+                    label: 'No further seismic action recommended',
+                    text: 'Given the seismic zone for the area including the Subject Property, no further action with regard to seismic risk is recommended at this time.',
+                },
+                {
+                    label: 'PML assessment retained',
+                    text: 'Given the seismic zone for the area including the Subject Property, NDDS was retained to conduct a Probable Maximum Loss (PML) assessment of the property. The PML assessment will be provided under separate cover.',
+                },
+                {
+                    label: 'PML assessment recommended',
+                    text: 'Given the seismic zone for the area including the Subject Property, NDDS recommends that a Probable Maximum Loss (PML) assessment of the property be conducted.',
+                },
+                {
+                    label: 'Wind/hurricane protection may be required',
+                    text: 'Based on the wind zone map reviewed, the subject property appears to be located in Zone, up to... Based on the wind zone map, the property is located within a high Wind Zones, a Special Wind Region, a Hurricane Susceptible Region. Therefore, wind/hurricane damage protection/insurance may be required.',
+                },
+                {
+                    label: 'Flood plain review included',
+                    text: 'Based on the flood map reviewed, a portion of the property is located within the 100-year flood plain. A current, site specific survey indicating the actual topographic elevations of the property, relative to the flood plain, in should be reviewed in conjunction with the site\'s architectural drawings indicating the elevation of the top of the finished building slabs, to determine if flood damage protection/insurance would be prudent. This review has been included in the Immediate Needs Table, but no cost has been assigned at this time.',
+                },
+            ],
+        }
+    ]
+}
+
+// SEC 10.2 Microbial Contamination (Mold)
+
+export const microbialContamination = {
+    //description block
+    description: [
+        {
+            id:'mold-description',
+            type:'textarea',
+            label:'Description',
+            rows:6,
+            defaultValue:'A visual screening for suspect mold was conducted. The screening was limited to observations in the areas walked and should not be considered a comprehensive survey of the property. No sampling was conducted. No assessment or assessment behind walls or in any other generally inaccessible areas was performed. Inquiries were made of the owner and/or property manager regarding any knowledge of past and current leaks at the property, any known mold issues, and any tenant complaints regarding health problems, musty odors or water leaks. When applicable, areas of reported or likely water leaks or water intrusion/penetration were inspected.',
+            quickOptions: null,
+        }
+    ],
+    //observations/comments/concerns block
+    observations: [
+        {
+            id:'mold-observations',
+            type:'textarea',
+            label:'Observations/Comments/Concerns',
+            rows:3,
+            defaultValue:'No significant indications of mold or water infiltration were noted by NDDS\'s assessor. No concerns relating to mold or water infiltration were reported to NDDS by property management or the tenants.',
+            quickOptions: null,
+        }
+    ],
+    //recommendations block
+    recommendations: [
+        {
+            id:'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 6,
+            defaultValue: '',
+            placeholder: 'Or make other site specific recommendation...',
+            quickOptions: [
+                {
+                    label: 'No concerns / no action recommended',
+                    text: 'No concerns relating to mold were identified during the assessment and no further action is recommended at this time.',
+                },
+                {
+                    label: 'No concerns / MMP recommended',
+                    text: 'No concerns relating to mold were identified during the assessment of the Subject Property. As a proactive, preventative measure, however, NDDS recommends that a Moisture Mitigation Program (MMP) be implemented at the Subject Property and has included costs for this in the Deferred Maintenance Table.',
+                },
+                {
+                    label: 'Minor amounts / routine maintenance',
+                    text: 'Minor amounts of mold were identified at the Subject Property. Consistent with USEPA, New York City Department of Health (NYCDOH) and National Multi Housing Council (NMHC) guidelines, property management should promptly identify and repair or remediate the source of the moisture infiltration/buildup supporting the mold growth. Any water damaged or mold impacted materials in those areas should be removed and replaced. Subsequent to addressing the moisture issue, the identified areas of mold should be properly cleaned and sanitized in accordance with EPA, NYCDOH and NMHC guidelines. Given the limited amount of area involved, this can be addressed as part of the routine maintenance of the property.',
+                },
+                {
+                    label: 'Moderate amounts / reserve schedule',
+                    text: 'Moderate amounts of mold were identified at the Subject Property. Consistent with USEPA, New York City Department of Health (NYCDOH) and National Multi Housing Council (NMHC) guidelines, property management should promptly identify and repair or remediate the source of the moisture infiltration/buildup supporting the mold growth. Any water damaged or mold impacted materials in those areas should be removed and replaced. Subsequent to addressing the moisture issue, the identified areas of mold should be properly cleaned and sanitized in accordance with EPA, NYCDOH and NMHC guidelines. NDDS anticipates a major overhaul of the building\'s water systems will be required during the reserve term and has included an allowance for this work in the Capital Replacement Reserve Schedule. Costs for some ongoing repairs and parts replacement for the HVAC system are also included in the table.',
+                },
+                {
+                    label: 'Significant amounts / industrial hygienist',
+                    text: 'Significant amounts of mold were identified at the Subject Property. Consistent with USEPA, New York City Department of Health (NYCDOH) and National Multi Housing Council (NMHC) guidelines, a certified industrial hygienist/environmental firm should be retained to properly remediate the identified areas of mold in accordance with EPA, NYCDOH and NMHC guidelines. NDDS anticipates a major overhaul of the building and the chiller/cooling tower systems will be required during the reserve term and has included an allowance for this work in the Capital Replacement Reserve Schedule. Costs for some ongoing repairs and parts replacement for the HVAC system are also included in the table.',
+                },
+                {
+                    label: 'Proactive MMP plan',
+                    text: 'This plan takes a proactive, preventative approach to reducing the potential for moisture-related damage and/or mold impact by ensuring the early identification and repair of potential problems.\n\nKey elements of the plan include:\n\n• Notification to tenants regarding the risks associated with moisture and mold, the actions they can take to mitigate these risks, and any corrective measures taken by management regarding moisture or mold.\n\n• Regularly scheduled and comprehensive inspections must be conducted by staff that has received appropriate training and all inspections must be documented. Staff should perform an inspection to monitor the property for signs of moisture, water damage or situations that may lead to conditions favorable for mold growth (e.g. faulty faucets, broken sprinkler heads at cast of turnover and when conducting other maintenance activities. Also be aware of situations such as carpet cleaning techniques, which may leave carpets too damp and at the risk of creating conditions favorable for mold growth. To the maximum extent possible ceiling tiles, apron wallboard, cardboard, dust liner, wood, carpet, paper, and other cellulose surfaces should be given careful attention during a visual inspection. Kitchens, bathrooms, appliances, and HVAC systems should also be scrutinized. All water intrusion and mold events must be responded to in a timely manner.\n\n• Leaky plumbing and leaks in the building envelope must be repaired as soon as possible. Watch for condensation and wet spots. Fix sources of moisture problems immediately. Clean and dry wet or damp spots within 48 hours.\n\n• Documented inspections of the HVAC system should be performed at least monthly and problems corrected as soon as possible. Improperly cooling HVAC systems, or improper use by the residents, can result in conditions of excessive humidity, which could lead to mold growth. Develop maintenance guidelines based on manufacturer\'s specifications for HVAC ventilation equipment (including appropriate settings, filter changes, and cleaning).\n\n• Prevent moisture due to condensation by increasing surface temperature or reducing the moisture level in air (humidity). To increase surface temperature, insulate or increase air circulation. To reduce the moisture level in air, repair leaks, increase ventilation (if outside air is cold and dry), or dehumidify (if outdoor air is warm and humid).\n\n• Maintain low indoor humidity, below 60% relative humidity (RH), ideally 30-50%, if possible.\n\n• Do not let foundations stay wet. Provide drainage and slope ground away from the foundation.',
+                },
+            ],
+        }
+    ]
+}
+
+// SEC 10.3 ADA Screening Checklist
+
+import type { ChecklistConfig } from '@/types/section'
+
+export const adaScreeningChecklist: ChecklistConfig = {
+    categories: [
+        {
+            id: 'history',
+            letter: 'A',
+            title: 'History',
+            questions: [
+                { id: 'a-1', text: 'Has an ADA survey previously been completed for the subject property.' },
+                { id: 'a-2', text: 'Have any ADA improvements been made to the subject property since original construction?' },
+                { id: 'a-3', text: 'Has building ownership/management reported any ADA complaints or litigation?' },
+            ],
+        },
+        {
+            id: 'parking',
+            letter: 'B',
+            title: 'Parking',
+            questions: [
+                { id: 'b-1', text: 'Does the required number of standard ADA-designated spaces appear to be provided?' },
+                { id: 'b-2', text: 'Does the required number of van-accessible designated spaces appear to be provided?' },
+                { id: 'b-3', text: 'Are accessible spaces part of the shortest accessible route to an accessible building entrance?' },
+                { id: 'b-4', text: 'Is a sign with the International Symbol of Accessibility at the head of each space?' },
+                { id: 'b-5', text: 'Does each accessible space have an adjacent access aisle?' },
+                { id: 'b-6', text: 'Do parking spaces and access aisles appear to be relatively level and without obstruction?' },
+            ],
+        },
+        {
+            id: 'exterior-route',
+            letter: 'C',
+            title: 'Exterior Accessible Route',
+            questions: [
+                { id: 'c-1', text: 'Is an accessible route present from public transportation stops and municipal sidewalks on the subject property?' },
+                { id: 'c-2', text: 'Are curb cut ramps present at transitions through curbs on an accessible route?' },
+                { id: 'c-3', text: 'Do the curb cut ramps appear to have the proper slope for all components?' },
+                { id: 'c-4', text: 'Do ramps on an accessible route appear to have a compliant slope?' },
+                { id: 'c-5', text: 'Do ramps on an accessible route appear to have a compliant length and width?' },
+                { id: 'c-6', text: 'Do ramps on an accessible route appear to have compliant end and intermediate landings?' },
+                { id: 'c-7', text: 'Do ramps on an accessible route appear to have compliant handrails?' },
+            ],
+        },
+        {
+            id: 'building-entrances',
+            letter: 'D',
+            title: 'Building Entrances',
+            questions: [
+                { id: 'd-1', text: 'Do a sufficient number of accessible entrances appear to be provided?' },
+                { id: 'd-2', text: 'If the main entrance is not accessible, is an alternate accessible entrance provided?' },
+                { id: 'd-3', text: 'Is signage provided indicating the location of alternate accessible entrances?' },
+                { id: 'd-4', text: 'Do doors at accessible entrances appear to have compliant clear floor area on each side?' },
+                { id: 'd-5', text: 'Do doors at accessible entrances appear to have compliant hardware?' },
+                { id: 'd-6', text: 'Do doors at accessible entrances appear to have a compliant clear opening width?' },
+                { id: 'd-7', text: 'Do pairs of accessible entrance doors in series appear to have the minimum clear space between them?' },
+                { id: 'd-8', text: 'Do thresholds at accessible entrances appear to have a compliant height?' },
+            ],
+        },
+        {
+            id: 'interior-routes',
+            letter: 'E',
+            title: 'Interior Accessible Routes and Amenities',
+            questions: [
+                { id: 'e-1', text: 'Does an accessible route appear to connect with all public areas inside the building?' },
+                { id: 'e-2', text: 'Do accessible routes appear free of obstructions and/or protruding objects?' },
+                { id: 'e-3', text: 'Do ramps on accessible routes appear to have a compliant slope?' },
+                { id: 'e-4', text: 'Do ramps on accessible routes appear to have a compliant length and width?' },
+                { id: 'e-5', text: 'Do ramps on accessible routes appear to have compliant end and intermediate landings?' },
+                { id: 'e-6', text: 'Do ramps on accessible routes appear to have compliant handrails?' },
+                { id: 'e-7', text: 'Are adjoining public areas and areas of egress identified with accessible signage?' },
+                { id: 'e-8', text: 'Do public transaction areas have an accessible, lowered counter section?' },
+                { id: 'e-9', text: 'Do public telephones appear mounted with an accessible height and location?' },
+                { id: 'e-10', text: 'Are publicly-accessible swimming pools equipped with an entrance lift?' },
+            ],
+        },
+        {
+            id: 'interior-doors',
+            letter: 'F',
+            title: 'Interior Doors',
+            questions: [
+                { id: 'f-1', text: 'Do doors at interior accessible routes appear to have compliant clear floor area on each side?' },
+                { id: 'f-2', text: 'Do doors at interior accessible routes appear to have compliant hardware?' },
+                { id: 'f-3', text: 'Do doors at interior accessible routes appear to have compliant opening force?' },
+                { id: 'f-4', text: 'Do doors at interior accessible routes appear to have a compliant clear opening width?' },
+            ],
+        },
+        {
+            id: 'elevators',
+            letter: 'G',
+            title: 'Elevators',
+            questions: [
+                { id: 'g-1', text: 'Are hallway call buttons configured with the "UP" button above the "DOWN" button?' },
+                { id: 'g-2', text: 'Is accessible floor identification signage present on the hoistway sidewalls?' },
+                { id: 'g-3', text: 'Do the elevators have audible and visual arrival indicators at the entrances?' },
+                { id: 'g-4', text: 'Do the elevator hoistway and car interior appear to have a minimum compliant clear floor area?' },
+                { id: 'g-5', text: 'Do the elevator car doors have automatic re-opening devices to prevent closure on obstructions?' },
+                { id: 'g-6', text: 'Do elevator car control buttons appear to be mounted at a compliant height?' },
+                { id: 'g-7', text: 'Are tactile and Braille characters mounted to the left of each elevator car control button?' },
+                { id: 'g-8', text: 'Are audible and visual floor position indicators provided in the elevator car?' },
+                { id: 'g-9', text: 'Is the emergency call system at the base of the control panel and not require voice communication?' },
+            ],
+        },
+        {
+            id: 'toilet-rooms',
+            letter: 'H',
+            title: 'Toilet Rooms',
+            questions: [
+                { id: 'h-1', text: 'Do publicly-accessible toilet rooms appear to have a minimum compliant floor area?' },
+                { id: 'h-2', text: 'Does the lavatory appear to be mounted at a compliant height and with compliant knee area?' },
+                { id: 'h-3', text: 'Does the lavatory faucet have compliant handles?' },
+                { id: 'h-4', text: 'Is the plumbing piping under lavatories configured to protect against contact?' },
+                { id: 'h-5', text: 'Are grab bars provided at compliant locations around the toilet?' },
+                { id: 'h-6', text: 'Do toilet stall doors appear to provide the minimum compliant clear width?' },
+                { id: 'h-7', text: 'Do toilet stalls appear to provide the minimum compliant clear floor area?' },
+                { id: 'h-8', text: 'Do urinals appear to be mounted at a compliant height and with compliant approach width?' },
+                { id: 'h-9', text: 'Do accessories and mirrors appear to be mounted at a compliant height?' },
+            ],
+        },
+        {
+            id: 'hospitality-guestrooms',
+            letter: 'L',
+            title: 'Hospitality Guestrooms',
+            questions: [
+                { id: 'l-1', text: 'Does property management report the minimum required accessible guestrooms?' },
+            ],
+        },
+    ],
+}

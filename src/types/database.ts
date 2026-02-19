@@ -218,6 +218,7 @@ export interface ReportContent {
     section_7_mechanical: SectionData;
     section_8_interior: SectionData;
     section_9_fire_protection: SectionData;
+    section_10_additional: SectionData;
     current_step: number;
     completed_steps: number[];
     last_modified: string;
@@ -234,6 +235,7 @@ export interface ReportContent {
     section_7_mechanical?: SectionData;
     section_8_interior?: SectionData;
     section_9_fire_protection?: SectionData;
+    section_10_additional?: SectionData;
     current_step?: number;
     completed_steps?: number[];
     last_modified?: string;
@@ -250,6 +252,7 @@ export interface ReportContent {
     section_7_mechanical?: SectionData;
     section_8_interior?: SectionData;
     section_9_fire_protection?: SectionData;
+    section_10_additional?: SectionData;
     current_step?: number;
     completed_steps?: number[];
     last_modified?: string;

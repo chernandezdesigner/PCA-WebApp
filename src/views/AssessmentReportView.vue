@@ -5,9 +5,10 @@ import SidebarNavigation from '@/components/SidebarNavigation.vue';
 import AssessorNotesPanel from '@/components/AssessorNotesPanel.vue';
 import DynamicReportSection from '@/components/DynamicReportSection.vue';
 import PropertyInfoSection from '@/components/PropertyInfoSection.vue';
+import AdaChecklistSection from '@/components/AdaChecklistSection.vue';
 import { useWebReportForm } from '@/composables/useWebReportForm';
 import { useTheme } from '@/composables/useTheme';
-import type { SectionConfig, PropertyInfoConfig, BlockType, FormData, AnySection } from '@/types/section';
+import type { SectionConfig, PropertyInfoConfig, ChecklistConfig, BlockType, FormData, AnySection } from '@/types/section';
 import type { NavSection, NavSubsection } from '@/components/SidebarNavigation.vue';
 
 // Import Section 1-4 configs (group2 - property info style)
@@ -46,6 +47,9 @@ import {
   tenantSpaces,
   sprinklersAndStandpipes,
   alarmSystems,
+  naturalHazards,
+  microbialContamination,
+  adaScreeningChecklist,
 } from '@/data/templates/group1';
 
 const route = useRoute();
@@ -56,7 +60,7 @@ const reportId = computed(() => (route.params.id as string) || 'demo');
 const isDemoMode = computed(() => reportId.value === 'demo');
 
 // Section type indicator
-type SectionType = 'property-info' | 'report';
+type SectionType = 'property-info' | 'report' | 'checklist';
 
 // Map step numbers to section configs
 // Total: 29 steps (12 from group2 + 17 from group1)
@@ -105,6 +109,10 @@ const allSectionConfigs: Record<number, {
   // Section 9: Fire Protection (2 steps)
   29: { id: '9.1', title: 'Sprinklers', config: sprinklersAndStandpipes as SectionConfig, type: 'report' },
   30: { id: '9.2', title: 'Alarms', config: alarmSystems as SectionConfig, type: 'report' },
+  // Section 10: Additional Considerations (3 steps)
+  31: { id: '10.1', title: 'Natural Hazards', config: naturalHazards as SectionConfig, type: 'report' },
+  32: { id: '10.2', title: 'Microbial Contamination', config: microbialContamination as SectionConfig, type: 'report' },
+  33: { id: '10.3', title: 'ADA Screening', config: adaScreeningChecklist as ChecklistConfig, type: 'checklist' },
 };
 
 // Navigation structure for sidebar
@@ -193,9 +201,18 @@ const navSections: NavSection[] = [
       { id: '9.2', title: '9.2 Alarms', step: 30 },
     ],
   },
+  {
+    id: 'section-10',
+    title: 'Section 10: Additional',
+    subsections: [
+      { id: '10.1', title: '10.1 Natural Hazards', step: 31 },
+      { id: '10.2', title: '10.2 Mold', step: 32 },
+      { id: '10.3', title: '10.3 ADA Screening', step: 33 },
+    ],
+  },
 ];
 
-const TOTAL_STEPS = 30;
+const TOTAL_STEPS = 33;
 
 const {
   currentStep,
@@ -326,6 +343,10 @@ const completionPercentage = computed(() => {
 // Determine if current section is property-info or report style
 const isPropertyInfoSection = computed(() => {
   return currentConfig.value?.type === 'property-info';
+});
+
+const isChecklistSection = computed(() => {
+  return currentConfig.value?.type === 'checklist';
 });
 </script>
 
@@ -544,9 +565,17 @@ const isPropertyInfoSection = computed(() => {
             @update:model-value="handlePropertyInfoUpdate"
           />
 
+          <!-- Checklist Section (10.3 ADA) -->
+          <AdaChecklistSection
+            v-else-if="currentConfig && isChecklistSection"
+            :config="(currentConfig.config as ChecklistConfig)"
+            :model-value="(currentStepData as FormData) || {}"
+            @update:model-value="handlePropertyInfoUpdate"
+          />
+
           <!-- Report Section (Sections 5-9) -->
           <DynamicReportSection
-            v-else-if="currentConfig && !isPropertyInfoSection"
+            v-else-if="currentConfig"
             :config="(currentConfig.config as SectionConfig)"
             :model-value="(currentStepData as Record<BlockType, FormData>) || {}"
             @update:model-value="handleReportSectionUpdate"

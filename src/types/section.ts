@@ -142,8 +142,25 @@ export interface PropertyInfoConfig {
   interviewTemplate?: InterviewTemplate;
 }
 
-// Generic section that can be either type
-export type AnySection = SectionConfig | PropertyInfoConfig;
+// Checklist config for ADA-style screening sections
+export interface ChecklistQuestion {
+  id: string;
+  text: string;
+}
+
+export interface ChecklistCategory {
+  id: string;
+  letter: string;
+  title: string;
+  questions: ChecklistQuestion[];
+}
+
+export interface ChecklistConfig {
+  categories: ChecklistCategory[];
+}
+
+// Generic section that can be any type
+export type AnySection = SectionConfig | PropertyInfoConfig | ChecklistConfig;
 
 // Helper to check section type
 export function isSectionConfig(config: AnySection): config is SectionConfig {
@@ -152,4 +169,8 @@ export function isSectionConfig(config: AnySection): config is SectionConfig {
 
 export function isPropertyInfoConfig(config: AnySection): config is PropertyInfoConfig {
   return 'fields' in config || 'interviewBlocks' in config;
+}
+
+export function isChecklistConfig(config: AnySection): config is ChecklistConfig {
+  return 'categories' in config;
 }
