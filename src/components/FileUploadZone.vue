@@ -51,19 +51,10 @@ async function handleFiles(fileList: FileList | File[]) {
   const maxBytes = props.maxSizeMb * 1024 * 1024;
 
   for (const file of Array.from(fileList)) {
-    const typeMatch = acceptTypes.some(t => file.type === t || file.type.startsWith(t.replace('/*', '/')));
-    const sizeOk = file.size <= maxBytes;
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/daf524a2-2b5c-47cb-bef4-5cc7decbfe33',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FileUploadZone.vue:handleFiles',message:'File validation',data:{fileName:file.name,fileType:file.type,fileSize:file.size,fileSizeMb:(file.size/(1024*1024)).toFixed(2),maxBytes,maxSizeMb:props.maxSizeMb,acceptTypes,typeMatch,sizeOk},timestamp:Date.now(),hypothesisId:'H1-H4'})}).catch(()=>{});
-    // #endregion
-    if (!typeMatch) continue;
-    if (!sizeOk) continue;
+    if (!acceptTypes.some(t => file.type === t || file.type.startsWith(t.replace('/*', '/')))) continue;
+    if (file.size > maxBytes) continue;
     validFiles.push(file);
   }
-
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/daf524a2-2b5c-47cb-bef4-5cc7decbfe33',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FileUploadZone.vue:handleFiles-result',message:'Validation result',data:{totalFiles:Array.from(fileList).length,validCount:validFiles.length},timestamp:Date.now(),hypothesisId:'H1-H4'})}).catch(()=>{});
-  // #endregion
 
   if (validFiles.length === 0) return;
 

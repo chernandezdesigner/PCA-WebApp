@@ -26,12 +26,6 @@ export function useFileUpload() {
   const uploading = ref(false);
   const activeUploads = ref<UploadProgress[]>([]);
 
-  // #region agent log
-  supabase.storage.listBuckets().then(({data, error}) => {
-    fetch('http://127.0.0.1:7242/ingest/daf524a2-2b5c-47cb-bef4-5cc7decbfe33',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useFileUpload.ts:init',message:'Available buckets',data:{buckets:data?.map(b=>({name:b.name,public:b.public})),error:error?.message},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
-  });
-  // #endregion
-
   async function uploadFile(
     file: File,
     bucket: string,
@@ -51,20 +45,12 @@ export function useFileUpload() {
     uploading.value = true;
 
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/daf524a2-2b5c-47cb-bef4-5cc7decbfe33',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useFileUpload.ts:pre-upload',message:'Upload attempt',data:{bucket,storagePath,fileName:file.name,fileType:file.type,fileSize:file.size,fileConstructor:file.constructor.name},timestamp:Date.now(),hypothesisId:'H1-H3-H5'})}).catch(()=>{});
-      // #endregion
-
-      const { error, data: uploadData } = await supabase.storage
+      const { error } = await supabase.storage
         .from(bucket)
         .upload(storagePath, file, {
           contentType: file.type,
           upsert: false,
         });
-
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/daf524a2-2b5c-47cb-bef4-5cc7decbfe33',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useFileUpload.ts:post-upload',message:'Upload result',data:{success:!error,errorMessage:error?.message,errorName:(error as any)?.name,errorStatus:(error as any)?.statusCode || (error as any)?.status,errorFull:error ? JSON.parse(JSON.stringify(error)) : null,uploadData},timestamp:Date.now(),hypothesisId:'H1-H2-H4'})}).catch(()=>{});
-      // #endregion
 
       if (error) {
         progress.status = 'failed';
