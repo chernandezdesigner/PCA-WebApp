@@ -59,6 +59,8 @@ const STEP_TO_SECTION: Record<number, keyof ReportContentRow> = {
   31: 'section_10_additional',
   32: 'section_10_additional',
   33: 'section_10_additional',
+  // Appendices (step 34)
+  34: 'appendices',
 };
 
 // Map step numbers to their key within the section
@@ -73,6 +75,7 @@ const STEP_TO_KEY: Record<number, string> = {
   27: 'step_27', 28: 'step_28',
   29: 'step_29', 30: 'step_30',
   31: 'step_31', 32: 'step_32', 33: 'step_33',
+  34: 'step_34',
 };
 
 export function useWebReportForm(options: WebReportFormOptions) {
@@ -324,6 +327,7 @@ export function useWebReportForm(options: WebReportFormOptions) {
           'section_8_interior',
           'section_9_fire_protection',
           'section_10_additional',
+          'appendices',
         ] as const;
 
         for (const sectionKey of allSections) {

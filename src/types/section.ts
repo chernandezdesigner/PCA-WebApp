@@ -159,8 +159,13 @@ export interface ChecklistConfig {
   categories: ChecklistCategory[];
 }
 
+// Appendix config for file upload sections (step 34)
+export interface AppendixConfig {
+  appendixType: 'appendix';
+}
+
 // Generic section that can be any type
-export type AnySection = SectionConfig | PropertyInfoConfig | ChecklistConfig;
+export type AnySection = SectionConfig | PropertyInfoConfig | ChecklistConfig | AppendixConfig;
 
 // Helper to check section type
 export function isSectionConfig(config: AnySection): config is SectionConfig {
@@ -173,4 +178,8 @@ export function isPropertyInfoConfig(config: AnySection): config is PropertyInfo
 
 export function isChecklistConfig(config: AnySection): config is ChecklistConfig {
   return 'categories' in config;
+}
+
+export function isAppendixConfig(config: AnySection): config is AppendixConfig {
+  return 'appendixType' in config;
 }

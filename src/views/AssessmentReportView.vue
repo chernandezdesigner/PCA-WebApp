@@ -6,9 +6,11 @@ import AssessorNotesPanel from '@/components/AssessorNotesPanel.vue';
 import DynamicReportSection from '@/components/DynamicReportSection.vue';
 import PropertyInfoSection from '@/components/PropertyInfoSection.vue';
 import AdaChecklistSection from '@/components/AdaChecklistSection.vue';
+import AppendixSection from '@/components/AppendixSection.vue';
 import { useWebReportForm } from '@/composables/useWebReportForm';
 import { useTheme } from '@/composables/useTheme';
-import type { SectionConfig, PropertyInfoConfig, ChecklistConfig, BlockType, FormData, AnySection } from '@/types/section';
+import { useAuthStore } from '@/stores/authStore';
+import type { SectionConfig, PropertyInfoConfig, ChecklistConfig, AppendixConfig, BlockType, FormData, AnySection } from '@/types/section';
 import type { NavSection, NavSubsection } from '@/components/SidebarNavigation.vue';
 
 // Import Section 1-4 configs (group2 - property info style)
@@ -58,9 +60,11 @@ const { theme, toggleTheme } = useTheme();
 
 const reportId = computed(() => (route.params.id as string) || 'demo');
 const isDemoMode = computed(() => reportId.value === 'demo');
+const authStore = useAuthStore();
+const userId = computed(() => authStore.user?.id || '');
 
 // Section type indicator
-type SectionType = 'property-info' | 'report' | 'checklist';
+type SectionType = 'property-info' | 'report' | 'checklist' | 'appendix';
 
 // Map step numbers to section configs
 // Total: 29 steps (12 from group2 + 17 from group1)
@@ -113,6 +117,8 @@ const allSectionConfigs: Record<number, {
   31: { id: '10.1', title: 'Natural Hazards', config: naturalHazards as SectionConfig, type: 'report' },
   32: { id: '10.2', title: 'Microbial Contamination', config: microbialContamination as SectionConfig, type: 'report' },
   33: { id: '10.3', title: 'ADA Screening', config: adaScreeningChecklist as ChecklistConfig, type: 'checklist' },
+  // Appendices (1 step)
+  34: { id: 'APP', title: 'Appendices', config: { appendixType: 'appendix' } as AppendixConfig, type: 'appendix' },
 };
 
 // Navigation structure for sidebar
@@ -210,9 +216,16 @@ const navSections: NavSection[] = [
       { id: '10.3', title: '10.3 ADA Screening', step: 33 },
     ],
   },
+  {
+    id: 'appendices',
+    title: 'Appendices',
+    subsections: [
+      { id: 'APP', title: 'Appendices A–E', step: 34 },
+    ],
+  },
 ];
 
-const TOTAL_STEPS = 33;
+const TOTAL_STEPS = 34;
 
 const {
   currentStep,
@@ -342,6 +355,10 @@ const isPropertyInfoSection = computed(() => {
 
 const isChecklistSection = computed(() => {
   return currentConfig.value?.type === 'checklist';
+});
+
+const isAppendixSection = computed(() => {
+  return currentConfig.value?.type === 'appendix';
 });
 </script>
 
@@ -565,6 +582,15 @@ const isChecklistSection = computed(() => {
             v-else-if="currentConfig && isChecklistSection"
             :config="(currentConfig.config as ChecklistConfig)"
             :model-value="(currentStepData as FormData) || {}"
+            @update:model-value="handlePropertyInfoUpdate"
+          />
+
+          <!-- Appendix Section (Step 34) -->
+          <AppendixSection
+            v-else-if="currentConfig && isAppendixSection"
+            :model-value="(currentStepData as Record<string, unknown>) || {}"
+            :report-id="reportId"
+            :user-id="userId"
             @update:model-value="handlePropertyInfoUpdate"
           />
 
