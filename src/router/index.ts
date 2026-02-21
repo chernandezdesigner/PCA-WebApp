@@ -4,6 +4,7 @@ import LoginView from '@/views/LoginView.vue';
 import DashboardView from '@/views/DashboardView.vue';
 import HomeView from '@/views/HomeView.vue';
 import AssessmentReportView from '@/views/AssessmentReportView.vue';
+import PdfPreviewView from '@/views/PdfPreviewView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +46,18 @@ const router = createRouter({
       path: '/demo/report',
       name: 'report-demo',
       component: AssessmentReportView,
+      meta: { requiresAuth: false },
+    },
+    {
+      path: '/report/:id/pdf-preview',
+      name: 'pdf-preview',
+      component: PdfPreviewView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/demo/pdf-preview',
+      name: 'pdf-preview-demo',
+      component: PdfPreviewView,
       meta: { requiresAuth: false },
     },
     {

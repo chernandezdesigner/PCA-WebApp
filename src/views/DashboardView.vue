@@ -5,6 +5,9 @@ import { useTheme } from '@/composables/useTheme';
 import { useReportCreation } from '@/composables/useReportCreation';
 import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/services/supabase';
+import { generateReportPdf, downloadPdf } from '@/services/pdf/pdfGenerationService';
+import { postProcessPdf, triggerDownload } from '@/services/pdf/pdfPostProcessor';
+import type { ReportMeta } from '@/services/pdf/reportTemplate';
 import type { ReportStatus } from '@/types/database';
 
 const router = useRouter();
@@ -310,14 +313,66 @@ function handleViewReport(reportId: string) {
   router.push({ name: 'report-editor', params: { id: reportId } });
 }
 
-function handleExportPdf(reportId: string) {
-  console.log('Export PDF for report:', reportId);
-  // TODO: Implement PDF export
+const exportingPdf = ref<string | null>(null);
+const downloadingPdf = ref<string | null>(null);
+const pdfError = ref<string | null>(null);
+
+async function handleExportPdf(reportId: string) {
+  exportingPdf.value = reportId;
+  pdfError.value = null;
+
+  try {
+    const meta: ReportMeta = {
+      projectNumber: '',
+      clientName: '',
+      clientAddress: '',
+      clientCityStateZip: '',
+      dateIssued: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      preparedBy: '',
+      preparedByTitle: 'Project Manager',
+      reviewedBy: '',
+      reviewedByTitle: 'Assessments Director',
+    };
+
+    const { pdfUrl } = await generateReportPdf(reportId, meta);
+
+    const finalPdfBytes = await postProcessPdf(pdfUrl, {
+      projectNumber: meta.projectNumber,
+    });
+
+    triggerDownload(finalPdfBytes, `PCA-Report-${reportId}.pdf`);
+
+    await supabase
+      .from('reports')
+      .update({ status: 'exported' })
+      .eq('id', reportId);
+
+    await fetchReports();
+  } catch (err) {
+    console.error('PDF export error:', err);
+    pdfError.value = err instanceof Error ? err.message : 'PDF export failed';
+    alert(`PDF Export Error: ${pdfError.value}`);
+  } finally {
+    exportingPdf.value = null;
+  }
 }
 
-function handleDownloadPdf(reportId: string, storagePath: string | null) {
-  console.log('Download PDF:', reportId, storagePath);
-  // TODO: Implement PDF download
+async function handleDownloadPdf(reportId: string, storagePath: string | null) {
+  if (!storagePath) {
+    alert('No PDF has been generated yet. Use Export PDF first.');
+    return;
+  }
+
+  downloadingPdf.value = reportId;
+  try {
+    const url = await downloadPdf(storagePath);
+    window.open(url, '_blank');
+  } catch (err) {
+    console.error('PDF download error:', err);
+    alert(err instanceof Error ? err.message : 'Download failed');
+  } finally {
+    downloadingPdf.value = null;
+  }
 }
 
 async function handleLogout() {
@@ -723,12 +778,17 @@ onMounted(() => {
                     </button>
                     <button
                       @click="handleExportPdf(report.id)"
-                      class="px-3 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1.5"
+                      :disabled="exportingPdf === report.id"
+                      class="px-3 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait"
                     >
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg v-if="exportingPdf === report.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      Export PDF
+                      {{ exportingPdf === report.id ? 'Exporting...' : 'Export PDF' }}
                     </button>
                   </template>
 
@@ -745,12 +805,17 @@ onMounted(() => {
                     </button>
                     <button
                       @click="handleDownloadPdf(report.id, report.pdf_storage_path)"
-                      class="px-3 py-2 text-sm font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors flex items-center gap-1.5"
+                      :disabled="downloadingPdf === report.id"
+                      class="px-3 py-2 text-sm font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait"
                     >
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg v-if="downloadingPdf === report.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                       </svg>
-                      Download PDF
+                      {{ downloadingPdf === report.id ? 'Downloading...' : 'Download PDF' }}
                     </button>
                   </template>
                 </div>
