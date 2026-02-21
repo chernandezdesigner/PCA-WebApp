@@ -325,6 +325,7 @@ async function handleExportPdf(reportId: string) {
     const meta: ReportMeta = {
       projectNumber: '',
       clientName: '',
+      clientContactName: '',
       clientAddress: '',
       clientCityStateZip: '',
       dateIssued: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),

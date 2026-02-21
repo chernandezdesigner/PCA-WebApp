@@ -15,12 +15,13 @@ const error = ref<string | null>(null);
 const demoMeta: ReportMeta = {
   projectNumber: '25DEMO01',
   clientName: 'Demo Client LLC',
+  clientContactName: 'Jane Smith',
   clientAddress: '123 Main Street',
   clientCityStateZip: 'Orlando, FL 32801',
   dateIssued: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
   preparedBy: 'Demo Assessor',
   preparedByTitle: 'Project Manager',
-  reviewedBy: 'Demo Reviewer',
+  reviewedBy: 'Ronnie Long',
   reviewedByTitle: 'Assessments Director',
 };
 

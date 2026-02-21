@@ -30,6 +30,7 @@ import {
 export interface ReportMeta {
   projectNumber: string;
   clientName: string;
+  clientContactName: string;
   clientAddress: string;
   clientCityStateZip: string;
   dateIssued: string;
@@ -327,24 +328,21 @@ export function assembleReportHtml(
 
     @page {
       size: letter;
-      margin: 0.75in 0.75in 1in 0.75in;
-
-      @bottom-center {
-        font-family: 'Calibri', Arial, Helvetica, sans-serif;
-        font-size: 9pt;
-        color: #0C306C;
-      }
+      margin: 0;
     }
 
-    @page cover { margin: 0; @bottom-center { content: none; } }
-    @page toc { margin: 1in 0.75in; @bottom-center { content: none; } }
+    @page cover { margin: 0; }
+    @page toc { margin: 0; }
 
     @page content {
+      margin: 0;
+      margin-bottom: 0.6in;
       @bottom-left {
         content: "PROPERTY CONDITION ASSESSMENT";
         font-family: 'Calibri', Arial, Helvetica, sans-serif;
         font-size: 9pt;
         color: #0C306C;
+        margin-left: 0.5in;
       }
       @bottom-center {
         content: counter(page);
@@ -357,7 +355,18 @@ export function assembleReportHtml(
         font-family: 'Calibri', Arial, Helvetica, sans-serif;
         font-size: 9pt;
         color: #0C306C;
+        margin-right: 0.5in;
       }
+    }
+
+    .content-wrapper {
+      padding: 0.5in;
+      padding-bottom: 0.25in;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 0 auto;
+      page: content;
+      margin-bottom: 0;
     }
 
     /* ---- Cover ---- */
@@ -396,7 +405,7 @@ export function assembleReportHtml(
     .cover-footer a { color: #0C306C; text-decoration: none; }
 
     /* ---- TOC ---- */
-    .toc-page { page: toc; page-break-after: always; }
+    .toc-page { page: toc; page-break-after: always; padding: 0.75in; }
     .toc-title { text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 20px; color: #0C306C; }
     .toc-line { display: flex; width: 100%; margin: 3px 0; align-items: baseline; }
     .toc-link {
@@ -455,19 +464,46 @@ export function assembleReportHtml(
       font-size: 11pt;
     }
     .kv-table td {
-      padding: 4px 8px;
+      padding: 3px 6px;
       vertical-align: top;
-      border: 1px solid #ccc;
+      border: 1px solid #000;
     }
     .kv-table .kv-label {
-      width: 200px;
+      width: 190px;
       font-weight: bold;
       white-space: nowrap;
+      font-size: 10pt;
     }
-    .kv-table .kv-source {
-      width: 140px;
-      font-style: italic;
-      color: #555;
+
+    /* 4-column property details table */
+    .prop-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 11pt;
+    }
+    .prop-table td {
+      padding: 3px 6px;
+      vertical-align: top;
+      border: 1px solid #000;
+    }
+    .prop-table .prop-label {
+      width: 190px;
+      font-weight: bold;
+      font-size: 10pt;
+    }
+    .prop-table .prop-value {
+      /* flexible width */
+    }
+    .prop-table .prop-source-label {
+      width: 55px;
+      font-size: 10pt;
+      text-align: right;
+    }
+    .prop-table .prop-source-value {
+      width: 110px;
+      font-size: 10pt;
+      color: #c00000;
     }
 
     /* ---- D/O/C/R tables (sections 5-10) ---- */
@@ -512,11 +548,55 @@ export function assembleReportHtml(
     .placeholder { color: #999; font-style: italic; }
 
     /* ---- Letter page ---- */
-    .letter-page { page: content; page-break-after: always; }
-    .letter-page p { text-align: left; margin: 8px 0; }
-
-    /* Section separator for major sections */
-    .section-break { page-break-before: always; }
+    .letter-page {
+      page: content;
+      page-break-after: always;
+      padding: 0.5in 0.65in;
+      font-size: 11pt;
+      position: relative;
+      height: 11in;
+      box-sizing: border-box;
+    }
+    .letter-page p { text-align: left; margin: 6px 0; }
+    .letter-date { color: #c00000; margin-bottom: 16px; }
+    .letter-client-block { color: #c00000; margin-bottom: 16px; line-height: 1.4; }
+    .letter-re { margin-bottom: 16px; }
+    .letter-re .re-label { color: #c00000; font-weight: bold; }
+    .letter-re .re-indent { padding-left: 40px; color: #c00000; }
+    .letter-salutation { margin-bottom: 12px; }
+    .letter-body p { text-align: justify; margin: 10px 0; }
+    .letter-sincerely { margin-top: 20px; }
+    .letter-signature-area { height: 50px; }
+    .letter-signer { margin-bottom: 0; }
+    .letter-bottom-section {
+      position: absolute;
+      bottom: 0.5in;
+      left: 0.65in;
+      right: 0.65in;
+    }
+    .letter-prep-review-header {
+      display: flex;
+      justify-content: flex-start;
+      gap: 120px;
+      margin-bottom: 24px;
+      font-size: 11pt;
+    }
+    .letter-ndds-footer {
+      text-align: center;
+      font-style: italic;
+      font-size: 10pt;
+      margin-bottom: 40px;
+      line-height: 1.4;
+    }
+    .letter-ndds-footer a { color: inherit; text-decoration: none; }
+    .letter-names-row {
+      display: flex;
+      justify-content: flex-start;
+      gap: 120px;
+      font-size: 11pt;
+    }
+    .letter-names-row .name { color: #c00000; }
+    .letter-names-row .title { color: #c00000; }
 
     /* ADA Checklist */
     .ada-table {
@@ -588,43 +668,62 @@ export function assembleReportHtml(
 <!-- TRANSMITTAL LETTER                                               -->
 <!-- ================================================================ -->
 <div class="letter-page">
-  <p style="text-align: right;">National Due Diligence Services, a Division of American Surveying and Mapping, Inc.<br>
-  221 Circle Drive, Maitland, Florida 32751<br>
-  www.NationalDueDiligenceServices.com</p>
+  <p class="letter-date">${dateIssued}</p>
 
-  <p>${dateIssued}</p>
+  <div class="letter-client-block">
+    ${escapeHtml(meta.clientContactName || 'Client Contact')}<br>
+    <strong>${clientName}</strong><br>
+    ${escapeHtml(meta.clientAddress || 'Address')}<br>
+    ${escapeHtml(meta.clientCityStateZip || 'City, State Zip Code')}
+  </div>
 
-  <p>${clientName}<br>
-  ${escapeHtml(meta.clientAddress || '')}<br>
-  ${escapeHtml(meta.clientCityStateZip || '')}</p>
+  <div class="letter-re">
+    <span class="re-label">RE:</span>
+    <span style="padding-left: 16px; color: #c00000;">${propertyName}</span><br>
+    <div class="re-indent">${propertyAddress}</div>
+    <div class="re-indent">${cityStateZip}</div>
+    <div class="re-indent">NDDS Project #${projectNum}</div>
+  </div>
 
-  <p>RE: &nbsp;&nbsp;${propertyName}<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${propertyAddress}<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${cityStateZip}<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NDDS Project #${projectNum}</p>
+  <p class="letter-salutation">Dear Mr., Mrs., Ms. ${escapeHtml(meta.clientContactName || 'Client Contact Name')},</p>
 
-  <p>Dear Sir/Madam,</p>
+  <div class="letter-body">
+    <p>National Due Diligence Services, a division of American Surveying and Mapping, Inc. (ASM) has completed a Property Condition Assessment (PCA) of the above referenced property. The PCA was conducted in accordance with the ASTM International (ASTM) Standard Guide for Property Condition Assessments: <u>Baseline Property Condition Assessment Process E 2018 24 (the Standard)</u>, the applicable engagement letter with <strong>${clientName}</strong> <strong>(Client)</strong> dated <span style="color: #c00000;">Month Day, 2025</span> and generally accepted industry standards.</p>
 
-  <p>National Due Diligence Services, a division of American Surveying and Mapping, Inc. (ASM) has completed a Property Condition Assessment (PCA) of the above referenced property. The PCA was conducted in accordance with the ASTM International (ASTM) Standard Guide for Property Condition Assessments: Baseline Property Condition Assessment Process E 2018-24 (the Standard), the applicable engagement letter with ${clientName} (Client) and generally accepted industry standards.</p>
+    <p>This report was prepared solely for the use of Client and any party specifically referenced in Section 2.5 User Reliance. No other party shall use or rely on this <u>report</u> or the findings herein, without the prior written consent of NDDS.</p>
 
-  <p>This report was prepared solely for the use of Client and any party specifically referenced in Section 2.5 User Reliance. No other party shall use or rely on this report or the findings herein, without the prior written consent of NDDS.</p>
+    <p>Please do not hesitate to contact us at 877 439 2582 if you have any questions or if we can be of further service to you.</p>
+  </div>
 
-  <p>Please do not hesitate to contact us at 877-439-2582 if you have any questions or if we can be of further service to you.</p>
+  <p class="letter-sincerely">Sincerely,</p>
 
-  <p>Sincerely,</p>
+  <div class="letter-signature-area"></div>
 
-  <p>${escapeHtml(meta.reviewedBy || 'Assessments Director')}<br>${escapeHtml(meta.reviewedByTitle || 'Assessments Director')}</p>
+  <p class="letter-signer">${escapeHtml(meta.reviewedBy || 'Ronnie Long')}<br>Assessments Director</p>
 
-  <table style="margin-top: 20px; font-size: 11pt;">
-    <tr>
-      <td style="padding-right: 60px;"><strong>Prepared by</strong></td>
-      <td><strong>Reviewed by</strong></td>
-    </tr>
-    <tr>
-      <td style="padding-right: 60px;">${escapeHtml(meta.preparedBy || '')}<br>${escapeHtml(meta.preparedByTitle || 'Project Manager')}</td>
-      <td>${escapeHtml(meta.reviewedBy || '')}<br>${escapeHtml(meta.reviewedByTitle || 'Assessments Director')}</td>
-    </tr>
-  </table>
+  <div class="letter-bottom-section">
+    <div class="letter-prep-review-header">
+      <div>Prepared by</div>
+      <div>Reviewed by</div>
+    </div>
+
+    <div class="letter-ndds-footer">
+      National Due Diligence Services, a Division of American Surveying and Mapping, Inc.<br>
+      221 Circle Drive, Maitland, Florida 32751<br>
+      <a href="http://www.NationalDueDiligenceServices.com">www.NationalDueDiligenceServices.com</a>
+    </div>
+
+    <div class="letter-names-row">
+      <div>
+        <span class="name">${escapeHtml(meta.preparedBy || 'Name')}</span><br>
+        <span class="title">${escapeHtml(meta.preparedByTitle || 'Project Manager')}</span>
+      </div>
+      <div>
+        <span class="name">${escapeHtml(meta.reviewedBy || 'Ronnie Long')}</span><br>
+        <span class="title">${escapeHtml(meta.reviewedByTitle || 'Assessments Director')}</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ================================================================ -->
@@ -635,7 +734,7 @@ ${buildToc(tocItems)}
 <!-- ================================================================ -->
 <!-- SECTION 1.0 - SUMMARY                                           -->
 <!-- ================================================================ -->
-<div class="content-page">
+<div class="content-wrapper">
 
 <h2 id="section-1-0">1.0&nbsp;&nbsp;&nbsp;SUMMARY</h2>
 
@@ -643,27 +742,33 @@ ${buildToc(tocItems)}
 
 <p>At the request of Client, NDDS has performed a Property Condition Assessment (PCA) of the property located at ${propertyAddress}, ${cityStateZip}, herein referred to as the Subject Property. Salient property details are as follows:</p>
 
-<table class="kv-table">
-  <tr><td class="kv-label">PROPERTY NAME</td><td>${propertyName}</td></tr>
-  <tr><td class="kv-label">PROPERTY ADDRESS</td><td>${propertyAddress}</td></tr>
-  <tr><td class="kv-label">CITY, STATE, ZIP</td><td>${cityStateZip}</td></tr>
-  <tr><td class="kv-label">PROPERTY USE</td><td>${pvRaw(content, 1, 'property-use')}</td></tr>
-  <tr><td class="kv-label">NUMBER OF BUILDINGS</td><td>${pvRaw(content, 1, 'number-of-buildings')}</td></tr>
-  <tr><td class="kv-label">NUMBER OF STORIES</td><td>${pvRaw(content, 1, 'number-of-stories')}</td></tr>
-  <tr><td class="kv-label">YEAR CONSTRUCTED</td><td>${pvRaw(content, 1, 'year-constructed')}</td><td class="kv-source">Source: ${pvRaw(content, 1, 'year-constructed__source') || 'County Assessor'}</td></tr>
-  <tr><td class="kv-label">NUMBER OF PARCELS</td><td>${pvRaw(content, 1, 'number-of-parcels')}</td><td class="kv-source">Source: ${pvRaw(content, 1, 'number-of-parcels__source') || ''}</td></tr>
-  <tr><td class="kv-label">TOTAL ACREAGE</td><td>${pvRaw(content, 1, 'total-acreage')}</td><td class="kv-source">Source: ${pvRaw(content, 1, 'total-acreage__source') || ''}</td></tr>
-  <tr><td class="kv-label">DWELLING UNITS/BEDS</td><td>${pvRaw(content, 1, 'dwelling-units-beds')}</td><td class="kv-source">Source: ${pvRaw(content, 1, 'dwelling-units-beds__source') || ''}</td></tr>
-  <tr><td class="kv-label">COMMERCIAL UNITS</td><td>${pvRaw(content, 1, 'commercial-units')}</td><td class="kv-source">Source: ${pvRaw(content, 1, 'commercial-units__source') || ''}</td></tr>
-  <tr><td class="kv-label">GROSS BUILDING AREA</td><td>${pvRaw(content, 1, 'gross-building-area')}</td><td class="kv-source">Source: ${pvRaw(content, 1, 'gross-building-area__source') || ''}</td></tr>
-  <tr><td class="kv-label">NET RENTABLE AREA</td><td>${pvRaw(content, 1, 'net-rentable-area')}</td><td class="kv-source">Source: ${pvRaw(content, 1, 'net-rentable-area__source') || ''}</td></tr>
-  <tr><td class="kv-label">PARKING/PAVING</td><td>${pvRaw(content, 1, 'parking-paving')}</td></tr>
-  <tr><td class="kv-label">FOUNDATION SYSTEMS</td><td>${pvRaw(content, 1, 'foundation-systems')}</td></tr>
-  <tr><td class="kv-label">STRUCTURAL SYSTEMS</td><td>${pvRaw(content, 1, 'structural-systems')}</td></tr>
-  <tr><td class="kv-label">ROOFING SYSTEMS</td><td>${pvRaw(content, 1, 'roofing-systems')}</td></tr>
-  <tr><td class="kv-label">HVAC SYSTEMS</td><td>${pvRaw(content, 1, 'hvac-systems')}</td></tr>
-  <tr><td class="kv-label">FIRE SUPPRESSION</td><td>${pvRaw(content, 1, 'fire-suppression')}</td></tr>
-  <tr><td class="kv-label">FIRE ALARMS</td><td>${pvRaw(content, 1, 'fire-alarms')}</td></tr>
+<table class="prop-table">
+  <colgroup>
+    <col style="width: 190px;">
+    <col>
+    <col style="width: 60px;">
+    <col style="width: 115px;">
+  </colgroup>
+  <tr><td class="prop-label">PROPERTY NAME</td><td colspan="3" class="prop-value">${propertyName}</td></tr>
+  <tr><td class="prop-label">PROPERTY ADDRESS</td><td colspan="3" class="prop-value">${propertyAddress}</td></tr>
+  <tr><td class="prop-label">CITY, STATE, ZIP</td><td colspan="3" class="prop-value">${cityStateZip}</td></tr>
+  <tr><td class="prop-label">PROPERTY USE</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'property-use')}</td></tr>
+  <tr><td class="prop-label">NUMBER OF BUILDINGS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'number-of-buildings')}</td></tr>
+  <tr><td class="prop-label">NUMBER OF STORIES</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'number-of-stories')}</td></tr>
+  <tr><td class="prop-label">YEAR CONSTRUCTED</td><td class="prop-value">${pvRaw(content, 1, 'year-constructed')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'year-constructed__source') || 'County Assessor'}</td></tr>
+  <tr><td class="prop-label">NUMBER OF PARCELS</td><td class="prop-value">${pvRaw(content, 1, 'number-of-parcels')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'number-of-parcels__source') || ''}</td></tr>
+  <tr><td class="prop-label">TOTAL ACREAGE</td><td class="prop-value">${pvRaw(content, 1, 'total-acreage')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'total-acreage__source') || ''}</td></tr>
+  <tr><td class="prop-label">DWELLING UNITS/BEDS</td><td class="prop-value">${pvRaw(content, 1, 'dwelling-units-beds')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'dwelling-units-beds__source') || 'Rent Roll'}</td></tr>
+  <tr><td class="prop-label">COMMERCIAL UNITS</td><td class="prop-value">${pvRaw(content, 1, 'commercial-units')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'commercial-units__source') || ''}</td></tr>
+  <tr><td class="prop-label">GROSS BUILDING AREA</td><td class="prop-value">${pvRaw(content, 1, 'gross-building-area')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'gross-building-area__source') || ''}</td></tr>
+  <tr><td class="prop-label">NET RENTABLE AREA</td><td class="prop-value">${pvRaw(content, 1, 'net-rentable-area')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'net-rentable-area__source') || 'Rent roll'}</td></tr>
+  <tr><td class="prop-label">PARKING/PAVING</td><td class="prop-value">${pvRaw(content, 1, 'parking-paving')}</td><td style="font-size: 10pt;">${pvRaw(content, 1, 'parking-spaces') || '# Spaces'}</td><td style="font-size: 10pt;">${pvRaw(content, 1, 'parking-ada-spaces') || '# ADA Spaces'}</td></tr>
+  <tr><td class="prop-label">FOUNDATION SYSTEMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'foundation-systems')}</td></tr>
+  <tr><td class="prop-label">STRUCTURAL SYSTEMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'structural-systems')}</td></tr>
+  <tr><td class="prop-label">ROOFING SYSTEMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'roofing-systems')}</td></tr>
+  <tr><td class="prop-label">HVAC SYSTEMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'hvac-systems')}</td></tr>
+  <tr><td class="prop-label">FIRE SUPPRESSION</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'fire-suppression')}</td></tr>
+  <tr><td class="prop-label">FIRE ALARMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'fire-alarms')}</td></tr>
 </table>
 
 <p>A site diagram is provided in Appendix A of this report. Photographs of the Subject Property are provided in Appendix B.</p>
@@ -712,7 +817,8 @@ ${pv(content, 4, 'recommendations-text') ? `<p>${pv(content, 4, 'recommendations
 <!-- ================================================================ -->
 <!-- SECTION 2.0 - INTRODUCTION                                      -->
 <!-- ================================================================ -->
-<div class="section-break"></div>
+</div><!-- end content-wrapper -->
+<div class="content-wrapper">
 <h2 id="section-2-0">2.0&nbsp;&nbsp;&nbsp;INTRODUCTION</h2>
 
 <h3 id="section-2-1">2.1&nbsp;&nbsp;&nbsp;Purpose</h3>
@@ -782,7 +888,8 @@ ${pv(content, 4, 'recommendations-text') ? `<p>${pv(content, 4, 'recommendations
 <!-- ================================================================ -->
 <!-- SECTION 3.0 - PROPERTY CHARACTERISTICS                          -->
 <!-- ================================================================ -->
-<div class="section-break"></div>
+</div><!-- end content-wrapper -->
+<div class="content-wrapper">
 <h2 id="section-3-0">3.0&nbsp;&nbsp;&nbsp;PROPERTY CHARACTERISTICS</h2>
 
 <h3 id="section-3-1">3.1&nbsp;&nbsp;&nbsp;Location and Description</h3>
@@ -811,7 +918,8 @@ ${pv(content, 8, 'special-utility-notes') ? `<p>${pv(content, 8, 'special-utilit
 <!-- ================================================================ -->
 <!-- SECTION 4.0 - DOCUMENT REVIEW AND INTERVIEWS                    -->
 <!-- ================================================================ -->
-<div class="section-break"></div>
+</div><!-- end content-wrapper -->
+<div class="content-wrapper">
 <h2 id="section-4-0">4.0&nbsp;&nbsp;&nbsp;DOCUMENT REVIEW AND INTERVIEWS</h2>
 
 <h3 id="section-4-1">4.1&nbsp;&nbsp;&nbsp;Property Questionnaire</h3>
@@ -857,7 +965,8 @@ ${pvRaw(content, 13, 'report-title') ? `
 <!-- ================================================================ -->
 <!-- SECTION 5.0 - SITE                                              -->
 <!-- ================================================================ -->
-<div class="section-break"></div>
+</div><!-- end content-wrapper -->
+<div class="content-wrapper">
 <h2 id="section-5-0">5.0&nbsp;&nbsp;&nbsp;Site</h2>
 
 <h3 id="section-5-1">5.1&nbsp;&nbsp;&nbsp;Topography and Stormwater Drainage</h3>
@@ -869,7 +978,8 @@ ${section5Html}
 <!-- ================================================================ -->
 <!-- SECTION 6.0 - STRUCTURAL FRAME AND BUILDING ENVELOPE            -->
 <!-- ================================================================ -->
-<div class="section-break"></div>
+</div><!-- end content-wrapper -->
+<div class="content-wrapper">
 <h2 id="section-6-0">6.0&nbsp;&nbsp;&nbsp;STRUCTURAL FRAME AND BUILDING ENVELOPE</h2>
 
 ${section6Html}
@@ -877,7 +987,8 @@ ${section6Html}
 <!-- ================================================================ -->
 <!-- SECTION 7.0 - MECHANICAL, ELECTRICAL, AND PLUMBING SYSTEM       -->
 <!-- ================================================================ -->
-<div class="section-break"></div>
+</div><!-- end content-wrapper -->
+<div class="content-wrapper">
 <h2 id="section-7-0">7.0&nbsp;&nbsp;&nbsp;MECHANICAL, ELECTRICAL, AND PLUMBING SYSTEM</h2>
 
 ${section7Html}
@@ -885,7 +996,8 @@ ${section7Html}
 <!-- ================================================================ -->
 <!-- SECTION 8.0 - INTERIOR ELEMENTS                                 -->
 <!-- ================================================================ -->
-<div class="section-break"></div>
+</div><!-- end content-wrapper -->
+<div class="content-wrapper">
 <h2 id="section-8-0">8.0&nbsp;&nbsp;&nbsp;INTERIOR ELEMENTS</h2>
 
 ${section8Html}
@@ -893,7 +1005,8 @@ ${section8Html}
 <!-- ================================================================ -->
 <!-- SECTION 9.0 - LIFE SAFETY/FIRE PROTECTION                      -->
 <!-- ================================================================ -->
-<div class="section-break"></div>
+</div><!-- end content-wrapper -->
+<div class="content-wrapper">
 <h2 id="section-9-0">9.0&nbsp;&nbsp;&nbsp;LIFE SAFETY/FIRE PROTECTION</h2>
 
 ${section9Html}
@@ -901,7 +1014,8 @@ ${section9Html}
 <!-- ================================================================ -->
 <!-- SECTION 10.0 - ADDITIONAL CONSIDERATIONS                        -->
 <!-- ================================================================ -->
-<div class="section-break"></div>
+</div><!-- end content-wrapper -->
+<div class="content-wrapper">
 <h2 id="section-10-0">10.0&nbsp;&nbsp;&nbsp;ADDITIONAL CONSIDERATIONS</h2>
 
 ${section10Html}
@@ -942,7 +1056,7 @@ ${section10Html}
   <p>PERSONAL QUALIFICATIONS</p>
 </div>
 
-</div><!-- end .content-page -->
+</div><!-- end content-wrapper -->
 
 </body>
 </html>`;
