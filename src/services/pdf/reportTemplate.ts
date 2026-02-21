@@ -406,7 +406,7 @@ export function assembleReportHtml(
 
     /* ---- TOC ---- */
     .toc-page { page: toc; page-break-after: always; padding: 0.75in; }
-    .toc-title { text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 20px; color: #0C306C; }
+    .toc-title { text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 20px; color: #000; }
     .toc-line { display: flex; width: 100%; margin: 3px 0; align-items: baseline; }
     .toc-link {
       display: flex;
@@ -438,15 +438,20 @@ export function assembleReportHtml(
     .content-page { page: content; }
 
     h2 {
-      font-size: 14pt;
-      color: #0C306C;
+      font-size: 12pt;
+      font-weight: bold;
+      color: #000;
       margin-top: 30px;
       margin-bottom: 10px;
       page-break-after: avoid;
+      border-top: 2.5px solid #000;
+      border-bottom: 2.5px solid #000;
+      padding: 4px 0;
     }
     h3 {
-      font-size: 12pt;
-      color: #0C306C;
+      font-size: 11pt;
+      font-weight: bold;
+      color: #000;
       margin-top: 20px;
       margin-bottom: 8px;
       page-break-after: avoid;
@@ -464,15 +469,15 @@ export function assembleReportHtml(
       font-size: 11pt;
     }
     .kv-table td {
-      padding: 3px 6px;
+      padding: 6px 8px;
       vertical-align: top;
-      border: 1px solid #000;
+      border: 1px solid #bbb;
     }
     .kv-table .kv-label {
       width: 190px;
-      font-weight: bold;
+      font-weight: normal;
       white-space: nowrap;
-      font-size: 10pt;
+      font-size: 11pt;
     }
 
     /* 4-column property details table */
@@ -483,26 +488,26 @@ export function assembleReportHtml(
       font-size: 11pt;
     }
     .prop-table td {
-      padding: 3px 6px;
+      padding: 6px 8px;
       vertical-align: top;
-      border: 1px solid #000;
+      border: 1px solid #bbb;
     }
     .prop-table .prop-label {
       width: 190px;
-      font-weight: bold;
-      font-size: 10pt;
+      font-weight: normal;
+      font-size: 11pt;
     }
     .prop-table .prop-value {
-      /* flexible width */
+      font-size: 11pt;
     }
     .prop-table .prop-source-label {
       width: 55px;
-      font-size: 10pt;
+      font-size: 11pt;
       text-align: right;
     }
     .prop-table .prop-source-value {
       width: 110px;
-      font-size: 10pt;
+      font-size: 11pt;
       color: #c00000;
     }
 
@@ -515,20 +520,21 @@ export function assembleReportHtml(
       page-break-inside: auto;
     }
     .docr-table td {
-      padding: 5px 8px;
+      padding: 6px 8px;
       vertical-align: top;
-      border: 1px solid #999;
+      border: 1px solid #bbb;
     }
     .docr-table .block-header td {
       background: #f0f0f0;
       font-weight: bold;
       font-style: italic;
-      border-bottom: 2px solid #999;
+      font-size: 11pt;
+      border-bottom: 2px solid #bbb;
     }
     .docr-table .field-label {
       width: 180px;
-      font-weight: bold;
-      font-size: 10pt;
+      font-weight: normal;
+      font-size: 11pt;
       text-transform: uppercase;
     }
     .docr-table .field-value {
