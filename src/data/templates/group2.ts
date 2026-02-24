@@ -272,7 +272,7 @@ export const opinionOfProbableCost = {
                     text: 'Based on the walk-through survey of the Subject Property, interviews conducted and information obtained while conducting this PCA, no areas of physical deficiency or deferred maintenance, that would be considered outside of the normal on-going routine maintenance of a property, were identified.',
                 },
                 {
-                    label: 'Probable costs provided in Table 1',
+                    label: 'robable costs provided in Table 1',
                     text: 'Based on the walk-through of the Subject Property, interviews conducted and information obtained while conducting this PCA, NDDS\'s opinion of the probable cost to address area of physical deficiency or deferred maintenance, that would be considered outside the normal on-going routine maintenance of a property, are provided in Table 1- Opinion of Probable Costs to Remedy Physical Deficiencies - Deferred Maintenance Schedule in Appendix C of this report.',
                 },
             ],
@@ -327,7 +327,43 @@ export const recommendations = {
     ]
 }
 
+// Property Condition Summary table (follows transmittal letter in PDF)
 
+export const propertyConditionSummary = {
+    rows: [
+        { id: '5-1', label: 'TOPOGRAPHY AND STORMWATER' },
+        { id: '5-2', label: 'ACCESS AND EGRESS' },
+        { id: '5-3', label: 'PAVING, CURBING, AND PARKING' },
+        { id: '5-4', label: 'SIDEWALKS AND FLATWORK' },
+        { id: '5-5', label: 'LANDSCAPING AND APPURTENANCES' },
+        { id: '5-6', label: 'ANCILLARY STRUCTURES' },
+        { id: '6-1', label: 'FOUNDATION' },
+        { id: '6-2', label: 'BUILDING FRAME' },
+        { id: '6-3', label: 'FACADES OR CURTAIN WALL' },
+        { id: '6-4', label: 'ROOFING' },
+        { id: '7-1', label: 'HVAC' },
+        { id: '7-2', label: 'ELECTRICAL' },
+        { id: '7-3', label: 'PLUMBING' },
+        { id: '7-4', label: 'ELEVATORS AND ESCALATORS' },
+        { id: '8-1', label: 'INTERIOR FINISHES COMMON AREAS' },
+        { id: '8-2', label: 'INTERIOR FINISHES TENANT SPACES' },
+        { id: '9-1', label: 'FIRE SPRINKLERS AND STANDPIPES' },
+        { id: '9-2', label: 'ALARM SYSTEMS' },
+        { id: '9-3', label: 'OTHER SYSTEMS' },
+        { id: '10-1', label: 'NATURAL HAZARDS' },
+        { id: '10-2', label: 'MOLD' },
+        { id: '10-3', label: 'ADA' },
+    ],
+    conditionOptions: ['Good', 'Fair', 'Poor'],
+    actionOptions: [
+        { value: 'IR', label: 'Immediate Repair' },
+        { value: 'ST', label: 'Short Term Repair' },
+        { value: 'RR', label: 'Replacement Reserve' },
+        { value: 'RM', label: 'Routine Maintenance' },
+        { value: 'INV', label: 'Investigation is Recommended' },
+        { value: 'NA', label: 'Not Applicable' },
+    ],
+}
 
 
 //SECTION 2.0 - INTRODUCTION

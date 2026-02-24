@@ -159,13 +159,25 @@ export interface ChecklistConfig {
   categories: ChecklistCategory[];
 }
 
-// Appendix config for file upload sections (step 34)
+// Condition summary config for Property Condition Summary table
+export interface ConditionSummaryRow {
+  id: string;
+  label: string;
+}
+
+export interface ConditionSummaryConfig {
+  rows: ConditionSummaryRow[];
+  conditionOptions: string[];
+  actionOptions: { value: string; label: string }[];
+}
+
+// Appendix config for file upload sections (step 35)
 export interface AppendixConfig {
   appendixType: 'appendix';
 }
 
 // Generic section that can be any type
-export type AnySection = SectionConfig | PropertyInfoConfig | ChecklistConfig | AppendixConfig;
+export type AnySection = SectionConfig | PropertyInfoConfig | ChecklistConfig | ConditionSummaryConfig | AppendixConfig;
 
 // Helper to check section type
 export function isSectionConfig(config: AnySection): config is SectionConfig {
@@ -178,6 +190,10 @@ export function isPropertyInfoConfig(config: AnySection): config is PropertyInfo
 
 export function isChecklistConfig(config: AnySection): config is ChecklistConfig {
   return 'categories' in config;
+}
+
+export function isConditionSummaryConfig(config: AnySection): config is ConditionSummaryConfig {
+  return 'rows' in config && 'conditionOptions' in config;
 }
 
 export function isAppendixConfig(config: AnySection): config is AppendixConfig {
