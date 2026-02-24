@@ -140,6 +140,60 @@ function buildConditionSummaryRows(content: ReportContentRow): string {
 }
 
 // ---------------------------------------------------------------------------
+// Multiple Buildings table renderer
+// ---------------------------------------------------------------------------
+
+function buildMultipleBuildingsTable(content: ReportContentRow): string {
+  const sd = getStepData(content, 1);
+  const fields = (sd['fields'] ?? sd) as Record<string, unknown>;
+
+  const listBuildings = fields['list-individual-buildings'] as string;
+  if (listBuildings !== 'yes') return '';
+
+  const details = fields['building-details'] as Record<string, string> | undefined;
+  if (!details) return '';
+
+  const count = parseInt(details['_count'] || '0');
+  if (count === 0) return '';
+
+  let rowsHtml = '';
+  for (let i = 1; i <= count; i++) {
+    const bldId = escapeHtml(details[`row-${i}-building-id`] || '');
+    const addr = escapeHtml(details[`row-${i}-address`] || '');
+    const sf = escapeHtml(details[`row-${i}-rentable-sf`] || '');
+    const stories = escapeHtml(details[`row-${i}-stories`] || '');
+    const dateBuilt = escapeHtml(details[`row-${i}-date-constructed`] || '');
+    rowsHtml += `  <tr>
+    <td style="color: #c00000; text-align: center;">${bldId}</td>
+    <td style="color: #c00000; text-align: center;">${addr}</td>
+    <td style="color: #c00000; text-align: center;">${sf}</td>
+    <td style="color: #c00000; text-align: center;">${stories}</td>
+    <td style="color: #c00000; text-align: center;">${dateBuilt}</td>
+  </tr>\n`;
+  }
+
+  return `
+<h3>Multiple Property Buildings</h3>
+<table class="prop-table">
+  <colgroup>
+    <col style="width: 18%;">
+    <col style="width: 30%;">
+    <col style="width: 18%;">
+    <col style="width: 14%;">
+    <col style="width: 20%;">
+  </colgroup>
+  <tr>
+    <td class="prop-label" style="text-align: center; font-weight: bold;">BUILDING ID</td>
+    <td class="prop-label" style="text-align: center; font-weight: bold;">ADDRESS</td>
+    <td class="prop-label" style="text-align: center; font-weight: bold;">RENTABLE SF</td>
+    <td class="prop-label" style="text-align: center; font-weight: bold;">STORIES</td>
+    <td class="prop-label" style="text-align: center; font-weight: bold;">DATE OF CONSTRUCTION</td>
+  </tr>
+${rowsHtml}</table>
+`;
+}
+
+// ---------------------------------------------------------------------------
 // Cost Opinion Table renderer
 // ---------------------------------------------------------------------------
 
@@ -1034,6 +1088,8 @@ ${buildToc(tocItems)}
   <tr><td class="prop-label">FIRE ALARMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'fire-alarms')}</td></tr>
 </table>
 
+${buildMultipleBuildingsTable(content)}
+
 <p>A site diagram is provided in Appendix A of this report. Photographs of the Subject Property are provided in Appendix B.</p>
 
 <!-- 1.2 Physical Condition -->
@@ -1209,11 +1265,28 @@ ${pv(content, 8, 'provided-legal-description') ? `<p>${pv(content, 8, 'provided-
 ${pv(content, 11, 'questionnaire-status') ? `<p>${pv(content, 11, 'questionnaire-status')}</p>` : ''}
 
 <h3 id="section-4-2">4.2&nbsp;&nbsp;&nbsp;Interviews</h3>
-<table class="kv-table">
-  <tr><td class="kv-label">INTERVIEWEE</td><td>${pvRaw(content, 12, 'interviewee-1')}</td></tr>
-  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 12, 'pertinent-info-1')}</td></tr>
-  <tr><td class="kv-label">CONCERNS</td><td>${pv(content, 12, 'concerns-1')}</td></tr>
-</table>
+${(() => {
+  const sd = getStepData(content, 12);
+  const fields = (sd['fields'] ?? sd) as Record<string, unknown>;
+  const suffixes: number[] = [];
+  for (const key of Object.keys(fields)) {
+    const m = key.match(/^interviewee-(\d+)$/);
+    if (m && m[1]) suffixes.push(parseInt(m[1]));
+  }
+  suffixes.sort((a, b) => a - b);
+  if (suffixes.length === 0) suffixes.push(1);
+
+  return suffixes.map(n => {
+    const name = nl2br(getVal(content, 12, 'fields', `interviewee-${n}`));
+    const info = nl2br(getVal(content, 12, 'fields', `pertinent-info-${n}`));
+    const concerns = nl2br(getVal(content, 12, 'fields', `concerns-${n}`));
+    return `<table class="kv-table">
+  <tr><td class="kv-label">INTERVIEWEE</td><td>${name || '<span class="placeholder">\u2014</span>'}</td></tr>
+  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${info || '<span class="placeholder">\u2014</span>'}</td></tr>
+  <tr><td class="kv-label">CONCERNS</td><td>${concerns || '<span class="placeholder">\u2014</span>'}</td></tr>
+</table>`;
+  }).join('\n');
+})()}
 
 <h3 id="section-4-3">4.3&nbsp;&nbsp;&nbsp;Building and Fire Departments</h3>
 <table class="kv-table">
