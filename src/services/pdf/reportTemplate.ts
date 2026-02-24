@@ -23,6 +23,7 @@ import {
   alarmSystems,
   naturalHazards,
   microbialContamination,
+  adaScreeningChecklist,
 } from '@/data/templates/group1';
 
 // ---------------------------------------------------------------------------
@@ -250,8 +251,126 @@ function buildCostOpinionTable(content: ReportContentRow): {
 }
 
 // ---------------------------------------------------------------------------
+// ADA Checklist renderer
+// ---------------------------------------------------------------------------
+
+function buildAdaChecklistTable(content: ReportContentRow): string {
+  const sd = getStepData(content, 36);
+  const fields = (sd['fields'] ?? sd) as Record<string, unknown>;
+
+  let html = `<h3 style="font-size: 11pt; margin-bottom: 8px;">Uniform Abbreviated Screening Checklist for the 2010 Americans with Disabilities Act</h3>\n`;
+  html += `<table class="ada-table">\n`;
+  html += `<tr><th style="width: 5%;"></th><th style="width: 55%;">Item</th><th style="width: 8%;">Yes</th><th style="width: 8%;">No</th><th style="width: 8%;">N/A</th><th style="width: 16%;">Comments</th></tr>\n`;
+
+  for (const cat of adaScreeningChecklist.categories) {
+    html += `<tr class="cat-header"><td><strong>${escapeHtml(cat.letter)}.</strong></td><td colspan="5"><strong>${escapeHtml(cat.title)}</strong></td></tr>\n`;
+
+    for (let qi = 0; qi < cat.questions.length; qi++) {
+      const q = cat.questions[qi];
+      const data = fields[q.id] as Record<string, string> | undefined;
+      const answer = data?.answer || '';
+      const comment = data?.comment || '';
+
+      const yMark = answer === 'Yes' ? 'x' : '';
+      const nMark = answer === 'No' ? 'x' : '';
+      const naMark = answer === 'N/A' ? 'x' : '';
+
+      html += `<tr>`;
+      html += `<td style="text-align: right;">${qi + 1}.</td>`;
+      html += `<td>${escapeHtml(q.text)}</td>`;
+      html += `<td style="text-align: center; font-weight: bold;">${yMark}</td>`;
+      html += `<td style="text-align: center; font-weight: bold;">${nMark}</td>`;
+      html += `<td style="text-align: center; font-weight: bold;">${naMark}</td>`;
+      html += `<td>${comment ? escapeHtml(comment) : ''}</td>`;
+      html += `</tr>\n`;
+    }
+  }
+
+  html += `</table>\n`;
+
+  const recs = (fields['_recommendations'] as string) || '';
+  if (recs) {
+    html += `<h3 style="font-size: 11pt; margin-top: 14px;">Recommendations</h3>\n`;
+    html += `<p>${nl2br(recs)}</p>\n`;
+  }
+
+  return html;
+}
+
+// ---------------------------------------------------------------------------
 // D/O/C/R Section Renderer (sections 5-10)
 // ---------------------------------------------------------------------------
+
+function renderEquipmentTable(
+  config: SectionConfig,
+  content: ReportContentRow,
+  stepNum: number,
+): string {
+  const eqCfg = config.equipmentList;
+  if (!eqCfg) return '';
+
+  const sd = getStepData(content, stepNum);
+  const eqData = (sd['equipmentList'] ?? {}) as Record<string, unknown>;
+  const count = parseInt((eqData['_count'] as string) || '0');
+  if (count === 0) return '';
+
+  // Resolve fields: use mode-specific fields if modes exist, otherwise top-level fields
+  let fields = eqCfg.fields;
+  const savedMode = (eqData['_mode'] as string) || '';
+  if (eqCfg.modes && eqCfg.modes.length > 0) {
+    const mode = eqCfg.modes.find((m: { id: string }) => m.id === savedMode) || eqCfg.modes[0];
+    fields = mode.fields;
+  }
+
+  if (!fields || fields.length === 0) return '';
+
+  // All columns render in the table (checkboxes show as Y/N)
+  const cols = fields;
+
+  let html = `<table class="docr-table" style="margin-bottom: 16px;">\n`;
+  html += `<tr class="block-header">`;
+  for (const col of cols) {
+    html += `<td style="text-align: center; font-weight: bold;">${escapeHtml(col.label.toUpperCase())}</td>`;
+  }
+  html += `</tr>\n`;
+
+  let sqftTotal = 0;
+
+  for (let i = 1; i <= count; i++) {
+    html += `<tr>`;
+    for (const col of cols) {
+      const raw = (eqData[`equipment-${i}-${col.id}`] as string) || '';
+
+      let val: string;
+      if (col.type === 'checkbox') {
+        val = raw === 'true' ? 'Y' : (raw === 'false' ? 'N' : '');
+      } else {
+        val = raw ? escapeHtml(raw) : '';
+      }
+
+      if (col.id === 'sqft' && raw) {
+        sqftTotal += parseFloat(raw.replace(/[^0-9.-]/g, '')) || 0;
+      }
+
+      const isFirstCol = col === cols[0];
+      const style = isFirstCol ? '' : ' style="text-align: center;"';
+      html += `<td${style}>${val}</td>`;
+    }
+    html += `</tr>\n`;
+  }
+
+  // Total row for tenant-spaces mode (has sqft column)
+  if (cols.some((c: { id: string }) => c.id === 'sqft')) {
+    html += `<tr>`;
+    html += `<td style="font-weight: bold;">Total</td>`;
+    html += `<td style="text-align: center; font-weight: bold;">${sqftTotal > 0 ? sqftTotal.toLocaleString('en-US') : '0'}</td>`;
+    for (let c = 2; c < cols.length; c++) html += `<td></td>`;
+    html += `</tr>\n`;
+  }
+
+  html += `</table>\n`;
+  return html;
+}
 
 function renderDOCRSection(
   sectionId: string,
@@ -269,6 +388,9 @@ function renderDOCRSection(
   ];
 
   let html = `<h3 id="${sectionId}">${sectionNumber}\u00A0\u00A0\u00A0${escapeHtml(sectionTitle)}</h3>\n`;
+
+  html += renderEquipmentTable(config, content, stepNum);
+
   html += `<table class="docr-table">\n`;
 
   for (const block of blocks) {
@@ -1378,7 +1500,7 @@ ${section10Html}
 
 <p>A Tier I Visual screening was conducted at the Subject Property for compliance with the Americans with Disabilities Act (ADA). The screening included a limited visual assessment of the property to determine if the property is accessible and usable by people with disabilities. No measurements were taken. This screening should not be considered an in-depth survey or audit.</p>
 
-<p><em class="placeholder">[ADA Checklist results to be rendered from step 33 data]</em></p>
+${buildAdaChecklistTable(content)}
 
 <!-- ================================================================ -->
 <!-- APPENDICES                                                      -->
