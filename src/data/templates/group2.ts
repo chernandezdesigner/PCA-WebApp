@@ -365,6 +365,22 @@ export const propertyConditionSummary = {
     ],
 }
 
+// Opinion of Probable Cost tables (follows condition summary in PDF)
+
+export const opinionOfProbableCostTable = {
+    deficiencyColumns: [
+        { id: 'item', label: 'Item', placeholder: 'Describe deficiency item...' },
+        { id: 'immediate-cost', label: 'Immediate Costs', placeholder: '$0', isCurrency: true },
+        { id: 'short-term-cost', label: 'Short-Term Costs', placeholder: '$0', isCurrency: true },
+    ],
+    reserveFields: [
+        { id: 'total-uninflated-reserve', label: 'Total Uninflated Reserve', placeholder: '$0' },
+        { id: 'annual-uninflated-cost-per-sf', label: 'Annual Uninflated Cost Per SF', placeholder: '$0' },
+        { id: 'total-inflated-reserve', label: 'Total Inflated Reserve (2.5%)', placeholder: '$0' },
+        { id: 'annual-inflated-cost-per-sf', label: 'Annual Inflated Cost Per SF (@2.5%)', placeholder: '$0' },
+    ],
+}
+
 
 //SECTION 2.0 - INTRODUCTION
 

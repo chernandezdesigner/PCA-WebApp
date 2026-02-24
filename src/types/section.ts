@@ -171,13 +171,26 @@ export interface ConditionSummaryConfig {
   actionOptions: { value: string; label: string }[];
 }
 
-// Appendix config for file upload sections (step 35)
+// Cost opinion config for the Opinion of Probable Cost tables
+export interface CostOpinionColumn {
+  id: string;
+  label: string;
+  placeholder?: string;
+  isCurrency?: boolean;
+}
+
+export interface CostOpinionConfig {
+  deficiencyColumns: CostOpinionColumn[];
+  reserveFields: { id: string; label: string; placeholder?: string }[];
+}
+
+// Appendix config for file upload sections (step 36)
 export interface AppendixConfig {
   appendixType: 'appendix';
 }
 
 // Generic section that can be any type
-export type AnySection = SectionConfig | PropertyInfoConfig | ChecklistConfig | ConditionSummaryConfig | AppendixConfig;
+export type AnySection = SectionConfig | PropertyInfoConfig | ChecklistConfig | ConditionSummaryConfig | CostOpinionConfig | AppendixConfig;
 
 // Helper to check section type
 export function isSectionConfig(config: AnySection): config is SectionConfig {
@@ -194,6 +207,10 @@ export function isChecklistConfig(config: AnySection): config is ChecklistConfig
 
 export function isConditionSummaryConfig(config: AnySection): config is ConditionSummaryConfig {
   return 'rows' in config && 'conditionOptions' in config;
+}
+
+export function isCostOpinionConfig(config: AnySection): config is CostOpinionConfig {
+  return 'deficiencyColumns' in config && 'reserveFields' in config;
 }
 
 export function isAppendixConfig(config: AnySection): config is AppendixConfig {
