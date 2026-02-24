@@ -36,6 +36,7 @@ import {
 
 // Import Section 5-9 configs (group1 - report style)
 import { 
+  topographyStormwater,
   accessEgress,
   pavingCurbingParking,
   flatwork,
@@ -96,34 +97,35 @@ const allSectionConfigs: Record<number, {
   13: { id: '4.3', title: 'Building & Fire Depts', config: buildingAndFireDepartments as PropertyInfoConfig, type: 'property-info' },
   14: { id: '4.4', title: 'Zoning Department', config: zoningDepartment as PropertyInfoConfig, type: 'property-info' },
   15: { id: '4.5', title: 'Previous Reports', config: previousReports as PropertyInfoConfig, type: 'property-info' },
-  // Section 5: Site & Grounds (5 steps)
-  16: { id: '5.2', title: 'Access & Egress', config: accessEgress as SectionConfig, type: 'report' },
-  17: { id: '5.3', title: 'Paving & Parking', config: pavingCurbingParking as SectionConfig, type: 'report' },
-  18: { id: '5.4', title: 'Flatwork', config: flatwork as SectionConfig, type: 'report' },
-  19: { id: '5.5', title: 'Landscaping', config: landscapingAppurtenances as SectionConfig, type: 'report' },
-  20: { id: '5.6', title: 'Ancillary Structures', config: ancillaryStructures as SectionConfig, type: 'report' },
+  // Section 5: Site & Grounds (6 steps)
+  16: { id: '5.1', title: 'Topography & Stormwater', config: topographyStormwater as SectionConfig, type: 'report' },
+  17: { id: '5.2', title: 'Access & Egress', config: accessEgress as SectionConfig, type: 'report' },
+  18: { id: '5.3', title: 'Paving & Parking', config: pavingCurbingParking as SectionConfig, type: 'report' },
+  19: { id: '5.4', title: 'Flatwork', config: flatwork as SectionConfig, type: 'report' },
+  20: { id: '5.5', title: 'Landscaping', config: landscapingAppurtenances as SectionConfig, type: 'report' },
+  21: { id: '5.6', title: 'Ancillary Structures', config: ancillaryStructures as SectionConfig, type: 'report' },
   // Section 6: Building Envelope (4 steps)
-  21: { id: '6.1', title: 'Foundation', config: foundation as SectionConfig, type: 'report' },
-  22: { id: '6.2', title: 'Building Frame', config: buildingFrame as SectionConfig, type: 'report' },
-  23: { id: '6.3', title: 'Facades', config: facadesCurtainWall as SectionConfig, type: 'report' },
-  24: { id: '6.4', title: 'Roofing', config: roofing as SectionConfig, type: 'report' },
+  22: { id: '6.1', title: 'Foundation', config: foundation as SectionConfig, type: 'report' },
+  23: { id: '6.2', title: 'Building Frame', config: buildingFrame as SectionConfig, type: 'report' },
+  24: { id: '6.3', title: 'Facades', config: facadesCurtainWall as SectionConfig, type: 'report' },
+  25: { id: '6.4', title: 'Roofing', config: roofing as SectionConfig, type: 'report' },
   // Section 7: Mechanical Systems (4 steps)
-  25: { id: '7.1', title: 'HVAC', config: heatingAndCooling as SectionConfig, type: 'report' },
-  26: { id: '7.2', title: 'Electrical', config: electrical as SectionConfig, type: 'report' },
-  27: { id: '7.3', title: 'Plumbing', config: plumbing as SectionConfig, type: 'report' },
-  28: { id: '7.4', title: 'Elevators', config: elevatorsAndEscalators as SectionConfig, type: 'report' },
+  26: { id: '7.1', title: 'HVAC', config: heatingAndCooling as SectionConfig, type: 'report' },
+  27: { id: '7.2', title: 'Electrical', config: electrical as SectionConfig, type: 'report' },
+  28: { id: '7.3', title: 'Plumbing', config: plumbing as SectionConfig, type: 'report' },
+  29: { id: '7.4', title: 'Elevators', config: elevatorsAndEscalators as SectionConfig, type: 'report' },
   // Section 8: Interior Elements (2 steps)
-  29: { id: '8.1', title: 'Common Areas', config: commonAreas as SectionConfig, type: 'report' },
-  30: { id: '8.2', title: 'Tenant Spaces', config: tenantSpaces as SectionConfig, type: 'report' },
+  30: { id: '8.1', title: 'Common Areas', config: commonAreas as SectionConfig, type: 'report' },
+  31: { id: '8.2', title: 'Tenant Spaces', config: tenantSpaces as SectionConfig, type: 'report' },
   // Section 9: Fire Protection (2 steps)
-  31: { id: '9.1', title: 'Sprinklers', config: sprinklersAndStandpipes as SectionConfig, type: 'report' },
-  32: { id: '9.2', title: 'Alarms', config: alarmSystems as SectionConfig, type: 'report' },
+  32: { id: '9.1', title: 'Sprinklers', config: sprinklersAndStandpipes as SectionConfig, type: 'report' },
+  33: { id: '9.2', title: 'Alarms', config: alarmSystems as SectionConfig, type: 'report' },
   // Section 10: Additional Considerations (3 steps)
-  33: { id: '10.1', title: 'Natural Hazards', config: naturalHazards as SectionConfig, type: 'report' },
-  34: { id: '10.2', title: 'Microbial Contamination', config: microbialContamination as SectionConfig, type: 'report' },
-  35: { id: '10.3', title: 'ADA Screening', config: adaScreeningChecklist as ChecklistConfig, type: 'checklist' },
+  34: { id: '10.1', title: 'Natural Hazards', config: naturalHazards as SectionConfig, type: 'report' },
+  35: { id: '10.2', title: 'Microbial Contamination', config: microbialContamination as SectionConfig, type: 'report' },
+  36: { id: '10.3', title: 'ADA Screening', config: adaScreeningChecklist as ChecklistConfig, type: 'checklist' },
   // Appendices (1 step)
-  36: { id: 'APP', title: 'Appendices', config: { appendixType: 'appendix' } as AppendixConfig, type: 'appendix' },
+  37: { id: 'APP', title: 'Appendices', config: { appendixType: 'appendix' } as AppendixConfig, type: 'appendix' },
 };
 
 // Navigation structure for sidebar
@@ -171,68 +173,69 @@ const navSections: NavSection[] = [
     id: 'section-5',
     title: 'Section 5: Site & Grounds',
     subsections: [
-      { id: '5.2', title: '5.2 Access & Egress', step: 16 },
-      { id: '5.3', title: '5.3 Paving', step: 17 },
-      { id: '5.4', title: '5.4 Flatwork', step: 18 },
-      { id: '5.5', title: '5.5 Landscaping', step: 19 },
-      { id: '5.6', title: '5.6 Ancillary', step: 20 },
+      { id: '5.1', title: '5.1 Topography', step: 16 },
+      { id: '5.2', title: '5.2 Access & Egress', step: 17 },
+      { id: '5.3', title: '5.3 Paving', step: 18 },
+      { id: '5.4', title: '5.4 Flatwork', step: 19 },
+      { id: '5.5', title: '5.5 Landscaping', step: 20 },
+      { id: '5.6', title: '5.6 Ancillary', step: 21 },
     ],
   },
   {
     id: 'section-6',
     title: 'Section 6: Building Envelope',
     subsections: [
-      { id: '6.1', title: '6.1 Foundation', step: 21 },
-      { id: '6.2', title: '6.2 Frame', step: 22 },
-      { id: '6.3', title: '6.3 Facades', step: 23 },
-      { id: '6.4', title: '6.4 Roofing', step: 24 },
+      { id: '6.1', title: '6.1 Foundation', step: 22 },
+      { id: '6.2', title: '6.2 Frame', step: 23 },
+      { id: '6.3', title: '6.3 Facades', step: 24 },
+      { id: '6.4', title: '6.4 Roofing', step: 25 },
     ],
   },
   {
     id: 'section-7',
     title: 'Section 7: Mechanical',
     subsections: [
-      { id: '7.1', title: '7.1 HVAC', step: 25 },
-      { id: '7.2', title: '7.2 Electrical', step: 26 },
-      { id: '7.3', title: '7.3 Plumbing', step: 27 },
-      { id: '7.4', title: '7.4 Elevators', step: 28 },
+      { id: '7.1', title: '7.1 HVAC', step: 26 },
+      { id: '7.2', title: '7.2 Electrical', step: 27 },
+      { id: '7.3', title: '7.3 Plumbing', step: 28 },
+      { id: '7.4', title: '7.4 Elevators', step: 29 },
     ],
   },
   {
     id: 'section-8',
     title: 'Section 8: Interior',
     subsections: [
-      { id: '8.1', title: '8.1 Common Areas', step: 29 },
-      { id: '8.2', title: '8.2 Tenant Spaces', step: 30 },
+      { id: '8.1', title: '8.1 Common Areas', step: 30 },
+      { id: '8.2', title: '8.2 Tenant Spaces', step: 31 },
     ],
   },
   {
     id: 'section-9',
     title: 'Section 9: Fire Protection',
     subsections: [
-      { id: '9.1', title: '9.1 Sprinklers', step: 31 },
-      { id: '9.2', title: '9.2 Alarms', step: 32 },
+      { id: '9.1', title: '9.1 Sprinklers', step: 32 },
+      { id: '9.2', title: '9.2 Alarms', step: 33 },
     ],
   },
   {
     id: 'section-10',
     title: 'Section 10: Additional',
     subsections: [
-      { id: '10.1', title: '10.1 Natural Hazards', step: 33 },
-      { id: '10.2', title: '10.2 Mold', step: 34 },
-      { id: '10.3', title: '10.3 ADA Screening', step: 35 },
+      { id: '10.1', title: '10.1 Natural Hazards', step: 34 },
+      { id: '10.2', title: '10.2 Mold', step: 35 },
+      { id: '10.3', title: '10.3 ADA Screening', step: 36 },
     ],
   },
   {
     id: 'appendices',
     title: 'Appendices',
     subsections: [
-      { id: 'APP', title: 'Appendices A\u2013E', step: 36 },
+      { id: 'APP', title: 'Appendices A\u2013E', step: 37 },
     ],
   },
 ];
 
-const TOTAL_STEPS = 36;
+const TOTAL_STEPS = 37;
 
 const {
   currentStep,

@@ -1,4 +1,104 @@
-// section 5.0 - Site 
+// section 5.0 - Site
+
+//sec 5.1
+
+export const topographyStormwater = {
+    description: [
+        {
+            id: 'topography',
+            type: 'textarea',
+            label: 'Topography',
+            rows: 5,
+            defaultValue: 'The United States Geological Survey (USGS), (insert Quad name), (state) Quadrangle 7.5 minute series topographic map was reviewed for this ESA. This map was published by the USGS in (insert year). Based on a review of the topographic map, the Subject Property is located on/in a (slope, top of the hill, relatively flat area, slightly hilly area, hilly area) approximately (insert elevation) feet above mean sea level (MSL). The contour lines indicate that the Subject Property is sloping toward the (insert direction north, east, south, west, northeast, northwest, southeast, southwest, north northeast, north northwest, east northeast, east southeast, west northwest, west southwest). A copy of the topographic map of the Subject Property is included in Appendix A.',
+            quickOptions: null,
+        },
+        {
+            id: 'surface-water-bodies',
+            type: 'textarea',
+            label: 'Surface Water Bodies',
+            rows: 3,
+            defaultValue: 'There are no surface water bodies on or immediately adjacent to the Subject Property.\nOR describe any applicable water body...',
+            quickOptions: null,
+        },
+    ],
+
+    observations: [
+        {
+            id: 'general-condition',
+            type: 'condition-selector',
+            label: 'General Condition',
+            options: ['Good', 'Fair', 'Poor'],
+        },
+        {
+            id: 'age-lastaction',
+            type: 'textarea',
+            label: 'Age / Last Action',
+            rows: 3,
+            defaultValue: 'The topography and storm water drainage components are original and are maintained as part of the routine maintenance of the facility.',
+            quickOptions: null,
+        },
+    ],
+
+    concerns: [
+        {
+            id: 'signs-of-ponding',
+            type: 'textarea',
+            label: 'Signs of Ponding',
+            rows: 3,
+            defaultValue: 'No significant areas of ponding were noted by or reported to NDDS\'s assessor.\nOr describe the area of concern...',
+            quickOptions: null,
+        },
+        {
+            id: 'signs-of-erosion',
+            type: 'textarea',
+            label: 'Signs of Erosion',
+            rows: 3,
+            defaultValue: 'No significant areas of erosion were noted by or reported to NDDS\'s assessor.\nOr describe the area of concern...',
+            quickOptions: null,
+        },
+        {
+            id: 'drainage-issues',
+            type: 'textarea',
+            label: 'Drainage Issues',
+            rows: 3,
+            defaultValue: 'No major drainage problems were noted by or reported to NDDS\'s assessor.\nOr describe the drainage issues',
+            quickOptions: null,
+        },
+        {
+            id: 'indications-of-wetlands',
+            type: 'textarea',
+            label: 'Indications of Wetlands',
+            rows: 5,
+            defaultValue: 'NDDS did not observe any water bodies or vegetation indicative of wetlands on the Subject Property. The majority of the property is covered with the building(s), paved driveways and parking areas, and landscaping. It is unlikely that portions of the Subject Property would be classified as wetlands.\nOr describe the location and size of potential wetland\nNDDS reviewed the US Fish and Wildlife Wetlands map of the Subject Property. No wetlands are depicted on the property Or describe the location and type of wetland. A copy of the wetland map is included in Appendix A.',
+            quickOptions: null,
+        },
+    ],
+
+    recommendations: [
+        {
+            id: 'recommendations',
+            type: 'textarea',
+            label: 'Recommendations',
+            rows: 4,
+            defaultValue: '',
+            quickOptions: [
+                {
+                    label: 'Routine maintenance',
+                    text: 'The topography and storm water drainage should be maintained as part of the routine maintenance of the property.',
+                },
+                {
+                    label: 'Potential wetlands identified',
+                    text: 'OR Potential wetlands were identified on the property. NDDS recommends that a determination be made regarding whether or not this area would be considered a jurisdictional wetland prior to any development activities likely to impact this area. NDDS was not informed of any planned development activities, so no costs are identified at this time.',
+                },
+                {
+                    label: 'Costs included',
+                    text: 'Costs are included in the short term/immediate term of the Deferred Maintenance/Physical Deficiencies Table 1 in Appendix C. OR Costs have been included in the Capital Replacement Reserve Schedule Table 2 in Appendix C.',
+                },
+
+            ],
+        },
+    ],
+}
 
 //sec 5.2
 

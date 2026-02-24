@@ -3,6 +3,7 @@ import type { ReportContentRow, SectionData } from '@/types/database';
 import { propertyConditionSummary } from '@/data/templates/group2';
 
 import {
+  topographyStormwater,
   accessEgress,
   pavingCurbingParking,
   flatwork,
@@ -56,12 +57,12 @@ const STEP_TO_SECTION: Record<number, keyof ReportContentRow> = {
   7: 'section_2_introduction',
   8: 'section_3_property', 9: 'section_3_property', 10: 'section_3_property',
   11: 'section_4_documents', 12: 'section_4_documents', 13: 'section_4_documents', 14: 'section_4_documents', 15: 'section_4_documents',
-  16: 'section_5_site_grounds', 17: 'section_5_site_grounds', 18: 'section_5_site_grounds', 19: 'section_5_site_grounds', 20: 'section_5_site_grounds',
-  21: 'section_6_building_envelope', 22: 'section_6_building_envelope', 23: 'section_6_building_envelope', 24: 'section_6_building_envelope',
-  25: 'section_7_mechanical', 26: 'section_7_mechanical', 27: 'section_7_mechanical', 28: 'section_7_mechanical',
-  29: 'section_8_interior', 30: 'section_8_interior',
-  31: 'section_9_fire_protection', 32: 'section_9_fire_protection',
-  33: 'section_10_additional', 34: 'section_10_additional', 35: 'section_10_additional',
+  16: 'section_5_site_grounds', 17: 'section_5_site_grounds', 18: 'section_5_site_grounds', 19: 'section_5_site_grounds', 20: 'section_5_site_grounds', 21: 'section_5_site_grounds',
+  22: 'section_6_building_envelope', 23: 'section_6_building_envelope', 24: 'section_6_building_envelope', 25: 'section_6_building_envelope',
+  26: 'section_7_mechanical', 27: 'section_7_mechanical', 28: 'section_7_mechanical', 29: 'section_7_mechanical',
+  30: 'section_8_interior', 31: 'section_8_interior',
+  32: 'section_9_fire_protection', 33: 'section_9_fire_protection',
+  34: 'section_10_additional', 35: 'section_10_additional', 36: 'section_10_additional',
 };
 
 // ---------------------------------------------------------------------------
@@ -397,25 +398,26 @@ export function assembleReportHtml(
 
   // ----- D/O/C/R sections -----
   const docrSections = [
-    { id: 'section-5-2', num: '5.2', title: 'Access and Egress', config: accessEgress as SectionConfig, step: 16 },
-    { id: 'section-5-3', num: '5.3', title: 'Paving, Curbing and Parking', config: pavingCurbingParking as SectionConfig, step: 17 },
-    { id: 'section-5-4', num: '5.4', title: 'Flatwork', config: flatwork as SectionConfig, step: 18 },
-    { id: 'section-5-5', num: '5.5', title: 'Landscaping and Appurtenances', config: landscapingAppurtenances as SectionConfig, step: 19 },
-    { id: 'section-5-6', num: '5.6', title: 'Ancillary Structures', config: ancillaryStructures as SectionConfig, step: 20 },
-    { id: 'section-6-1', num: '6.1', title: 'Foundation', config: foundation as SectionConfig, step: 21 },
-    { id: 'section-6-2', num: '6.2', title: 'Building Frame', config: buildingFrame as SectionConfig, step: 22 },
-    { id: 'section-6-3', num: '6.3', title: 'Facades or Curtain Wall', config: facadesCurtainWall as SectionConfig, step: 23 },
-    { id: 'section-6-4', num: '6.4', title: 'Roofing', config: roofing as SectionConfig, step: 24 },
-    { id: 'section-7-1', num: '7.1', title: 'Heating, Ventilation and Air Conditioning', config: heatingAndCooling as SectionConfig, step: 25 },
-    { id: 'section-7-2', num: '7.2', title: 'Electrical', config: electrical as SectionConfig, step: 26 },
-    { id: 'section-7-3', num: '7.3', title: 'Plumbing', config: plumbing as SectionConfig, step: 27 },
-    { id: 'section-7-4', num: '7.4', title: 'Elevators and Escalators', config: elevatorsAndEscalators as SectionConfig, step: 28 },
-    { id: 'section-8-1', num: '8.1', title: 'Common Areas', config: commonAreas as SectionConfig, step: 29 },
-    { id: 'section-8-2', num: '8.2', title: 'Tenant Spaces', config: tenantSpaces as SectionConfig, step: 30 },
-    { id: 'section-9-1', num: '9.1', title: 'Sprinklers and Standpipes', config: sprinklersAndStandpipes as SectionConfig, step: 31 },
-    { id: 'section-9-2', num: '9.2', title: 'Alarm Systems', config: alarmSystems as SectionConfig, step: 32 },
-    { id: 'section-10-1', num: '10.1', title: 'Natural Hazards', config: naturalHazards as SectionConfig, step: 33 },
-    { id: 'section-10-2', num: '10.2', title: 'Microbial Contamination (Mold)', config: microbialContamination as SectionConfig, step: 34 },
+    { id: 'section-5-1', num: '5.1', title: 'Topography and Stormwater Drainage', config: topographyStormwater as SectionConfig, step: 16 },
+    { id: 'section-5-2', num: '5.2', title: 'Access and Egress', config: accessEgress as SectionConfig, step: 17 },
+    { id: 'section-5-3', num: '5.3', title: 'Paving, Curbing and Parking', config: pavingCurbingParking as SectionConfig, step: 18 },
+    { id: 'section-5-4', num: '5.4', title: 'Flatwork', config: flatwork as SectionConfig, step: 19 },
+    { id: 'section-5-5', num: '5.5', title: 'Landscaping and Appurtenances', config: landscapingAppurtenances as SectionConfig, step: 20 },
+    { id: 'section-5-6', num: '5.6', title: 'Ancillary Structures', config: ancillaryStructures as SectionConfig, step: 21 },
+    { id: 'section-6-1', num: '6.1', title: 'Foundation', config: foundation as SectionConfig, step: 22 },
+    { id: 'section-6-2', num: '6.2', title: 'Building Frame', config: buildingFrame as SectionConfig, step: 23 },
+    { id: 'section-6-3', num: '6.3', title: 'Facades or Curtain Wall', config: facadesCurtainWall as SectionConfig, step: 24 },
+    { id: 'section-6-4', num: '6.4', title: 'Roofing', config: roofing as SectionConfig, step: 25 },
+    { id: 'section-7-1', num: '7.1', title: 'Heating, Ventilation and Air Conditioning', config: heatingAndCooling as SectionConfig, step: 26 },
+    { id: 'section-7-2', num: '7.2', title: 'Electrical', config: electrical as SectionConfig, step: 27 },
+    { id: 'section-7-3', num: '7.3', title: 'Plumbing', config: plumbing as SectionConfig, step: 28 },
+    { id: 'section-7-4', num: '7.4', title: 'Elevators and Escalators', config: elevatorsAndEscalators as SectionConfig, step: 29 },
+    { id: 'section-8-1', num: '8.1', title: 'Common Areas', config: commonAreas as SectionConfig, step: 30 },
+    { id: 'section-8-2', num: '8.2', title: 'Tenant Spaces', config: tenantSpaces as SectionConfig, step: 31 },
+    { id: 'section-9-1', num: '9.1', title: 'Sprinklers and Standpipes', config: sprinklersAndStandpipes as SectionConfig, step: 32 },
+    { id: 'section-9-2', num: '9.2', title: 'Alarm Systems', config: alarmSystems as SectionConfig, step: 33 },
+    { id: 'section-10-1', num: '10.1', title: 'Natural Hazards', config: naturalHazards as SectionConfig, step: 34 },
+    { id: 'section-10-2', num: '10.2', title: 'Microbial Contamination (Mold)', config: microbialContamination as SectionConfig, step: 35 },
   ];
 
   // Build D/O/C/R section HTML, grouped by parent section headers
@@ -1208,12 +1210,12 @@ ${pv(content, 4, 'recommendations-text') ? `<p>${pv(content, 4, 'recommendations
 <h3 id="section-2-4">2.4&nbsp;&nbsp;&nbsp;General Property Reconnaissance Information</h3>
 
 <table class="kv-table">
-  <tr><td class="kv-label">DATE OF ASSESSMENT:</td><td>${pvRaw(content, 7, 'date-of-assessment')}</td></tr>
-  <tr><td class="kv-label">WEATHER CONDITIONS:</td><td>${pvRaw(content, 7, 'weather-conditions')}</td></tr>
-  <tr><td class="kv-label">ASSESSOR:</td><td>${pv(content, 7, 'assessor')}<br>A copy of the Professional Assessor's qualifications is included in Appendix D.</td></tr>
-  <tr><td class="kv-label">PROPERTY CONTACT/ESCORT:</td><td>${pvRaw(content, 7, 'property-contact-escort')}</td></tr>
-  <tr><td class="kv-label">AREAS ACCESSED:</td><td>${pv(content, 7, 'areas-accessed')}</td></tr>
-  <tr><td class="kv-label">LIMITATIONS:</td><td>${pv(content, 7, 'limitations')}</td></tr>
+  <tr><td class="kv-label">DATE OF ASSESSMENT:</td><td>${pvRaw(content, 8, 'date-of-assessment')}</td></tr>
+  <tr><td class="kv-label">WEATHER CONDITIONS:</td><td>${pvRaw(content, 8, 'weather-conditions')}</td></tr>
+  <tr><td class="kv-label">ASSESSOR:</td><td>${pv(content, 8, 'assessor')}<br>A copy of the Professional Assessor's qualifications is included in Appendix D.</td></tr>
+  <tr><td class="kv-label">PROPERTY CONTACT/ESCORT:</td><td>${pvRaw(content, 8, 'property-contact-escort')}</td></tr>
+  <tr><td class="kv-label">AREAS ACCESSED:</td><td>${pv(content, 8, 'areas-accessed')}</td></tr>
+  <tr><td class="kv-label">LIMITATIONS:</td><td>${pv(content, 8, 'limitations')}</td></tr>
 </table>
 
 <!-- 2.5 User Reliance -->
@@ -1231,26 +1233,26 @@ ${pv(content, 4, 'recommendations-text') ? `<p>${pv(content, 4, 'recommendations
 <h2 id="section-3-0">3.0&nbsp;&nbsp;&nbsp;PROPERTY CHARACTERISTICS</h2>
 
 <h3 id="section-3-1">3.1&nbsp;&nbsp;&nbsp;Location and Description</h3>
-${pv(content, 8, 'location-description') ? `<p>${pv(content, 8, 'location-description')}</p>` : ''}
-${pv(content, 8, 'provided-legal-description') ? `<p>${pv(content, 8, 'provided-legal-description')}</p>` : '<p>A site diagram is provided in Appendix A of this report. Photographs of the Subject Property are provided in Appendix B.</p>'}
+${pv(content, 9, 'location-description') ? `<p>${pv(content, 9, 'location-description')}</p>` : ''}
+${pv(content, 9, 'provided-legal-description') ? `<p>${pv(content, 9, 'provided-legal-description')}</p>` : '<p>A site diagram is provided in Appendix A of this report. Photographs of the Subject Property are provided in Appendix B.</p>'}
 
 <h3 id="section-3-2">3.2&nbsp;&nbsp;&nbsp;Tenant and Lease Information</h3>
 <table class="kv-table">
-  <tr><td class="kv-label">TENANTS:</td><td>${pv(content, 9, 'tenants')}</td></tr>
-  <tr><td class="kv-label">LEASE INFORMATION:</td><td>${pv(content, 9, 'lease-information')}</td></tr>
+  <tr><td class="kv-label">TENANTS:</td><td>${pv(content, 10, 'tenants')}</td></tr>
+  <tr><td class="kv-label">LEASE INFORMATION:</td><td>${pv(content, 10, 'lease-information')}</td></tr>
 </table>
 
 <h3 id="section-3-3">3.3&nbsp;&nbsp;&nbsp;Utility and Service Providers</h3>
 <table class="kv-table">
-  <tr><td class="kv-label">POTABLE WATER</td><td>${pvRaw(content, 10, 'portable-water')}</td></tr>
-  <tr><td class="kv-label">ELECTRICITY</td><td>${pvRaw(content, 10, 'electricity')}</td></tr>
-  <tr><td class="kv-label">NATURAL GAS</td><td>${pvRaw(content, 10, 'natural-gas')}</td></tr>
-  <tr><td class="kv-label">STORM WATER</td><td>${pvRaw(content, 10, 'storm-water')}</td></tr>
-  <tr><td class="kv-label">SANITARY SEWER</td><td>${pvRaw(content, 10, 'sanitary-sewer')}</td></tr>
-  <tr><td class="kv-label">HVAC MAINTENANCE</td><td>${pvRaw(content, 10, 'hvac-maintenance')}</td></tr>
-  <tr><td class="kv-label">FIRE/SECURITY</td><td>${pvRaw(content, 10, 'fire-security')}</td></tr>
-  <tr><td class="kv-label">ROOF MAINTENANCE</td><td>${pvRaw(content, 10, 'roof-maintenance')}</td></tr>
-  <tr><td colspan="2">${pv(content, 10, 'special-utility-notes') || 'No deficiencies or Special Utility Systems were observed or reported.'}</td></tr>
+  <tr><td class="kv-label">POTABLE WATER</td><td>${pvRaw(content, 11, 'portable-water')}</td></tr>
+  <tr><td class="kv-label">ELECTRICITY</td><td>${pvRaw(content, 11, 'electricity')}</td></tr>
+  <tr><td class="kv-label">NATURAL GAS</td><td>${pvRaw(content, 11, 'natural-gas')}</td></tr>
+  <tr><td class="kv-label">STORM WATER</td><td>${pvRaw(content, 11, 'storm-water')}</td></tr>
+  <tr><td class="kv-label">SANITARY SEWER</td><td>${pvRaw(content, 11, 'sanitary-sewer')}</td></tr>
+  <tr><td class="kv-label">HVAC MAINTENANCE</td><td>${pvRaw(content, 11, 'hvac-maintenance')}</td></tr>
+  <tr><td class="kv-label">FIRE/SECURITY</td><td>${pvRaw(content, 11, 'fire-security')}</td></tr>
+  <tr><td class="kv-label">ROOF MAINTENANCE</td><td>${pvRaw(content, 11, 'roof-maintenance')}</td></tr>
+  <tr><td colspan="2">${pv(content, 11, 'special-utility-notes') || 'No deficiencies or Special Utility Systems were observed or reported.'}</td></tr>
 </table>
 
 <!-- ================================================================ -->
@@ -1262,11 +1264,11 @@ ${pv(content, 8, 'provided-legal-description') ? `<p>${pv(content, 8, 'provided-
 
 <h3 id="section-4-1">4.1&nbsp;&nbsp;&nbsp;Property Questionnaire</h3>
 <p>NDDS requested that a property questionnaire be completed by someone familiar with the operation and maintenance of the facility. The questionnaire covered past and planned capital improvements, typical replacement costs, information from previous assessments and the description of any known or suspected issues of concern.</p>
-${pv(content, 11, 'questionnaire-status') ? `<p>${pv(content, 11, 'questionnaire-status')}</p>` : ''}
+${pv(content, 12, 'questionnaire-status') ? `<p>${pv(content, 12, 'questionnaire-status')}</p>` : ''}
 
 <h3 id="section-4-2">4.2&nbsp;&nbsp;&nbsp;Interviews</h3>
 ${(() => {
-  const sd = getStepData(content, 12);
+  const sd = getStepData(content, 13);
   const fields = (sd['fields'] ?? sd) as Record<string, unknown>;
   const suffixes: number[] = [];
   for (const key of Object.keys(fields)) {
@@ -1277,9 +1279,9 @@ ${(() => {
   if (suffixes.length === 0) suffixes.push(1);
 
   return suffixes.map(n => {
-    const name = nl2br(getVal(content, 12, 'fields', `interviewee-${n}`));
-    const info = nl2br(getVal(content, 12, 'fields', `pertinent-info-${n}`));
-    const concerns = nl2br(getVal(content, 12, 'fields', `concerns-${n}`));
+    const name = nl2br(getVal(content, 13, 'fields', `interviewee-${n}`));
+    const info = nl2br(getVal(content, 13, 'fields', `pertinent-info-${n}`));
+    const concerns = nl2br(getVal(content, 13, 'fields', `concerns-${n}`));
     return `<table class="kv-table">
   <tr><td class="kv-label">INTERVIEWEE</td><td>${name || '<span class="placeholder">\u2014</span>'}</td></tr>
   <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${info || '<span class="placeholder">\u2014</span>'}</td></tr>
@@ -1290,30 +1292,30 @@ ${(() => {
 
 <h3 id="section-4-3">4.3&nbsp;&nbsp;&nbsp;Building and Fire Departments</h3>
 <table class="kv-table">
-  <tr><td class="kv-label">BUILDING DEPARTMENT CONTACT</td><td>${pvRaw(content, 13, 'building-dept-name')}<br>${pvRaw(content, 13, 'building-dept-phone')}<br>${pvRaw(content, 13, 'building-dept-website')}</td></tr>
-  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 13, 'building-pertinent-info')}</td></tr>
-  <tr><td class="kv-label">FIRE DEPARTMENT CONTACT</td><td>${pvRaw(content, 13, 'fire-dept-name')}<br>${pvRaw(content, 13, 'fire-dept-phone')}<br>${pvRaw(content, 13, 'fire-dept-website')}</td></tr>
-  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 13, 'fire-pertinent-info')}</td></tr>
-  <tr><td class="kv-label">CONCERNS</td><td>${pv(content, 13, 'building-fire-concerns')}</td></tr>
-  <tr><td class="kv-label">RECOMMENDATIONS</td><td>${pv(content, 13, 'building-fire-recommendations')}</td></tr>
+  <tr><td class="kv-label">BUILDING DEPARTMENT CONTACT</td><td>${pvRaw(content, 14, 'building-dept-name')}<br>${pvRaw(content, 14, 'building-dept-phone')}<br>${pvRaw(content, 14, 'building-dept-website')}</td></tr>
+  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 14, 'building-pertinent-info')}</td></tr>
+  <tr><td class="kv-label">FIRE DEPARTMENT CONTACT</td><td>${pvRaw(content, 14, 'fire-dept-name')}<br>${pvRaw(content, 14, 'fire-dept-phone')}<br>${pvRaw(content, 14, 'fire-dept-website')}</td></tr>
+  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 14, 'fire-pertinent-info')}</td></tr>
+  <tr><td class="kv-label">CONCERNS</td><td>${pv(content, 14, 'building-fire-concerns')}</td></tr>
+  <tr><td class="kv-label">RECOMMENDATIONS</td><td>${pv(content, 14, 'building-fire-recommendations')}</td></tr>
 </table>
 
 <h3 id="section-4-4">4.4&nbsp;&nbsp;&nbsp;Zoning Department</h3>
 <table class="kv-table">
-  <tr><td class="kv-label">ZONING DEPARTMENT CONTACT</td><td>${pvRaw(content, 14, 'zoning-dept-contact')}</td></tr>
-  <tr><td class="kv-label">ZONE</td><td>${pvRaw(content, 14, 'zone')}</td></tr>
-  <tr><td class="kv-label">ZONING COMPLIANCE</td><td>${pv(content, 14, 'zoning-compliance')}</td></tr>
-  <tr><td class="kv-label">CONCERNS</td><td>${pv(content, 14, 'zoning-concerns')}</td></tr>
-  <tr><td class="kv-label">RECOMMENDATIONS</td><td>${pv(content, 14, 'zoning-recommendations')}</td></tr>
+  <tr><td class="kv-label">ZONING DEPARTMENT CONTACT</td><td>${pvRaw(content, 15, 'zoning-dept-contact')}</td></tr>
+  <tr><td class="kv-label">ZONE</td><td>${pvRaw(content, 15, 'zone')}</td></tr>
+  <tr><td class="kv-label">ZONING COMPLIANCE</td><td>${pv(content, 15, 'zoning-compliance')}</td></tr>
+  <tr><td class="kv-label">CONCERNS</td><td>${pv(content, 15, 'zoning-concerns')}</td></tr>
+  <tr><td class="kv-label">RECOMMENDATIONS</td><td>${pv(content, 15, 'zoning-recommendations')}</td></tr>
 </table>
 
 <h3 id="section-4-5">4.5&nbsp;&nbsp;&nbsp;Previous Reports</h3>
-${pvRaw(content, 15, 'report-title') ? `
+${pvRaw(content, 16, 'report-title') ? `
 <table class="kv-table">
-  <tr><td class="kv-label">REPORT TITLE</td><td>${pvRaw(content, 15, 'report-title')}</td></tr>
-  <tr><td class="kv-label">PREPARED BY</td><td>${pvRaw(content, 15, 'prepared-by')}</td></tr>
-  <tr><td class="kv-label">DATE OF REPORT</td><td>${pvRaw(content, 15, 'date-of-report')}</td></tr>
-  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 15, 'report-pertinent-info')}</td></tr>
+  <tr><td class="kv-label">REPORT TITLE</td><td>${pvRaw(content, 16, 'report-title')}</td></tr>
+  <tr><td class="kv-label">PREPARED BY</td><td>${pvRaw(content, 16, 'prepared-by')}</td></tr>
+  <tr><td class="kv-label">DATE OF REPORT</td><td>${pvRaw(content, 16, 'date-of-report')}</td></tr>
+  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 16, 'report-pertinent-info')}</td></tr>
 </table>
 ` : '<p>NDDS was not provided any previous reports for the Subject Property.</p>'}
 
@@ -1323,10 +1325,6 @@ ${pvRaw(content, 15, 'report-title') ? `
 </div><!-- end content-wrapper -->
 <div class="content-wrapper">
 <h2 id="section-5-0">5.0&nbsp;&nbsp;&nbsp;Site</h2>
-
-<h3 id="section-5-1">5.1&nbsp;&nbsp;&nbsp;Topography and Stormwater Drainage</h3>
-<!-- 5.1 is typically filled from field notes or a standard template; placeholder for now -->
-<p><em class="placeholder">[Topography and Stormwater Drainage content to be populated from field data]</em></p>
 
 ${section5Html}
 
