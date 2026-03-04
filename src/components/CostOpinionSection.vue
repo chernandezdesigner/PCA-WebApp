@@ -88,6 +88,31 @@ function parseCurrency(val: string): number {
   return isNaN(n) ? 0 : n;
 }
 
+function formatCurrencyInput(val: string): string {
+  const num = parseCurrency(val);
+  if (num === 0 && val.replace(/[^0-9]/g, '') === '') return '';
+  return `$${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+}
+
+function handleCurrencyInput(rowIdx: number, colId: string, raw: string) {
+  // Store the raw value so parseCurrency works for totals
+  updateCell(rowIdx, colId, raw);
+}
+
+function handleCurrencyBlur(rowIdx: number, colId: string) {
+  const raw = (rows.value[rowIdx][colId] as string) || '';
+  if (raw.trim() === '') return;
+  const formatted = formatCurrencyInput(raw);
+  updateCell(rowIdx, colId, formatted);
+}
+
+function handleReserveBlur(fieldId: string) {
+  const raw = getReserveField(fieldId);
+  if (raw.trim() === '') return;
+  const formatted = formatCurrencyInput(raw);
+  setReserveField(fieldId, formatted);
+}
+
 const immediateCostTotal = computed(() =>
   rows.value.reduce((sum, r) => sum + parseCurrency((r['immediate-cost'] as string) || ''), 0)
 );
@@ -194,7 +219,8 @@ const inputClass = computed(() =>
               :aria-label="`Item ${rowIdx + 1} immediate cost`"
               class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 text-right tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               :class="inputClass"
-              @input="updateCell(rowIdx, 'immediate-cost', ($event.target as HTMLInputElement).value)"
+              @input="handleCurrencyInput(rowIdx, 'immediate-cost', ($event.target as HTMLInputElement).value)"
+              @blur="handleCurrencyBlur(rowIdx, 'immediate-cost')"
             />
 
             <!-- Short-term cost -->
@@ -207,7 +233,8 @@ const inputClass = computed(() =>
               :aria-label="`Item ${rowIdx + 1} short-term cost`"
               class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 text-right tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               :class="inputClass"
-              @input="updateCell(rowIdx, 'short-term-cost', ($event.target as HTMLInputElement).value)"
+              @input="handleCurrencyInput(rowIdx, 'short-term-cost', ($event.target as HTMLInputElement).value)"
+              @blur="handleCurrencyBlur(rowIdx, 'short-term-cost')"
             />
 
             <!-- Remove -->
@@ -344,6 +371,7 @@ const inputClass = computed(() =>
               class="w-full px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               :class="inputClass"
               @input="setReserveField(field.id, ($event.target as HTMLInputElement).value)"
+              @blur="handleReserveBlur(field.id)"
             />
           </div>
         </div>

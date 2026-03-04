@@ -12,6 +12,7 @@ import AppendixSection from '@/components/AppendixSection.vue';
 import { useWebReportForm } from '@/composables/useWebReportForm';
 import { useTheme } from '@/composables/useTheme';
 import { useAuthStore } from '@/stores/authStore';
+import { supabase } from '@/services/supabase';
 import type { SectionConfig, PropertyInfoConfig, ChecklistConfig, ConditionSummaryConfig, CostOpinionConfig, AppendixConfig, BlockType, FormData, AnySection } from '@/types/section';
 import type { NavSection, NavSubsection } from '@/components/SidebarNavigation.vue';
 
@@ -290,12 +291,18 @@ function handleNavigate(_sectionId: string, step: number) {
   goToStep(step);
 }
 
-function handleNext() {
+async function handleNext() {
   markStepComplete(currentStep.value);
   if (currentStep.value < TOTAL_STEPS) {
     nextStep();
   } else {
     forceSave();
+    if (!isDemoMode.value) {
+      await supabase
+        .from('reports')
+        .update({ status: 'final' })
+        .eq('id', reportId.value);
+    }
     router.push('/');
   }
 }
@@ -310,14 +317,6 @@ function handleKeydown(event: KeyboardEvent) {
     if (isDirty.value) {
       forceSave();
     }
-  }
-  if ((event.ctrlKey || event.metaKey) && event.key === 'ArrowRight' && currentStep.value < TOTAL_STEPS) {
-    event.preventDefault();
-    handleNext();
-  }
-  if ((event.ctrlKey || event.metaKey) && event.key === 'ArrowLeft' && currentStep.value > 1) {
-    event.preventDefault();
-    handlePrev();
   }
 }
 
@@ -657,33 +656,12 @@ const isAppendixSection = computed(() => {
               Previous
             </button>
 
-            <div 
-              class="hidden md:flex items-center gap-4 text-xs"
+            <p
+              class="hidden md:block text-xs italic"
               :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
             >
-              <span class="flex items-center gap-1">
-                <kbd 
-                  class="px-1.5 py-0.5 rounded"
-                  :class="theme === 'dark' ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-100 text-slate-500'"
-                >
-                  Ctrl
-                </kbd>
-                <span>+</span>
-                <kbd 
-                  class="px-1.5 py-0.5 rounded"
-                  :class="theme === 'dark' ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-100 text-slate-500'"
-                >
-                  ←
-                </kbd>
-                <kbd 
-                  class="px-1.5 py-0.5 rounded"
-                  :class="theme === 'dark' ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-100 text-slate-500'"
-                >
-                  →
-                </kbd>
-                <span class="ml-1">Navigate</span>
-              </span>
-            </div>
+              Tip: Use the sidebar to jump between sections
+            </p>
 
             <button
               type="button"
@@ -711,9 +689,3 @@ const isAppendixSection = computed(() => {
   </div>
 </template>
 
-<style scoped>
-kbd {
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
-  font-size: 0.75rem;
-}
-</style>

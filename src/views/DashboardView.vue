@@ -766,16 +766,16 @@ onMounted(() => {
                     </button>
                   </template>
 
-                  <!-- Final: View + Export PDF -->
+                  <!-- Final: Edit + Export PDF -->
                   <template v-else-if="report.status === 'final'">
                     <button
-                      @click="handleViewReport(report.id)"
+                      @click="handleContinueEditing(report.id)"
                       class="px-3 py-2 text-sm font-medium rounded-lg border transition-colors"
                       :class="theme === 'dark'
                         ? 'text-zinc-300 border-zinc-700 hover:bg-zinc-800'
                         : 'text-slate-600 border-slate-300 hover:bg-slate-50'"
                     >
-                      View
+                      Edit
                     </button>
                     <button
                       @click="handleExportPdf(report.id)"
@@ -793,16 +793,16 @@ onMounted(() => {
                     </button>
                   </template>
 
-                  <!-- Exported: View + Download PDF -->
+                  <!-- Exported: Edit + Download PDF -->
                   <template v-else-if="report.status === 'exported'">
                     <button
-                      @click="handleViewReport(report.id)"
+                      @click="handleContinueEditing(report.id)"
                       class="px-3 py-2 text-sm font-medium rounded-lg border transition-colors"
                       :class="theme === 'dark'
                         ? 'text-zinc-300 border-zinc-700 hover:bg-zinc-800'
                         : 'text-slate-600 border-slate-300 hover:bg-slate-50'"
                     >
-                      View
+                      Edit
                     </button>
                     <button
                       @click="handleDownloadPdf(report.id, report.pdf_storage_path)"

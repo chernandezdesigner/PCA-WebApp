@@ -108,12 +108,18 @@ function vRaw(content: ReportContentRow, step: number, block: string, fieldId: s
   return escapeHtml(getVal(content, step, block, fieldId));
 }
 
-// For property-info style sections (group2), data is stored under 'fields' block
+// For property-info style sections (group2), data is stored directly on the step object
 function pv(content: ReportContentRow, step: number, fieldId: string): string {
+  const sd = getStepData(content, step);
+  const val = sd[fieldId];
+  if (typeof val === 'string') return nl2br(val);
   return nl2br(getVal(content, step, 'fields', fieldId));
 }
 
 function pvRaw(content: ReportContentRow, step: number, fieldId: string): string {
+  const sd = getStepData(content, step);
+  const val = sd[fieldId];
+  if (typeof val === 'string') return escapeHtml(val);
   return escapeHtml(getVal(content, step, 'fields', fieldId));
 }
 
@@ -453,15 +459,18 @@ export function assembleReportHtml(
   content: ReportContentRow,
   meta: ReportMeta,
 ): string {
-  const projectNum = escapeHtml(meta.projectNumber || '25XXXXXXX');
+  const projectNum = pvRaw(content, 1, 'project-number') || escapeHtml(meta.projectNumber || '25XXXXXXX');
   const propertyName = pvRaw(content, 1, 'property-name') || 'Subject Property';
   const propertyAddress = pvRaw(content, 1, 'property-address') || '';
   const city = pvRaw(content, 1, 'city') || '';
   const state = pvRaw(content, 1, 'state') || '';
   const zip = pvRaw(content, 1, 'zip') || '';
   const cityStateZip = [city, state].filter(Boolean).join(', ') + (zip ? ` ${zip}` : '');
-  const clientName = escapeHtml(meta.clientName || 'Client');
-  const dateIssued = escapeHtml(meta.dateIssued || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
+  const clientName = pvRaw(content, 1, 'client-name') || escapeHtml(meta.clientName || 'Client');
+  const clientContactName = pvRaw(content, 1, 'client-contact-name') || escapeHtml(meta.clientContactName || '');
+  const clientAddress = pvRaw(content, 1, 'client-address') || escapeHtml(meta.clientAddress || '');
+  const clientCityStateZip = pvRaw(content, 1, 'client-city-state-zip') || escapeHtml(meta.clientCityStateZip || '');
+  const dateIssued = pvRaw(content, 1, 'date-issued') || escapeHtml(meta.dateIssued || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
   const logoUrl = meta.logoUrl || 'https://firebasestorage.googleapis.com/v0/b/ndds-report-generator-version2.firebasestorage.app/o/Logo%2FASMLogoBlue.png?alt=media&token=31cf6b22-14d2-4a81-b699-7e9752c70748';
 
   // ----- TOC Items -----
@@ -1007,8 +1016,8 @@ export function assembleReportHtml(
   <div class="cover-prepared-for">
     Prepared For:<br>
     ${clientName}<br>
-    ${escapeHtml(meta.clientAddress || '')}<br>
-    ${escapeHtml(meta.clientCityStateZip || '')}
+    ${clientAddress}<br>
+    ${clientCityStateZip}
   </div>
   <div class="cover-footer">
     National Due Diligence Services, a Division of American Surveying and Mapping, Inc.<br>
@@ -1025,10 +1034,10 @@ export function assembleReportHtml(
   <p class="letter-date">${dateIssued}</p>
 
   <div class="letter-client-block">
-    ${escapeHtml(meta.clientContactName || 'Client Contact')}<br>
+    ${clientContactName || 'Client Contact'}<br>
     <strong>${clientName}</strong><br>
-    ${escapeHtml(meta.clientAddress || 'Address')}<br>
-    ${escapeHtml(meta.clientCityStateZip || 'City, State Zip Code')}
+    ${clientAddress || 'Address'}<br>
+    ${clientCityStateZip || 'City, State Zip Code'}
   </div>
 
   <div class="letter-re">
@@ -1039,7 +1048,7 @@ export function assembleReportHtml(
     <div class="re-indent">NDDS Project #${projectNum}</div>
   </div>
 
-  <p class="letter-salutation">Dear Mr., Mrs., Ms. ${escapeHtml(meta.clientContactName || 'Client Contact Name')},</p>
+  <p class="letter-salutation">Dear Mr., Mrs., Ms. ${clientContactName || 'Client Contact Name'},</p>
 
   <div class="letter-body">
     <p>National Due Diligence Services, a division of American Surveying and Mapping, Inc. (ASM) has completed a Property Condition Assessment (PCA) of the above referenced property. The PCA was conducted in accordance with the ASTM International (ASTM) Standard Guide for Property Condition Assessments: <u>Baseline Property Condition Assessment Process E 2018 24 (the Standard)</u>, the applicable engagement letter with <strong>${clientName}</strong> <strong>(Client)</strong> dated <span style="color: #c00000;">Month Day, 2025</span> and generally accepted industry standards.</p>
@@ -1203,7 +1212,7 @@ ${buildToc(tocItems)}
   <tr><td class="prop-label">COMMERCIAL UNITS</td><td class="prop-value">${pvRaw(content, 1, 'commercial-units')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'commercial-units__source') || ''}</td></tr>
   <tr><td class="prop-label">GROSS BUILDING AREA</td><td class="prop-value">${pvRaw(content, 1, 'gross-building-area')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'gross-building-area__source') || ''}</td></tr>
   <tr><td class="prop-label">NET RENTABLE AREA</td><td class="prop-value">${pvRaw(content, 1, 'net-rentable-area')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'net-rentable-area__source') || 'Rent roll'}</td></tr>
-  <tr><td class="prop-label">PARKING/PAVING</td><td class="prop-value">${pvRaw(content, 1, 'parking-paving')}</td><td style="font-size: 10pt;">${pvRaw(content, 1, 'parking-spaces') || '# Spaces'}</td><td style="font-size: 10pt;">${pvRaw(content, 1, 'parking-ada-spaces') || '# ADA Spaces'}</td></tr>
+  <tr><td class="prop-label">PARKING/PAVING</td><td class="prop-value">${pvRaw(content, 1, 'parking-paving')}</td><td style="font-size: 10pt;">${pvRaw(content, 1, 'num-spaces') || '# Spaces'}</td><td style="font-size: 10pt;">${pvRaw(content, 1, 'num-ada-spaces') || '# ADA Spaces'}</td></tr>
   <tr><td class="prop-label">FOUNDATION SYSTEMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'foundation-systems')}</td></tr>
   <tr><td class="prop-label">STRUCTURAL SYSTEMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'structural-systems')}</td></tr>
   <tr><td class="prop-label">ROOFING SYSTEMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'roofing-systems')}</td></tr>

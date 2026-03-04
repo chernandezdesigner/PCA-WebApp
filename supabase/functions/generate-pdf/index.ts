@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.90.1';
 
 const DOCRAPTOR_API_KEY = Deno.env.get('DOCRAPTOR_API_KEY') ?? '';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const SERVICE_ROLE_KEY = Deno.env.get('SERVICE_ROLE_KEY') ?? '';
 
 const FONT_FILES: Record<string, { family: string; weight: string; style: string }> = {
   'CALIBRI.TTF':  { family: 'Calibri', weight: 'normal', style: 'normal' },
@@ -54,7 +54,7 @@ serve(async (req: Request) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
       },
     });
   }
@@ -76,7 +76,7 @@ serve(async (req: Request) => {
       );
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
     // Load fonts and inject into HTML
     const fontCss = await loadFontsAsBase64(supabase);

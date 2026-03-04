@@ -6,6 +6,54 @@ export const generalDescription = {
     introText: 'At the request of Client, NDDS has performed a Property Condition Assessment (PCA) of the property located at Property Address, City State, herein referred to as the Subject Property. Salient property details are as follows:',
     
     fields: [
+        // --- Project / Engagement Info ---
+        {
+            id: '_header_engagement',
+            type: 'section-header',
+            label: 'Project & Client Information',
+        },
+        {
+            id: 'project-number',
+            type: 'text',
+            label: 'NDDS Project Number',
+            placeholder: 'e.g. 2523816',
+        },
+        {
+            id: 'date-issued',
+            type: 'text',
+            label: 'Date Issued',
+            placeholder: 'e.g. March 15, 2025',
+        },
+        {
+            id: 'client-name',
+            type: 'text',
+            label: 'Client Name',
+            placeholder: 'Enter client company name...',
+        },
+        {
+            id: 'client-contact-name',
+            type: 'text',
+            label: 'Client Contact Name',
+            placeholder: 'Enter contact person name...',
+        },
+        {
+            id: 'client-address',
+            type: 'text',
+            label: 'Client Address',
+            placeholder: 'Enter client street address...',
+        },
+        {
+            id: 'client-city-state-zip',
+            type: 'text',
+            label: 'Client City, State Zip',
+            placeholder: 'e.g. Orlando, FL 32801',
+        },
+        // --- Subject Property ---
+        {
+            id: '_header_property',
+            type: 'section-header',
+            label: 'Subject Property',
+        },
         {
             id: 'property-name',
             type: 'text',
@@ -23,18 +71,21 @@ export const generalDescription = {
             type: 'text',
             label: 'City',
             placeholder: 'Enter city...',
+            row: 'address-csz',
         },
         {
             id: 'state',
             type: 'text',
             label: 'State',
             placeholder: 'Enter state...',
+            row: 'address-csz',
         },
         {
             id: 'zip',
             type: 'text',
             label: 'Zip',
             placeholder: 'Enter zip...',
+            row: 'address-csz',
         },
         {
             id: 'property-use',

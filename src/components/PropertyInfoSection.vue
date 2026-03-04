@@ -33,6 +33,21 @@ const hasIntroText = computed(() => !!props.config.introText);
 const hasFields = computed(() => props.config.fields && props.config.fields.length > 0);
 const hasInterviewBlocks = computed(() => activeBlocks.value.length > 0);
 
+// Group consecutive fields that share the same `row` value
+const groupedFields = computed(() => {
+  if (!props.config.fields) return [];
+  const groups: { row?: string; fields: FieldConfig[] }[] = [];
+  for (const field of props.config.fields) {
+    const rowKey = (field as any).row as string | undefined;
+    if (rowKey && groups.length > 0 && groups[groups.length - 1].row === rowKey) {
+      groups[groups.length - 1].fields.push(field);
+    } else {
+      groups.push({ row: rowKey, fields: [field] });
+    }
+  }
+  return groups;
+});
+
 // Dynamic interview blocks
 const FIELD_ID_MAP: Record<string, string> = {
   'Interviewee': 'interviewee',
@@ -122,15 +137,43 @@ function removeInterviewBlock(index: number) {
 
     <!-- Regular Fields -->
     <div v-if="hasFields" class="space-y-6">
-      <DynamicField
-        v-for="field in config.fields"
-        :key="field.id"
-        :field="field"
-        :model-value="getFieldValue(field.id)"
-        :form-data="modelValue"
-        :disabled="disabled"
-        @update:model-value="(val) => updateFieldValue(field.id, val)"
-      />
+      <template v-for="(group, groupIdx) in groupedFields" :key="group.row || `g-${groupIdx}`">
+        <!-- Row group (e.g. city/state/zip) -->
+        <div v-if="group.row" class="grid gap-4" :style="{ gridTemplateColumns: `repeat(${group.fields.length}, minmax(0, 1fr))` }">
+          <DynamicField
+            v-for="field in group.fields"
+            :key="field.id"
+            :field="field"
+            :model-value="getFieldValue(field.id)"
+            :form-data="modelValue"
+            :disabled="disabled"
+            @update:model-value="(val) => updateFieldValue(field.id, val)"
+          />
+        </div>
+        <!-- Single fields -->
+        <template v-else v-for="field in group.fields" :key="field.id">
+          <!-- Section divider header -->
+          <div
+            v-if="(field as any).type === 'section-header'"
+            class="flex items-center gap-3 pt-2"
+          >
+            <span
+              class="text-xs font-semibold uppercase tracking-widest"
+              :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'"
+            >{{ (field as any).label }}</span>
+            <div class="flex-1 h-px" :class="theme === 'dark' ? 'bg-zinc-800' : 'bg-slate-200'"></div>
+          </div>
+          <!-- Regular field -->
+          <DynamicField
+            v-else
+            :field="field"
+            :model-value="getFieldValue(field.id)"
+            :form-data="modelValue"
+            :disabled="disabled"
+            @update:model-value="(val) => updateFieldValue(field.id, val)"
+          />
+        </template>
+      </template>
     </div>
 
     <!-- Interview Blocks -->
