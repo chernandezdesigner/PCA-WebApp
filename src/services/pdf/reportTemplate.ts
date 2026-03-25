@@ -1313,6 +1313,20 @@ ${pv(content, 3, 'opinion-of-probable-cost') ? `<p>${pv(content, 3, 'opinion-of-
 <h3 id="section-1-5">1.5&nbsp;&nbsp;&nbsp;Recommendations</h3>
 
 ${pv(content, 4, 'recommendations-text') ? `<p>${pv(content, 4, 'recommendations-text')}</p>` : ''}
+${(() => {
+  const sd = getStepData(content, 4);
+  const items = sd['physical-deficiency-items'];
+  if (!items || typeof items !== 'object') return '';
+  const entries = Object.entries(items as Record<string, string>)
+    .filter(([k, v]) => k.startsWith('deficiency-') && typeof v === 'string' && v.trim())
+    .sort(([a], [b]) => {
+      const numA = parseInt(a.split('-').pop() || '0');
+      const numB = parseInt(b.split('-').pop() || '0');
+      return numA - numB;
+    });
+  if (entries.length === 0) return '';
+  return '<ul>\n' + entries.map(([, val]) => `  <li>${escapeHtml(val)}</li>`).join('\n') + '\n</ul>';
+})()}
 
 <!-- ================================================================ -->
 <!-- SECTION 2.0 - INTRODUCTION                                      -->

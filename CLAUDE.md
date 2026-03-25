@@ -56,4 +56,6 @@ supabase/
 
 ## Status
 
-Template HTML is built out for all 10 sections + appendices. PDF generation pipeline is functional end-to-end. Currently testing and doing surgical fixes to template layout and data wiring.
+Template HTML is built out for all 10 sections + appendices. PDF generation pipeline is functional end-to-end. Currently testing and doing surgical fixes to template layout, data wiring and form wizard steps. 
+
+we are working with multiple claude instances at once so be weary to not break things or touch code not necessary to touch.
