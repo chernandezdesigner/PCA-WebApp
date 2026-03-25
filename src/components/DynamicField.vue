@@ -403,19 +403,26 @@ function getConditionButtonClass(option: string): string {
 
         <!-- Additional fields (like # Spaces, # ADA Spaces) -->
         <div v-if="renderField.additionalFields?.length" class="flex gap-3 mt-2">
-          <div 
-            v-for="addField in renderField.additionalFields" 
+          <div
+            v-for="addField in renderField.additionalFields"
             :key="addField.id"
             class="flex-1"
           >
+            <label
+              v-if="addField.label"
+              class="block text-sm font-medium mb-1"
+              :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-700'"
+            >
+              {{ addField.label }}
+            </label>
             <input
               :value="compoundValue[addField.id] || ''"
               type="text"
               :placeholder="addField.placeholder"
               :disabled="disabled"
               class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              :class="theme === 'dark' 
-                ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50' 
+              :class="theme === 'dark'
+                ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50'
                 : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50'"
               @input="updateCompoundField(addField.id, ($event.target as HTMLInputElement).value)"
             />

@@ -383,9 +383,9 @@ async function handleLogout() {
 
 // Progress calculation
 function getProgress(report: ReportItem): number {
-  const totalSteps = 29;
+  const totalSteps = 37;
   const completed = report.completed_steps?.length || 0;
-  return Math.round((completed / totalSteps) * 100);
+  return Math.min(100, Math.round((completed / totalSteps) * 100));
 }
 
 // Lifecycle

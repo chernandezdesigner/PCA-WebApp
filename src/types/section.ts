@@ -32,7 +32,7 @@ export interface TextField extends BaseField {
   type: 'text';
   sourceLabel?: string;
   sourcePlaceholder?: string;
-  additionalFields?: { id: string; placeholder: string }[];
+  additionalFields?: { id: string; placeholder: string; label?: string }[];
 }
 
 // Conditional field (shows based on another field's value)

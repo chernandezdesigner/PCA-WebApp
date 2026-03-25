@@ -203,11 +203,11 @@ export const generalDescription = {
         {
             id: 'parking-paving',
             type: 'text',
-            label: 'Parking/Paving',
+            label: 'Describe Paving',
             placeholder: 'Describe paving...',
             additionalFields: [
-                { id: 'num-spaces', placeholder: '# Spaces' },
-                { id: 'num-ada-spaces', placeholder: '# ADA Spaces' },
+                { id: 'num-spaces', label: 'Number of Spaces', placeholder: '# Spaces' },
+                { id: 'num-ada-spaces', label: 'ADA Spaces', placeholder: '# ADA Spaces' },
             ],
         },
         {
@@ -453,9 +453,8 @@ export const generalPropertyReconnaissanceInformation = {
         },
         {
             id: 'assessor',
-            type: 'textarea',
+            type: 'text',
             label: 'Assessor',
-            rows: 2,
             placeholder: 'Professional Assessor\'s Name',
             helperText: 'A copy of the Professional Assessor\'s qualifications is included in Appendix D.',
         },
@@ -623,7 +622,7 @@ export const utilityAndServiceProviders = {
         {
             id: 'special-utility-notes',
             type: 'textarea',
-            label: 'Special Utility Systems',
+            label: 'Additional Notes & Deficiencies',
             rows: 2,
             placeholder: 'Note any deficiencies, needs and/or any Special Utility Systems present',
         },
