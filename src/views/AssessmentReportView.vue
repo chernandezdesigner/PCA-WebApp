@@ -126,7 +126,7 @@ const allSectionConfigs: Record<number, {
   35: { id: '10.2', title: 'Microbial Contamination', config: microbialContamination as SectionConfig, type: 'report' },
   36: { id: '10.3', title: 'ADA Screening', config: adaScreeningChecklist as ChecklistConfig, type: 'checklist' },
   // Appendices (1 step)
-  37: { id: 'APP', title: 'Appendices', config: { appendixType: 'appendix' } as AppendixConfig, type: 'appendix' },
+  37: { id: 'APP', title: 'Uploads & Appendices', config: { appendixType: 'appendix' } as AppendixConfig, type: 'appendix' },
 };
 
 // Navigation structure for sidebar
@@ -231,7 +231,7 @@ const navSections: NavSection[] = [
     id: 'appendices',
     title: 'Appendices',
     subsections: [
-      { id: 'APP', title: 'Appendices A\u2013E', step: 37 },
+      { id: 'APP', title: 'Uploads & Appendices', step: 37 },
     ],
   },
 ];

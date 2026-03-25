@@ -7,12 +7,17 @@ const props = withDefaults(defineProps<{
   modelValue: UploadedFile[];
   accept?: string;
   maxSizeMb?: number;
+  maxFiles?: number;
   bucket: string;
   storagePath: string;
 }>(), {
   accept: 'image/png,image/jpeg,image/gif,application/pdf',
   maxSizeMb: 50,
+  maxFiles: 0,
 });
+
+const isAtLimit = computed(() => props.maxFiles > 0 && files.value.length >= props.maxFiles);
+const isSingleMode = computed(() => props.maxFiles === 1);
 
 const emit = defineEmits<{
   'update:modelValue': [value: UploadedFile[]];
@@ -58,9 +63,22 @@ async function handleFiles(fileList: FileList | File[]) {
 
   if (validFiles.length === 0) return;
 
+  // In single-file mode, only take the first file
+  if (isSingleMode.value) {
+    validFiles.splice(1);
+  }
+
   const uploaded = await uploadFiles(validFiles, props.bucket, props.storagePath);
   if (uploaded.length > 0) {
-    emit('update:modelValue', [...props.modelValue, ...uploaded]);
+    if (isSingleMode.value) {
+      // Replace: delete existing file(s) first, then set the new one
+      for (const existing of props.modelValue) {
+        await deleteFile(props.bucket, existing.storage_path);
+      }
+      emit('update:modelValue', [uploaded[0]]);
+    } else {
+      emit('update:modelValue', [...props.modelValue, ...uploaded]);
+    }
   }
 }
 
@@ -143,7 +161,7 @@ async function handlePaste() {
       ref="fileInput"
       type="file"
       :accept="accept"
-      multiple
+      :multiple="!isSingleMode"
       class="hidden"
       @change="handleInputChange"
     />
@@ -244,6 +262,7 @@ async function handlePaste() {
 
       <!-- Add more -->
       <div
+        v-if="!isAtLimit"
         class="px-4 py-3 border-t flex items-center justify-center gap-3"
         :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'"
       >
@@ -266,6 +285,7 @@ async function handlePaste() {
 
       <!-- Action buttons -->
       <div
+        v-if="!isAtLimit"
         class="px-4 py-2.5 border-t flex items-center gap-2"
         :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'"
       >

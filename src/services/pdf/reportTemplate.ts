@@ -43,6 +43,8 @@ export interface ReportMeta {
   reviewedByTitle: string;
   coverPhotoUrl?: string;
   logoUrl?: string;
+  table1ImageUrl?: string;
+  table2ImageUrl?: string;
 }
 
 interface StepData {
@@ -559,6 +561,11 @@ export function assembleReportHtml(
   const section9Html = docrSections.filter(s => s.num.startsWith('9.')).map(s => renderDOCRSection(s.id, s.num, s.title, s.config, content, s.step)).join('\n');
   const section10Html = docrSections.filter(s => s.num.startsWith('10.')).map(s => renderDOCRSection(s.id, s.num, s.title, s.config, content, s.step)).join('\n');
 
+  // Appendices uploads (URLs resolved by pdfGenerationService)
+  const coverPhotoUrl = meta.coverPhotoUrl || '';
+  const table1ImageUrl = meta.table1ImageUrl || '';
+  const table2ImageUrl = meta.table2ImageUrl || '';
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -884,6 +891,31 @@ export function assembleReportHtml(
     .appendix-cover h2 { font-size: 18pt; color: #0C306C; }
     .appendix-cover p { font-size: 14pt; text-align: center; color: #0C306C; }
 
+    /* Table divider pages (same style as appendix covers) */
+    .table-cover {
+      page: content;
+      page-break-before: always;
+      text-align: center;
+      padding-top: 3in;
+    }
+    .table-cover h2 { font-size: 18pt; font-weight: bold; color: #0C306C; }
+    .table-cover p { font-size: 14pt; text-align: center; color: #0C306C; }
+
+    /* Landscape page for table images */
+    @page landscape-table {
+      size: letter landscape;
+      margin: 0.25in;
+    }
+    .table-image-page {
+      page: landscape-table;
+      page-break-before: always;
+      text-align: center;
+    }
+    .table-image-page img {
+      width: 100%;
+      height: auto;
+    }
+
     /* Property Condition Summary page */
     .pcs-page {
       page: content;
@@ -1008,7 +1040,7 @@ export function assembleReportHtml(
   <div class="cover-title">PROPERTY CONDITION ASSESSMENT REPORT</div>
   <div class="cover-property-name">${propertyName}</div>
   <div class="cover-photo">
-    ${meta.coverPhotoUrl ? `<img src="${escapeHtml(meta.coverPhotoUrl)}" alt="Property Photo" />` : '<!-- Cover photo placeholder -->'}
+    ${coverPhotoUrl ? `<img src="${escapeHtml(coverPhotoUrl)}" alt="Property Photo" />` : '<!-- Cover photo placeholder -->'}
   </div>
   <div class="cover-address">${propertyAddress}<br>${cityStateZip}</div>
   <div class="cover-project">NDDS Project #${projectNum}</div>
@@ -1175,6 +1207,20 @@ ${(() => {
   </div>
 </div>`;
 })()}
+
+<!-- ================================================================ -->
+<!-- TABLE 1 & TABLE 2 DIVIDERS                                      -->
+<!-- ================================================================ -->
+
+<div class="table-cover">
+  <h2>TABLE 1 – PHYSICAL DEFICIENCIES/DEFERRED MAINTENANCE</h2>
+</div>
+${table1ImageUrl ? `<div class="table-image-page"><img src="${escapeHtml(table1ImageUrl)}" alt="Table 1 – Physical Deficiencies/Deferred Maintenance" /></div>` : ''}
+
+<div class="table-cover">
+  <h2>TABLE 2 – CAPITAL REPLACEMENT RESERVE SCHEDULE</h2>
+</div>
+${table2ImageUrl ? `<div class="table-image-page"><img src="${escapeHtml(table2ImageUrl)}" alt="Table 2 – Capital Replacement Reserve Schedule" /></div>` : ''}
 
 <!-- ================================================================ -->
 <!-- TABLE OF CONTENTS                                                -->
