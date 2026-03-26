@@ -368,15 +368,15 @@ function getConditionButtonClass(option: string): string {
         <div class="flex gap-3">
           <input
             :id="fieldId"
-            :value="renderField.sourceLabel ? compoundValue.main : value"
+            :value="(renderField.sourceLabel || renderField.additionalFields?.length) ? compoundValue.main : value"
             type="text"
             :placeholder="renderField.placeholder"
             :disabled="disabled"
             class="flex-[2] min-w-0 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            :class="theme === 'dark' 
-              ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
+            :class="theme === 'dark'
+              ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700'
               : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
-            @input="renderField.sourceLabel ? updateCompoundField('main', ($event.target as HTMLInputElement).value) : (value = ($event.target as HTMLInputElement).value)"
+            @input="(renderField.sourceLabel || renderField.additionalFields?.length) ? updateCompoundField('main', ($event.target as HTMLInputElement).value) : (value = ($event.target as HTMLInputElement).value)"
           />
           
           <!-- Source field -->
