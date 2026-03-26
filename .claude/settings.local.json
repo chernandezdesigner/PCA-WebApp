@@ -3,7 +3,14 @@
     "allow": [
       "Bash(npx vue-tsc:*)",
       "Bash(npx vite:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(node:*)",
+      "Bash(npx supabase status:*)",
+      "Bash(npx supabase projects api-keys:*)",
+      "Bash(SRK=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5cGpwbnFydHllaWVsYnBtZHZzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjUyNzc0OCwiZXhwIjoyMDc4MTAzNzQ4fQ.uVd5nR3R7d6E98F0LKzYDP4WVO5zh2z26W0Er6kdnR4\")",
+      "Bash(REPORT_ID=\"36b15dd0-b721-4eeb-bea6-2293063ca3ad\")"
     ]
   }
 }

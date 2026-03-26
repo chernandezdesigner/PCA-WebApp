@@ -236,7 +236,17 @@ export function useWebReportForm(options: WebReportFormOptions) {
         };
 
         // Organize form data by section
+        // IMPORTANT: Only carry forward step keys that BELONG to each section
+        // to prevent cross-contamination (stale steps leaking between sections)
         const sections: Record<string, SectionData> = {};
+
+        // Build a reverse lookup: section -> set of valid step keys
+        const validStepKeysForSection: Record<string, Set<string>> = {};
+        for (const [stepNumStr, sectionKey] of Object.entries(STEP_TO_SECTION)) {
+          const key = sectionKey as string;
+          if (!validStepKeysForSection[key]) validStepKeysForSection[key] = new Set();
+          validStepKeysForSection[key].add(`step_${stepNumStr}`);
+        }
 
         for (const [stepNumStr, stepData] of Object.entries(formData.value)) {
           const stepNum = parseInt(stepNumStr);
@@ -245,8 +255,17 @@ export function useWebReportForm(options: WebReportFormOptions) {
 
           if (sectionKey && stepKey) {
             if (!sections[sectionKey]) {
-              // Start with existing data from the database
-              sections[sectionKey] = { ...(sectionData.value[sectionKey] as SectionData || {}) };
+              // Start with existing data but ONLY keep valid step keys for this section
+              const cached = (sectionData.value[sectionKey] as SectionData) || {};
+              const validKeys = validStepKeysForSection[sectionKey] || new Set();
+              const cleaned: SectionData = {};
+              for (const [k, v] of Object.entries(cached)) {
+                if (k.startsWith('step_') && validKeys.has(k)) {
+                  cleaned[k] = v;
+                }
+                // Drop non-step keys (flat field leakage) and step keys from wrong sections
+              }
+              sections[sectionKey] = cleaned;
             }
             sections[sectionKey][stepKey] = stepData;
           }
@@ -371,15 +390,47 @@ export function useWebReportForm(options: WebReportFormOptions) {
           'appendices',
         ] as const;
 
+        // Map sections to the step where flat imported data (from useReportCreation) belongs.
+        // useReportCreation stores fields FLAT on the section root without step_N wrappers.
+        // mapToSection1 → step 1 fields, mapToSection2 → step 7 fields, mapToSection3 → step 10 fields
+        const sectionFlatDataStep: Record<string, number> = {
+          'section_1_summary': 1,
+          'section_2_introduction': 7,
+          'section_3_property': 10,
+        };
+
         for (const sectionKey of allSections) {
           const sectionContent = content[sectionKey] as SectionData | null;
           if (sectionContent) {
             // Extract each step's data from the section
+            // ONLY load steps that actually belong to this section per STEP_TO_SECTION
+            // to prevent stale cross-contaminated steps from overwriting correct data
+            let hasStepKeys = false;
             for (const [key, value] of Object.entries(sectionContent)) {
               if (key.startsWith('step_')) {
                 const stepNum = parseInt(key.replace('step_', ''));
-                if (!isNaN(stepNum) && value) {
+                if (!isNaN(stepNum) && value && STEP_TO_SECTION[stepNum] === sectionKey) {
                   formData.value[stepNum] = value as StepData;
+                  hasStepKeys = true;
+                }
+              }
+            }
+
+            // If no step keys found, check for flat imported data from useReportCreation
+            // which stores fields directly on the section root (e.g. 'property-name', 'city')
+            if (!hasStepKeys) {
+              const flatFields: StepData = {};
+              let hasFlatData = false;
+              for (const [key, value] of Object.entries(sectionContent)) {
+                if (!key.startsWith('step_') && key !== 'current_step' && key !== 'completed_steps' && key !== 'last_modified') {
+                  flatFields[key] = value;
+                  hasFlatData = true;
+                }
+              }
+              if (hasFlatData) {
+                const firstStep = sectionFlatDataStep[sectionKey];
+                if (firstStep) {
+                  formData.value[firstStep] = { ...(formData.value[firstStep] || {}), ...flatFields };
                 }
               }
             }
