@@ -420,7 +420,11 @@ function renderDOCRSection(
     for (const field of block.fields) {
       if (field.type === 'conditional') continue;
 
-      const value = v(content, stepNum, block.key, field.id);
+      let value = v(content, stepNum, block.key, field.id);
+      // Fall back to field's defaultValue from config if no user data was saved
+      if (!value && 'defaultValue' in field && field.defaultValue) {
+        value = nl2br(field.defaultValue);
+      }
       const displayValue = value || '<span class="placeholder">—</span>';
 
       if (block.key === 'recommendations') {
