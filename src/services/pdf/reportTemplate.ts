@@ -110,19 +110,30 @@ function vRaw(content: ReportContentRow, step: number, block: string, fieldId: s
   return escapeHtml(getVal(content, step, block, fieldId));
 }
 
-// For property-info style sections (group2), data is stored directly on the step object
-function pv(content: ReportContentRow, step: number, fieldId: string): string {
-  const sd = getStepData(content, step);
-  const val = sd[fieldId];
-  if (typeof val === 'string') return nl2br(val);
-  return nl2br(getVal(content, step, 'fields', fieldId));
+// Resolve a field value that may be a plain string or a compound object {main, source, ...}
+function resolveFieldValue(val: unknown, subKey?: string): string {
+  if (val == null) return '';
+  if (typeof val === 'string') return subKey ? '' : val;
+  if (typeof val === 'object') {
+    const obj = val as Record<string, string>;
+    return obj[subKey || 'main'] || '';
+  }
+  return '';
 }
 
-function pvRaw(content: ReportContentRow, step: number, fieldId: string): string {
+// For property-info style sections (group2), data is stored directly on the step object
+function pv(content: ReportContentRow, step: number, fieldId: string, subKey?: string): string {
   const sd = getStepData(content, step);
   const val = sd[fieldId];
-  if (typeof val === 'string') return escapeHtml(val);
-  return escapeHtml(getVal(content, step, 'fields', fieldId));
+  if (val != null) return nl2br(resolveFieldValue(val, subKey));
+  return nl2br(resolveFieldValue((sd['fields'] as Record<string, unknown> | undefined)?.[fieldId], subKey));
+}
+
+function pvRaw(content: ReportContentRow, step: number, fieldId: string, subKey?: string): string {
+  const sd = getStepData(content, step);
+  const val = sd[fieldId];
+  if (val != null) return escapeHtml(resolveFieldValue(val, subKey));
+  return escapeHtml(resolveFieldValue((sd['fields'] as Record<string, unknown> | undefined)?.[fieldId], subKey));
 }
 
 // ---------------------------------------------------------------------------
@@ -1251,14 +1262,14 @@ ${buildToc(tocItems)}
   <tr><td class="prop-label">PROPERTY USE</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'property-use')}</td></tr>
   <tr><td class="prop-label">NUMBER OF BUILDINGS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'number-of-buildings')}</td></tr>
   <tr><td class="prop-label">NUMBER OF STORIES</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'number-of-stories')}</td></tr>
-  <tr><td class="prop-label">YEAR CONSTRUCTED</td><td class="prop-value">${pvRaw(content, 1, 'year-constructed')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'year-constructed__source') || 'County Assessor'}</td></tr>
-  <tr><td class="prop-label">NUMBER OF PARCELS</td><td class="prop-value">${pvRaw(content, 1, 'number-of-parcels')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'number-of-parcels__source') || ''}</td></tr>
-  <tr><td class="prop-label">TOTAL ACREAGE</td><td class="prop-value">${pvRaw(content, 1, 'total-acreage')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'total-acreage__source') || ''}</td></tr>
-  <tr><td class="prop-label">DWELLING UNITS/BEDS</td><td class="prop-value">${pvRaw(content, 1, 'dwelling-units-beds')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'dwelling-units-beds__source') || 'Rent Roll'}</td></tr>
-  <tr><td class="prop-label">COMMERCIAL UNITS</td><td class="prop-value">${pvRaw(content, 1, 'commercial-units')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'commercial-units__source') || ''}</td></tr>
-  <tr><td class="prop-label">GROSS BUILDING AREA</td><td class="prop-value">${pvRaw(content, 1, 'gross-building-area')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'gross-building-area__source') || ''}</td></tr>
-  <tr><td class="prop-label">NET RENTABLE AREA</td><td class="prop-value">${pvRaw(content, 1, 'net-rentable-area')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'net-rentable-area__source') || 'Rent roll'}</td></tr>
-  <tr><td class="prop-label">PARKING/PAVING</td><td class="prop-value">${pvRaw(content, 1, 'parking-paving')}</td><td style="font-size: 10pt;">${pvRaw(content, 1, 'num-spaces') || '# Spaces'}</td><td style="font-size: 10pt;">${pvRaw(content, 1, 'num-ada-spaces') || '# ADA Spaces'}</td></tr>
+  <tr><td class="prop-label">YEAR CONSTRUCTED</td><td class="prop-value">${pvRaw(content, 1, 'year-constructed')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'year-constructed', 'source') || 'County Assessor'}</td></tr>
+  <tr><td class="prop-label">NUMBER OF PARCELS</td><td class="prop-value">${pvRaw(content, 1, 'number-of-parcels')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'number-of-parcels', 'source') || ''}</td></tr>
+  <tr><td class="prop-label">TOTAL ACREAGE</td><td class="prop-value">${pvRaw(content, 1, 'total-acreage')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'total-acreage', 'source') || ''}</td></tr>
+  <tr><td class="prop-label">DWELLING UNITS/BEDS</td><td class="prop-value">${pvRaw(content, 1, 'dwelling-units-beds')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'dwelling-units-beds', 'source') || 'Rent Roll'}</td></tr>
+  <tr><td class="prop-label">COMMERCIAL UNITS</td><td class="prop-value">${pvRaw(content, 1, 'commercial-units')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'commercial-units', 'source') || ''}</td></tr>
+  <tr><td class="prop-label">GROSS BUILDING AREA</td><td class="prop-value">${pvRaw(content, 1, 'gross-building-area')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'gross-building-area', 'source') || ''}</td></tr>
+  <tr><td class="prop-label">NET RENTABLE AREA</td><td class="prop-value">${pvRaw(content, 1, 'net-rentable-area')}</td><td class="prop-source-label">Source:</td><td class="prop-source-value">${pvRaw(content, 1, 'net-rentable-area', 'source') || 'Rent roll'}</td></tr>
+  <tr><td class="prop-label">PARKING/PAVING</td><td class="prop-value">${pvRaw(content, 1, 'parking-paving')}</td><td style="font-size: 10pt;">${pvRaw(content, 1, 'parking-paving', 'num-spaces') || '# Spaces'}</td><td style="font-size: 10pt;">${pvRaw(content, 1, 'parking-paving', 'num-ada-spaces') || '# ADA Spaces'}</td></tr>
   <tr><td class="prop-label">FOUNDATION SYSTEMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'foundation-systems')}</td></tr>
   <tr><td class="prop-label">STRUCTURAL SYSTEMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'structural-systems')}</td></tr>
   <tr><td class="prop-label">ROOFING SYSTEMS</td><td colspan="3" class="prop-value">${pvRaw(content, 1, 'roofing-systems')}</td></tr>
@@ -1401,12 +1412,12 @@ ${(() => {
 <h3 id="section-2-4">2.4&nbsp;&nbsp;&nbsp;General Property Reconnaissance Information</h3>
 
 <table class="kv-table">
-  <tr><td class="kv-label">DATE OF ASSESSMENT:</td><td>${pvRaw(content, 8, 'date-of-assessment')}</td></tr>
-  <tr><td class="kv-label">WEATHER CONDITIONS:</td><td>${pvRaw(content, 8, 'weather-conditions')}</td></tr>
-  <tr><td class="kv-label">ASSESSOR:</td><td>${pv(content, 8, 'assessor')}<br>A copy of the Professional Assessor's qualifications is included in Appendix D.</td></tr>
-  <tr><td class="kv-label">PROPERTY CONTACT/ESCORT:</td><td>${pvRaw(content, 8, 'property-contact-escort')}</td></tr>
-  <tr><td class="kv-label">AREAS ACCESSED:</td><td>${pv(content, 8, 'areas-accessed')}</td></tr>
-  <tr><td class="kv-label">LIMITATIONS:</td><td>${pv(content, 8, 'limitations')}</td></tr>
+  <tr><td class="kv-label">DATE OF ASSESSMENT:</td><td>${pvRaw(content, 7, 'date-of-assessment')}</td></tr>
+  <tr><td class="kv-label">WEATHER CONDITIONS:</td><td>${pvRaw(content, 7, 'weather-conditions')}</td></tr>
+  <tr><td class="kv-label">ASSESSOR:</td><td>${pv(content, 7, 'assessor')}<br>A copy of the Professional Assessor's qualifications is included in Appendix D.</td></tr>
+  <tr><td class="kv-label">PROPERTY CONTACT/ESCORT:</td><td>${pvRaw(content, 7, 'property-contact-escort')}</td></tr>
+  <tr><td class="kv-label">AREAS ACCESSED:</td><td>${pv(content, 7, 'areas-accessed')}</td></tr>
+  <tr><td class="kv-label">LIMITATIONS:</td><td>${pv(content, 7, 'limitations')}</td></tr>
 </table>
 
 <!-- 2.5 User Reliance -->
@@ -1424,26 +1435,26 @@ ${(() => {
 <h2 id="section-3-0">3.0&nbsp;&nbsp;&nbsp;PROPERTY CHARACTERISTICS</h2>
 
 <h3 id="section-3-1">3.1&nbsp;&nbsp;&nbsp;Location and Description</h3>
-${pv(content, 9, 'location-description') ? `<p>${pv(content, 9, 'location-description')}</p>` : ''}
-${pv(content, 9, 'provided-legal-description') ? `<p>${pv(content, 9, 'provided-legal-description')}</p>` : '<p>A site diagram is provided in Appendix A of this report. Photographs of the Subject Property are provided in Appendix B.</p>'}
+${pv(content, 8, 'location-description') ? `<p>${pv(content, 8, 'location-description')}</p>` : ''}
+${pv(content, 8, 'provided-legal-description') ? `<p>${pv(content, 8, 'provided-legal-description')}</p>` : '<p>A site diagram is provided in Appendix A of this report. Photographs of the Subject Property are provided in Appendix B.</p>'}
 
 <h3 id="section-3-2">3.2&nbsp;&nbsp;&nbsp;Tenant and Lease Information</h3>
 <table class="kv-table">
-  <tr><td class="kv-label">TENANTS:</td><td>${pv(content, 10, 'tenants')}</td></tr>
-  <tr><td class="kv-label">LEASE INFORMATION:</td><td>${pv(content, 10, 'lease-information')}</td></tr>
+  <tr><td class="kv-label">TENANTS:</td><td>${pv(content, 9, 'tenants')}</td></tr>
+  <tr><td class="kv-label">LEASE INFORMATION:</td><td>${pv(content, 9, 'lease-information')}</td></tr>
 </table>
 
 <h3 id="section-3-3">3.3&nbsp;&nbsp;&nbsp;Utility and Service Providers</h3>
 <table class="kv-table">
-  <tr><td class="kv-label">POTABLE WATER</td><td>${pvRaw(content, 11, 'portable-water')}</td></tr>
-  <tr><td class="kv-label">ELECTRICITY</td><td>${pvRaw(content, 11, 'electricity')}</td></tr>
-  <tr><td class="kv-label">NATURAL GAS</td><td>${pvRaw(content, 11, 'natural-gas')}</td></tr>
-  <tr><td class="kv-label">STORM WATER</td><td>${pvRaw(content, 11, 'storm-water')}</td></tr>
-  <tr><td class="kv-label">SANITARY SEWER</td><td>${pvRaw(content, 11, 'sanitary-sewer')}</td></tr>
-  <tr><td class="kv-label">HVAC MAINTENANCE</td><td>${pvRaw(content, 11, 'hvac-maintenance')}</td></tr>
-  <tr><td class="kv-label">FIRE/SECURITY</td><td>${pvRaw(content, 11, 'fire-security')}</td></tr>
-  <tr><td class="kv-label">ROOF MAINTENANCE</td><td>${pvRaw(content, 11, 'roof-maintenance')}</td></tr>
-  <tr><td colspan="2">${pv(content, 11, 'special-utility-notes') || 'No deficiencies or Special Utility Systems were observed or reported.'}</td></tr>
+  <tr><td class="kv-label">POTABLE WATER</td><td>${pvRaw(content, 10, 'portable-water')}</td></tr>
+  <tr><td class="kv-label">ELECTRICITY</td><td>${pvRaw(content, 10, 'electricity')}</td></tr>
+  <tr><td class="kv-label">NATURAL GAS</td><td>${pvRaw(content, 10, 'natural-gas')}</td></tr>
+  <tr><td class="kv-label">STORM WATER</td><td>${pvRaw(content, 10, 'storm-water')}</td></tr>
+  <tr><td class="kv-label">SANITARY SEWER</td><td>${pvRaw(content, 10, 'sanitary-sewer')}</td></tr>
+  <tr><td class="kv-label">HVAC MAINTENANCE</td><td>${pvRaw(content, 10, 'hvac-maintenance')}</td></tr>
+  <tr><td class="kv-label">FIRE/SECURITY</td><td>${pvRaw(content, 10, 'fire-security')}</td></tr>
+  <tr><td class="kv-label">ROOF MAINTENANCE</td><td>${pvRaw(content, 10, 'roof-maintenance')}</td></tr>
+  <tr><td colspan="2">${pv(content, 10, 'special-utility-notes') || 'No deficiencies or Special Utility Systems were observed or reported.'}</td></tr>
 </table>
 
 <!-- ================================================================ -->
@@ -1455,11 +1466,11 @@ ${pv(content, 9, 'provided-legal-description') ? `<p>${pv(content, 9, 'provided-
 
 <h3 id="section-4-1">4.1&nbsp;&nbsp;&nbsp;Property Questionnaire</h3>
 <p>NDDS requested that a property questionnaire be completed by someone familiar with the operation and maintenance of the facility. The questionnaire covered past and planned capital improvements, typical replacement costs, information from previous assessments and the description of any known or suspected issues of concern.</p>
-${pv(content, 12, 'questionnaire-status') ? `<p>${pv(content, 12, 'questionnaire-status')}</p>` : ''}
+${pv(content, 11, 'questionnaire-status') ? `<p>${pv(content, 11, 'questionnaire-status')}</p>` : ''}
 
 <h3 id="section-4-2">4.2&nbsp;&nbsp;&nbsp;Interviews</h3>
 ${(() => {
-  const sd = getStepData(content, 13);
+  const sd = getStepData(content, 12);
   const fields = (sd['fields'] ?? sd) as Record<string, unknown>;
   const suffixes: number[] = [];
   for (const key of Object.keys(fields)) {
@@ -1470,9 +1481,9 @@ ${(() => {
   if (suffixes.length === 0) suffixes.push(1);
 
   return suffixes.map(n => {
-    const name = nl2br(getVal(content, 13, 'fields', `interviewee-${n}`));
-    const info = nl2br(getVal(content, 13, 'fields', `pertinent-info-${n}`));
-    const concerns = nl2br(getVal(content, 13, 'fields', `concerns-${n}`));
+    const name = pv(content, 12, `interviewee-${n}`);
+    const info = pv(content, 12, `pertinent-info-${n}`);
+    const concerns = pv(content, 12, `concerns-${n}`);
     return `<table class="kv-table">
   <tr><td class="kv-label">INTERVIEWEE</td><td>${name || '<span class="placeholder">\u2014</span>'}</td></tr>
   <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${info || '<span class="placeholder">\u2014</span>'}</td></tr>
@@ -1483,30 +1494,30 @@ ${(() => {
 
 <h3 id="section-4-3">4.3&nbsp;&nbsp;&nbsp;Building and Fire Departments</h3>
 <table class="kv-table">
-  <tr><td class="kv-label">BUILDING DEPARTMENT CONTACT</td><td>${pvRaw(content, 14, 'building-dept-name')}<br>${pvRaw(content, 14, 'building-dept-phone')}<br>${pvRaw(content, 14, 'building-dept-website')}</td></tr>
-  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 14, 'building-pertinent-info')}</td></tr>
-  <tr><td class="kv-label">FIRE DEPARTMENT CONTACT</td><td>${pvRaw(content, 14, 'fire-dept-name')}<br>${pvRaw(content, 14, 'fire-dept-phone')}<br>${pvRaw(content, 14, 'fire-dept-website')}</td></tr>
-  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 14, 'fire-pertinent-info')}</td></tr>
-  <tr><td class="kv-label">CONCERNS</td><td>${pv(content, 14, 'building-fire-concerns')}</td></tr>
-  <tr><td class="kv-label">RECOMMENDATIONS</td><td>${pv(content, 14, 'building-fire-recommendations')}</td></tr>
+  <tr><td class="kv-label">BUILDING DEPARTMENT CONTACT</td><td>${pvRaw(content, 13, 'building-dept-name')}<br>${pvRaw(content, 13, 'building-dept-phone')}<br>${pvRaw(content, 13, 'building-dept-website')}</td></tr>
+  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 13, 'building-pertinent-info')}</td></tr>
+  <tr><td class="kv-label">FIRE DEPARTMENT CONTACT</td><td>${pvRaw(content, 13, 'fire-dept-name')}<br>${pvRaw(content, 13, 'fire-dept-phone')}<br>${pvRaw(content, 13, 'fire-dept-website')}</td></tr>
+  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 13, 'fire-pertinent-info')}</td></tr>
+  <tr><td class="kv-label">CONCERNS</td><td>${pv(content, 13, 'building-fire-concerns')}</td></tr>
+  <tr><td class="kv-label">RECOMMENDATIONS</td><td>${pv(content, 13, 'building-fire-recommendations')}</td></tr>
 </table>
 
 <h3 id="section-4-4">4.4&nbsp;&nbsp;&nbsp;Zoning Department</h3>
 <table class="kv-table">
-  <tr><td class="kv-label">ZONING DEPARTMENT CONTACT</td><td>${pvRaw(content, 15, 'zoning-dept-contact')}</td></tr>
-  <tr><td class="kv-label">ZONE</td><td>${pvRaw(content, 15, 'zone')}</td></tr>
-  <tr><td class="kv-label">ZONING COMPLIANCE</td><td>${pv(content, 15, 'zoning-compliance')}</td></tr>
-  <tr><td class="kv-label">CONCERNS</td><td>${pv(content, 15, 'zoning-concerns')}</td></tr>
-  <tr><td class="kv-label">RECOMMENDATIONS</td><td>${pv(content, 15, 'zoning-recommendations')}</td></tr>
+  <tr><td class="kv-label">ZONING DEPARTMENT CONTACT</td><td>${pvRaw(content, 14, 'zoning-dept-contact')}</td></tr>
+  <tr><td class="kv-label">ZONE</td><td>${pvRaw(content, 14, 'zone')}</td></tr>
+  <tr><td class="kv-label">ZONING COMPLIANCE</td><td>${pv(content, 14, 'zoning-compliance')}</td></tr>
+  <tr><td class="kv-label">CONCERNS</td><td>${pv(content, 14, 'zoning-concerns')}</td></tr>
+  <tr><td class="kv-label">RECOMMENDATIONS</td><td>${pv(content, 14, 'zoning-recommendations')}</td></tr>
 </table>
 
 <h3 id="section-4-5">4.5&nbsp;&nbsp;&nbsp;Previous Reports</h3>
-${pvRaw(content, 16, 'report-title') ? `
+${pvRaw(content, 15, 'report-title') ? `
 <table class="kv-table">
-  <tr><td class="kv-label">REPORT TITLE</td><td>${pvRaw(content, 16, 'report-title')}</td></tr>
-  <tr><td class="kv-label">PREPARED BY</td><td>${pvRaw(content, 16, 'prepared-by')}</td></tr>
-  <tr><td class="kv-label">DATE OF REPORT</td><td>${pvRaw(content, 16, 'date-of-report')}</td></tr>
-  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 16, 'report-pertinent-info')}</td></tr>
+  <tr><td class="kv-label">REPORT TITLE</td><td>${pvRaw(content, 15, 'report-title')}</td></tr>
+  <tr><td class="kv-label">PREPARED BY</td><td>${pvRaw(content, 15, 'prepared-by')}</td></tr>
+  <tr><td class="kv-label">DATE OF REPORT</td><td>${pvRaw(content, 15, 'date-of-report')}</td></tr>
+  <tr><td class="kv-label">PERTINENT INFORMATION</td><td>${pv(content, 15, 'report-pertinent-info')}</td></tr>
 </table>
 ` : '<p>NDDS was not provided any previous reports for the Subject Property.</p>'}
 

@@ -103,6 +103,7 @@ export function useWebReportForm(options: WebReportFormOptions) {
   const sectionData = ref<Partial<ReportContentRow>>({});
 
   let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+  let savePromise: Promise<void> | null = null;
 
   // Initialize form data for a section config
   function initializeSectionData(config: SectionConfig): StepData {
@@ -150,26 +151,40 @@ export function useWebReportForm(options: WebReportFormOptions) {
     get: () => formData.value[currentStep.value] || {},
     set: (value: StepData) => {
       formData.value[currentStep.value] = value;
-      isDirty.value = true;
-      scheduleAutoSave();
+      if (!loading.value) {
+        isDirty.value = true;
+        scheduleAutoSave();
+      }
     },
   });
+
+  // Flush pending auto-save before navigating away from current step
+  function flushPendingSave() {
+    if (isDirty.value && saveTimeout) {
+      clearTimeout(saveTimeout);
+      saveTimeout = null;
+      saveToSupabase();
+    }
+  }
 
   // Navigation
   function nextStep() {
     if (currentStep.value < totalSteps.value) {
+      flushPendingSave();
       currentStep.value++;
     }
   }
 
   function prevStep() {
     if (currentStep.value > 1) {
+      flushPendingSave();
       currentStep.value--;
     }
   }
 
   function goToStep(step: number) {
     if (step >= 1 && step <= totalSteps.value) {
+      flushPendingSave();
       currentStep.value = step;
     }
   }
@@ -182,6 +197,7 @@ export function useWebReportForm(options: WebReportFormOptions) {
 
   // Auto-save logic
   function scheduleAutoSave() {
+    if (loading.value) return;
     if (saveTimeout) {
       clearTimeout(saveTimeout);
     }
@@ -190,7 +206,7 @@ export function useWebReportForm(options: WebReportFormOptions) {
     }, autoSaveDelay);
   }
 
-  // Save to Supabase
+  // Save to Supabase (with concurrency lock to prevent overlapping saves)
   async function saveToSupabase() {
     // Skip database operations in demo mode
     if (isDemo) {
@@ -199,67 +215,83 @@ export function useWebReportForm(options: WebReportFormOptions) {
       return;
     }
 
-    if (!isDirty.value || !reportId) return;
+    if (!isDirty.value || !reportId || loading.value) return;
+
+    // If a save is already in progress, wait for it then re-check dirty state
+    if (savePromise) {
+      await savePromise;
+      if (!isDirty.value) return;
+    }
 
     saving.value = true;
     error.value = null;
 
-    try {
-      // Build the section data updates
-      const updateData: ReportContentUpdate = {
-        current_step: currentStep.value,
-        completed_steps: Array.from(completedSteps.value),
-        last_modified: new Date().toISOString(),
-      };
+    savePromise = (async () => {
+      try {
+        // Build the section data updates
+        const updateData: ReportContentUpdate = {
+          current_step: currentStep.value,
+          completed_steps: Array.from(completedSteps.value),
+          last_modified: new Date().toISOString(),
+        };
 
-      // Organize form data by section
-      const sections: Record<string, SectionData> = {};
+        // Organize form data by section
+        const sections: Record<string, SectionData> = {};
 
-      for (const [stepNumStr, stepData] of Object.entries(formData.value)) {
-        const stepNum = parseInt(stepNumStr);
-        const sectionKey = STEP_TO_SECTION[stepNum];
-        const stepKey = STEP_TO_KEY[stepNum];
+        for (const [stepNumStr, stepData] of Object.entries(formData.value)) {
+          const stepNum = parseInt(stepNumStr);
+          const sectionKey = STEP_TO_SECTION[stepNum];
+          const stepKey = STEP_TO_KEY[stepNum];
 
-        if (sectionKey && stepKey) {
-          if (!sections[sectionKey]) {
-            // Start with existing data from the database
-            sections[sectionKey] = { ...(sectionData.value[sectionKey] as SectionData || {}) };
+          if (sectionKey && stepKey) {
+            if (!sections[sectionKey]) {
+              // Start with existing data from the database
+              sections[sectionKey] = { ...(sectionData.value[sectionKey] as SectionData || {}) };
+            }
+            sections[sectionKey][stepKey] = stepData;
           }
-          sections[sectionKey][stepKey] = stepData;
         }
+
+        // Add sections to update
+        for (const [key, value] of Object.entries(sections)) {
+          (updateData as Record<string, unknown>)[key] = value;
+        }
+
+        const { error: updateError } = await supabase
+          .from('report_content')
+          .update(updateData)
+          .eq('report_id', reportId);
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        // Update sectionData cache so future merges use fresh base
+        for (const [key, value] of Object.entries(sections)) {
+          (sectionData.value as Record<string, unknown>)[key] = value;
+        }
+
+        // Update report status to in_progress if it was draft
+        if (reportStatus.value === 'draft') {
+          await supabase
+            .from('reports')
+            .update({ status: 'in_progress' })
+            .eq('id', reportId);
+          reportStatus.value = 'in_progress';
+        }
+
+        isDirty.value = false;
+        lastSaved.value = new Date();
+      } catch (err) {
+        error.value = err instanceof Error ? err.message : 'Failed to save';
+        console.error('Error saving form:', err);
+      } finally {
+        saving.value = false;
+        savePromise = null;
       }
+    })();
 
-      // Add sections to update
-      for (const [key, value] of Object.entries(sections)) {
-        (updateData as Record<string, unknown>)[key] = value;
-      }
-
-      const { error: updateError } = await supabase
-        .from('report_content')
-        .update(updateData)
-        .eq('report_id', reportId);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      // Update report status to in_progress if it was draft
-      if (reportStatus.value === 'draft') {
-        await supabase
-          .from('reports')
-          .update({ status: 'in_progress' })
-          .eq('id', reportId);
-        reportStatus.value = 'in_progress';
-      }
-
-      isDirty.value = false;
-      lastSaved.value = new Date();
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to save';
-      console.error('Error saving form:', err);
-    } finally {
-      saving.value = false;
-    }
+    await savePromise;
   }
 
   // Load from Supabase
@@ -275,6 +307,12 @@ export function useWebReportForm(options: WebReportFormOptions) {
       return;
     }
 
+    // Cancel any pending auto-save from component initialization
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+      saveTimeout = null;
+    }
+    isDirty.value = false;
     loading.value = true;
     error.value = null;
 
@@ -343,19 +381,6 @@ export function useWebReportForm(options: WebReportFormOptions) {
                 if (!isNaN(stepNum) && value) {
                   formData.value[stepNum] = value as StepData;
                 }
-              } else {
-                // Legacy format: data is directly on the section (from initial creation)
-                // Find which step this section belongs to
-                for (const [stepStr, secKey] of Object.entries(STEP_TO_SECTION)) {
-                  if (secKey === sectionKey) {
-                    const stepNum = parseInt(stepStr);
-                    if (!formData.value[stepNum]) {
-                      formData.value[stepNum] = {};
-                    }
-                    // Merge the legacy data
-                    formData.value[stepNum] = { ...formData.value[stepNum], [key]: value };
-                  }
-                }
               }
             }
           }
@@ -403,8 +428,8 @@ export function useWebReportForm(options: WebReportFormOptions) {
     if (saveTimeout) {
       clearTimeout(saveTimeout);
     }
-    // Final save if dirty (skip in demo mode)
-    if (isDirty.value && !isDemo) {
+    // Final save if dirty — but skip if a save is already in progress (e.g. from forceSave)
+    if (isDirty.value && !isDemo && !loading.value && !saving.value) {
       saveToSupabase();
     }
   }

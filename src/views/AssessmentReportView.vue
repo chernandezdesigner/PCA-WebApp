@@ -296,7 +296,7 @@ async function handleNext() {
   if (currentStep.value < TOTAL_STEPS) {
     nextStep();
   } else {
-    forceSave();
+    await forceSave();
     if (!isDemoMode.value) {
       await supabase
         .from('reports')
@@ -589,6 +589,7 @@ const isAppendixSection = computed(() => {
           <!-- Property Info Section (Sections 1-4) -->
           <PropertyInfoSection
             v-if="currentConfig && isPropertyInfoSection"
+            :key="currentStep"
             :config="(currentConfig.config as PropertyInfoConfig)"
             :model-value="(currentStepData as FormData) || {}"
             @update:model-value="handlePropertyInfoUpdate"
@@ -597,6 +598,7 @@ const isAppendixSection = computed(() => {
           <!-- Condition Summary Section -->
           <ConditionSummarySection
             v-else-if="currentConfig && isConditionSummarySection"
+            :key="currentStep"
             :config="(currentConfig.config as ConditionSummaryConfig)"
             :model-value="(currentStepData as FormData) || {}"
             @update:model-value="handlePropertyInfoUpdate"
@@ -605,6 +607,7 @@ const isAppendixSection = computed(() => {
           <!-- Cost Opinion Section -->
           <CostOpinionSection
             v-else-if="currentConfig && isCostOpinionSection"
+            :key="currentStep"
             :config="(currentConfig.config as CostOpinionConfig)"
             :model-value="(currentStepData as FormData) || {}"
             @update:model-value="handlePropertyInfoUpdate"
@@ -613,6 +616,7 @@ const isAppendixSection = computed(() => {
           <!-- Checklist Section (10.3 ADA) -->
           <AdaChecklistSection
             v-else-if="currentConfig && isChecklistSection"
+            :key="currentStep"
             :config="(currentConfig.config as ChecklistConfig)"
             :model-value="(currentStepData as FormData) || {}"
             @update:model-value="handlePropertyInfoUpdate"
@@ -621,6 +625,7 @@ const isAppendixSection = computed(() => {
           <!-- Appendix Section (Step 36) -->
           <AppendixSection
             v-else-if="currentConfig && isAppendixSection"
+            :key="currentStep"
             :model-value="(currentStepData as Record<string, unknown>) || {}"
             :report-id="reportId"
             :user-id="userId"
@@ -630,6 +635,7 @@ const isAppendixSection = computed(() => {
           <!-- Report Section (Sections 5-9) -->
           <DynamicReportSection
             v-else-if="currentConfig"
+            :key="currentStep"
             :config="(currentConfig.config as SectionConfig)"
             :model-value="(currentStepData as Record<BlockType, FormData>) || {}"
             @update:model-value="handleReportSectionUpdate"
