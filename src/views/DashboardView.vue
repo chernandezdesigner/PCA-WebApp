@@ -335,10 +335,14 @@ async function handleExportPdf(reportId: string) {
       reviewedByTitle: 'Assessments Director',
     };
 
-    const { pdfUrl } = await generateReportPdf(reportId, meta);
+    const { pdfUrl, appendixData, propertyName, cityStateZip } = await generateReportPdf(reportId, meta);
 
     const finalPdfBytes = await postProcessPdf(pdfUrl, {
       projectNumber: meta.projectNumber,
+      propertyName,
+      cityStateZip,
+      logoUrl: meta.logoUrl,
+      appendixData,
     });
 
     triggerDownload(finalPdfBytes, `PCA-Report-${reportId}.pdf`);

@@ -621,6 +621,7 @@ export function assembleReportHtml(
         content: "PROPERTY CONDITION ASSESSMENT";
         font-family: 'Calibri', Arial, Helvetica, sans-serif;
         font-size: 9pt;
+        font-weight: bold;
         color: #0C306C;
         margin-left: 0.5in;
       }
@@ -628,12 +629,14 @@ export function assembleReportHtml(
         content: counter(page);
         font-family: 'Calibri', Arial, Helvetica, sans-serif;
         font-size: 9pt;
+        font-weight: bold;
         color: #0C306C;
       }
       @bottom-right {
         content: "NDDS PROJECT ${projectNum}";
         font-family: 'Calibri', Arial, Helvetica, sans-serif;
         font-size: 9pt;
+        font-weight: bold;
         color: #0C306C;
         margin-right: 0.5in;
       }
@@ -706,7 +709,7 @@ export function assembleReportHtml(
       order: 2;
     }
     .toc-link::after {
-      content: target-counter(attr(href), page);
+      content: target-counter(attr(href url), page);
       order: 3;
       margin-left: 6px;
       flex-shrink: 0;
@@ -895,16 +898,6 @@ export function assembleReportHtml(
       background: #e8e8e8;
       font-weight: bold;
     }
-
-    /* Appendix cover pages */
-    .appendix-cover {
-      page: content;
-      page-break-before: always;
-      text-align: center;
-      padding-top: 3in;
-    }
-    .appendix-cover h2 { font-size: 18pt; color: #0C306C; }
-    .appendix-cover p { font-size: 14pt; text-align: center; color: #0C306C; }
 
     /* Table divider pages (same style as appendix covers) */
     .table-cover {
@@ -1586,35 +1579,7 @@ ${section10Html}
 
 ${buildAdaChecklistTable(content)}
 
-<!-- ================================================================ -->
-<!-- APPENDICES                                                      -->
-<!-- ================================================================ -->
-
-<div class="appendix-cover" id="section-appendices">
-  <h2>APPENDIX A</h2>
-  <p>PROPERTY MAPS, DRAWINGS, AND DESCRIPTION</p>
-</div>
-
-<div class="appendix-cover">
-  <h2>APPENDIX B</h2>
-  <p>PROPERTY PHOTOGRAPHS</p>
-</div>
-
-<div class="appendix-cover">
-  <h2>APPENDIX C</h2>
-  <p>INTERVIEW/QUESTIONNAIRE DOCUMENTATION/CORRESPONDENCE</p>
-</div>
-
-<div class="appendix-cover">
-  <h2>APPENDIX D</h2>
-  <p>SUPPORTING DOCUMENTS</p>
-</div>
-
-<div class="appendix-cover">
-  <h2>APPENDIX E</h2>
-  <p>PERSONAL QUALIFICATIONS</p>
-</div>
-
+<div id="section-appendices" style="height:0;margin:0;padding:0;"></div>
 </div><!-- end content-wrapper -->
 
 </body>
