@@ -17,7 +17,18 @@
       "Bash(npx supabase:*)",
       "Read(//c/Users/beats/OneDrive/Desktop/Projects/pcaWebApp/$USERPROFILE/**)",
       "Read(//c/Users/beats/OneDrive/Desktop/Projects/pcaWebApp/$APPDATA/supabase/**)",
-      "Read(//c/Users/beats/OneDrive/Desktop/Projects/pcaWebApp/$LOCALAPPDATA/**)"
+      "Read(//c/Users/beats/OneDrive/Desktop/Projects/pcaWebApp/$LOCALAPPDATA/**)",
+      "Read(//c/Users/beats/OneDrive/Desktop/Projects/pcaWebApp/$APPDATA/Claude/**)",
+      "Read(//c/Users/beats/OneDrive/Desktop/Projects/pcaWebApp/$USERPROFILE/.claude/**)",
+      "Read(//c/Users/beats/.claude/**)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''mcpServers'''', {}\\), indent=2\\)\\)\")",
+      "mcp__supabase__get_project_url",
+      "mcp__supabase__execute_sql",
+      "Bash(grep -E \"\\\\.\\(vue|html|css|ts\\)$\")",
+      "Bash(xargs grep:*)",
+      "Bash(find C:UsersbeatsOneDriveDesktopProjectsASMZoningReportGen-V2-Pdffunctions -name fonts -o -name *.ttf -o -name *.TTF)",
+      "Bash(find C:UsersbeatsOneDriveDesktopProjectsASMZoningReportGen-V2-Pdf/functions/lib -type f -name *.js)",
+      "Bash(find C:UsersbeatsOneDriveDesktopProjectsASMZoningReportGen-V2-Pdf/src -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.vue \\\\\\))"
     ]
   }
 }

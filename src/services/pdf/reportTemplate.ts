@@ -488,7 +488,7 @@ export function assembleReportHtml(
   const clientAddress = pvRaw(content, 1, 'client-address') || escapeHtml(meta.clientAddress || '');
   const clientCityStateZip = pvRaw(content, 1, 'client-city-state-zip') || escapeHtml(meta.clientCityStateZip || '');
   const dateIssued = pvRaw(content, 1, 'date-issued') || escapeHtml(meta.dateIssued || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
-  const logoUrl = meta.logoUrl || 'https://firebasestorage.googleapis.com/v0/b/ndds-report-generator-version2.firebasestorage.app/o/Logo%2FASMLogoBlue.png?alt=media&token=31cf6b22-14d2-4a81-b699-7e9752c70748';
+  const logoUrl = meta.logoUrl || 'https://sypjpnqrtyeielbpmdvs.supabase.co/storage/v1/object/public/report-assets/ASMLogoBlue.png';
 
   // ----- TOC Items -----
   const tocItems: TocItem[] = [

@@ -333,6 +333,7 @@ async function handleExportPdf(reportId: string) {
       preparedByTitle: 'Project Manager',
       reviewedBy: '',
       reviewedByTitle: 'Assessments Director',
+      logoUrl: 'https://sypjpnqrtyeielbpmdvs.supabase.co/storage/v1/object/public/report-assets/ASMLogoBlue.png',
     };
 
     const { pdfUrl, appendixData, propertyName, cityStateZip } = await generateReportPdf(reportId, meta);

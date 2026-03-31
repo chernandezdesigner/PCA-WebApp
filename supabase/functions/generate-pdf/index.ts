@@ -6,11 +6,12 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SERVICE_ROLE_KEY') ?? '';
 
 const FONT_FILES: Record<string, { family: string; weight: string; style: string }> = {
-  'CALIBRI.TTF':  { family: 'Calibri', weight: 'normal', style: 'normal' },
-  'CALIBRIB.TTF': { family: 'Calibri', weight: 'bold',   style: 'normal' },
-  'CALIBRII.TTF': { family: 'Calibri', weight: 'normal', style: 'italic' },
-  'ARIAL.TTF':    { family: 'Arial',   weight: 'normal', style: 'normal' },
-  'ARIALBD.TTF':  { family: 'Arial',   weight: 'bold',   style: 'normal' },
+  'CALIBRI.TTF':   { family: 'Calibri', weight: '400', style: 'normal' },
+  'CALIBRIL.TTF':  { family: 'Calibri', weight: '300', style: 'normal' },
+  'CALIBRILI.TTF': { family: 'Calibri', weight: '300', style: 'italic' },
+  'CALIBRII.TTF':  { family: 'Calibri', weight: '400', style: 'italic' },
+  'CALIBRIB.TTF':  { family: 'Calibri', weight: '700', style: 'normal' },
+  'CALIBRIZ.TTF':  { family: 'Calibri', weight: '700', style: 'italic' },
 };
 
 async function loadFontsAsBase64(supabase: ReturnType<typeof createClient>): Promise<string> {
