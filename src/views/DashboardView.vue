@@ -13,7 +13,6 @@ import { useToast } from '@/composables/useToast';
 import { withTimeout } from '@/utils/withTimeout';
 import { buildPdfFilename } from '@/utils/pdfFilename';
 import PdfExportOverlay from '@/components/PdfExportOverlay.vue';
-import ToastNotification from '@/components/ToastNotification.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -858,5 +857,4 @@ onMounted(() => {
   </div>
 
   <PdfExportOverlay :visible="!!exportingPdf" :message="pdfOverlayMessage" />
-  <ToastNotification />
 </template>

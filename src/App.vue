@@ -1,7 +1,8 @@
 <script setup lang="ts">
-// Main app component with router
+import ToastNotification from '@/components/ToastNotification.vue';
 </script>
 
 <template>
   <RouterView />
+  <ToastNotification />
 </template>

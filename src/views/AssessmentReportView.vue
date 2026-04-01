@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useToast } from '@/composables/useToast';
 import { useRoute, useRouter } from 'vue-router';
 import SidebarNavigation from '@/components/SidebarNavigation.vue';
 import AssessorNotesPanel from '@/components/AssessorNotesPanel.vue';
@@ -63,6 +64,7 @@ import {
 const route = useRoute();
 const router = useRouter();
 const { theme, toggleTheme } = useTheme();
+const { showError } = useToast();
 
 const reportId = computed(() => (route.params.id as string) || 'demo');
 const isDemoMode = computed(() => reportId.value === 'demo');
@@ -350,6 +352,12 @@ watch(isDirty, (dirty) => {
     window.onbeforeunload = () => true;
   } else {
     window.onbeforeunload = null;
+  }
+});
+
+watch(error, (msg) => {
+  if (msg && !isDemoMode.value) {
+    showError(msg);
   }
 });
 
