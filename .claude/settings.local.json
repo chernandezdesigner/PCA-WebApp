@@ -28,7 +28,15 @@
       "Bash(xargs grep:*)",
       "Bash(find C:UsersbeatsOneDriveDesktopProjectsASMZoningReportGen-V2-Pdffunctions -name fonts -o -name *.ttf -o -name *.TTF)",
       "Bash(find C:UsersbeatsOneDriveDesktopProjectsASMZoningReportGen-V2-Pdf/functions/lib -type f -name *.js)",
-      "Bash(find C:UsersbeatsOneDriveDesktopProjectsASMZoningReportGen-V2-Pdf/src -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.vue \\\\\\))"
+      "Bash(find C:UsersbeatsOneDriveDesktopProjectsASMZoningReportGen-V2-Pdf/src -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.vue \\\\\\))",
+      "Bash(find c:UsersbeatsOneDriveDesktopProjectspcaWebApp -type f -name *reportTemplate* -o -name *pdfGeneration*)",
+      "Bash(grep -r \"vee-validate\\\\|FormKit\\\\|validation\\\\|required\" c:UsersbeatsOneDriveDesktopProjectspcaWebAppsrc --include=*.ts --include=*.vue -l)",
+      "Bash(npm install:*)",
+      "Bash(mkdir -p src/tests)",
+      "Bash(npm test:*)",
+      "Bash(npx vitest:*)",
+      "Bash(find c:UsersbeatsOneDriveDesktopProjectspcaWebAppsupabasefunctions -type f -name *.ts)",
+      "Bash(grep -n \"current_step\" \"c:\\\\Users\\\\beats\\\\OneDrive\\\\Desktop\\\\Projects\\\\pcaWebApp\\\\supabase\\\\migrations\"/*.sql)"
     ]
   }
 }

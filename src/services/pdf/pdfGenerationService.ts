@@ -28,6 +28,7 @@ export interface GeneratePdfResult {
   appendixData: AppendixData;
   propertyName: string;
   cityStateZip: string;
+  projectNumber: string;
 }
 
 const UPLOAD_BUCKET = 'report-documents';
@@ -203,6 +204,7 @@ export async function generateReportPdf(
   }
 
   const propertyName = readPropertyField(content, 'property-name') || 'Subject Property';
+  const projectNumber = readPropertyField(content, 'project-number');
   const city = readPropertyField(content, 'city');
   const state = readPropertyField(content, 'state');
   const zip = readPropertyField(content, 'zip');
@@ -214,6 +216,7 @@ export async function generateReportPdf(
     appendixData: { aFiles, bPhotos, cFiles, dFiles, eFiles },
     propertyName,
     cityStateZip,
+    projectNumber,
   };
 }
 
@@ -230,4 +233,36 @@ export async function downloadPdf(storagePath: string): Promise<string> {
   }
 
   return data.signedUrl;
+}
+
+export interface ValidationResult {
+  valid: boolean
+  missingFields: string[]
+}
+
+export async function validateReportForExport(reportId: string): Promise<ValidationResult> {
+  const { data, error } = await supabase
+    .from('report_content')
+    .select('section_1_summary')
+    .eq('report_id', reportId)
+    .single()
+
+  if (error || !data) return { valid: false, missingFields: ['Report data could not be loaded'] }
+
+  const content = data as Pick<ReportContentRow, 'section_1_summary'>
+  const missingFields: string[] = []
+
+  const required: Array<[string, string]> = [
+    ['project-number', 'Project Number'],
+    ['client-name', 'Client Name'],
+    ['property-name', 'Property Name'],
+    ['property-address', 'Property Address'],
+  ]
+
+  for (const [fieldId, label] of required) {
+    const val = readPropertyField(content as ReportContentRow, fieldId)
+    if (!val.trim()) missingFields.push(label)
+  }
+
+  return { valid: missingFields.length === 0, missingFields }
 }

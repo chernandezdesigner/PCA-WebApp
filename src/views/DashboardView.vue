@@ -5,15 +5,21 @@ import { useTheme } from '@/composables/useTheme';
 import { useReportCreation } from '@/composables/useReportCreation';
 import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/services/supabase';
-import { generateReportPdf, downloadPdf } from '@/services/pdf/pdfGenerationService';
+import { generateReportPdf, downloadPdf, validateReportForExport } from '@/services/pdf/pdfGenerationService';
 import { postProcessPdf, triggerDownload } from '@/services/pdf/pdfPostProcessor';
 import type { ReportMeta } from '@/services/pdf/reportTemplate';
 import type { ReportStatus } from '@/types/database';
+import { useToast } from '@/composables/useToast';
+import { withTimeout } from '@/utils/withTimeout';
+import { buildPdfFilename } from '@/utils/pdfFilename';
+import PdfExportOverlay from '@/components/PdfExportOverlay.vue';
+import ToastNotification from '@/components/ToastNotification.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const { theme, toggleTheme } = useTheme();
 const { createReportFromAssessment, loading: creatingReport, error: createError } = useReportCreation();
+const { showError, showSuccess } = useToast();
 
 // Loading states
 const loadingAssessments = ref(true);
@@ -297,9 +303,8 @@ async function handleCreateReport(assessmentId: string) {
     await Promise.all([fetchPendingAssessments(), fetchReports()]);
     router.push({ name: 'report-editor', params: { id: result.reportId } });
   } else {
-    // Show error (you could add a toast notification here)
     console.error('Failed to create report:', result.error);
-    alert(result.error || 'Failed to create report');
+    showError(result.error || 'Failed to create report');
   }
 }
 
@@ -315,13 +320,22 @@ function handleViewReport(reportId: string) {
 
 const exportingPdf = ref<string | null>(null);
 const downloadingPdf = ref<string | null>(null);
-const pdfError = ref<string | null>(null);
+const pdfOverlayMessage = ref('Preparing your report...');
 
 async function handleExportPdf(reportId: string) {
   exportingPdf.value = reportId;
-  pdfError.value = null;
+  pdfOverlayMessage.value = 'Checking report data...';
 
   try {
+    // 1. Pre-export validation
+    const validation = await validateReportForExport(reportId);
+    if (!validation.valid) {
+      showError(`Cannot export: missing required fields — ${validation.missingFields.join(', ')}`);
+      return;
+    }
+
+    pdfOverlayMessage.value = 'Generating PDF with DocRaptor...';
+
     const meta: ReportMeta = {
       projectNumber: '',
       clientName: '',
@@ -336,46 +350,55 @@ async function handleExportPdf(reportId: string) {
       logoUrl: 'https://sypjpnqrtyeielbpmdvs.supabase.co/storage/v1/object/public/report-assets/ASMLogoBlue.png',
     };
 
-    const { pdfUrl, appendixData, propertyName, cityStateZip } = await generateReportPdf(reportId, meta);
+    // 2. Generate base PDF — 3-minute timeout
+    const { pdfUrl, appendixData, propertyName, cityStateZip, projectNumber } =
+      await withTimeout(generateReportPdf(reportId, meta), 180_000, 'PDF generation');
 
-    const finalPdfBytes = await postProcessPdf(pdfUrl, {
-      projectNumber: meta.projectNumber,
-      propertyName,
-      cityStateZip,
-      logoUrl: meta.logoUrl,
-      appendixData,
-    });
+    pdfOverlayMessage.value = 'Building appendix pages...';
 
-    triggerDownload(finalPdfBytes, `PCA-Report-${reportId}.pdf`);
+    // 3. Post-process (pdf-lib) — 2-minute timeout
+    const finalPdfBytes = await withTimeout(
+      postProcessPdf(pdfUrl, {
+        projectNumber,
+        propertyName,
+        cityStateZip,
+        logoUrl: meta.logoUrl,
+        appendixData,
+      }),
+      120_000,
+      'PDF post-processing'
+    );
 
-    await supabase
-      .from('reports')
-      .update({ status: 'exported' })
-      .eq('id', reportId);
+    // 4. Smart filename + download
+    triggerDownload(finalPdfBytes, buildPdfFilename(projectNumber, propertyName, cityStateZip));
 
+    // 5. Mark exported
+    await supabase.from('reports').update({ status: 'exported' }).eq('id', reportId);
     await fetchReports();
+
+    showSuccess('PDF exported successfully');
   } catch (err) {
     console.error('PDF export error:', err);
-    pdfError.value = err instanceof Error ? err.message : 'PDF export failed';
-    alert(`PDF Export Error: ${pdfError.value}`);
+    showError(err instanceof Error ? err.message : 'PDF export failed');
   } finally {
     exportingPdf.value = null;
+    pdfOverlayMessage.value = 'Preparing your report...';
   }
 }
 
 async function handleDownloadPdf(reportId: string, storagePath: string | null) {
   if (!storagePath) {
-    alert('No PDF has been generated yet. Use Export PDF first.');
+    showError('No PDF has been generated yet. Use Export PDF first.');
     return;
   }
 
   downloadingPdf.value = reportId;
   try {
-    const url = await downloadPdf(storagePath);
+    const url = await withTimeout(downloadPdf(storagePath), 30_000, 'PDF download');
     window.open(url, '_blank');
   } catch (err) {
     console.error('PDF download error:', err);
-    alert(err instanceof Error ? err.message : 'Download failed');
+    showError(err instanceof Error ? err.message : 'Download failed');
   } finally {
     downloadingPdf.value = null;
   }
@@ -833,4 +856,7 @@ onMounted(() => {
 
     </main>
   </div>
+
+  <PdfExportOverlay :visible="!!exportingPdf" :message="pdfOverlayMessage" />
+  <ToastNotification />
 </template>
