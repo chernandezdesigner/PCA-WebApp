@@ -51,7 +51,7 @@ const completionCount = computed(() =>
 function conditionBtnClass(rowId: string, option: string): string {
   const selected = getCondition(rowId) === option;
   const isDark = theme.value === 'dark';
-  const base = 'flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 cursor-pointer';
+  const base = 'flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 cursor-pointer';
   const offset = isDark ? 'focus-visible:ring-offset-zinc-950' : 'focus-visible:ring-offset-white';
 
   if (selected) {
@@ -192,7 +192,7 @@ function conditionBtnClass(rowId: string, option: string): string {
           :value="getAction(row.id)"
           :disabled="disabled"
           :aria-label="`Recommended action for ${row.label}`"
-          class="w-full px-3 py-2 rounded-lg text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer appearance-none bg-no-repeat"
+          class="w-full px-3 py-2 rounded-lg text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer appearance-none bg-no-repeat"
           :class="[
             theme === 'dark'
               ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 hover:border-zinc-700 focus:border-blue-500/50'

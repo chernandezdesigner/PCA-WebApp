@@ -389,7 +389,7 @@ const isAppendixSection = computed(() => {
 
 <template>
   <div 
-    class="report-view h-screen flex flex-col transition-colors duration-300"
+    class="report-view h-screen flex flex-col transition-colors duration-150"
     :class="theme === 'dark' ? 'bg-zinc-950 text-zinc-100' : 'bg-slate-100 text-slate-900'"
   >
     <!-- Skip link -->
@@ -402,7 +402,7 @@ const isAppendixSection = computed(() => {
 
     <!-- Header -->
     <header 
-      class="flex-shrink-0 h-14 flex items-center justify-between px-4 border-b transition-colors duration-300"
+      class="flex-shrink-0 h-14 flex items-center justify-between px-4 border-b transition-colors duration-150"
       :class="theme === 'dark' ? 'bg-zinc-900/50 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'"
     >
       <div class="flex items-center gap-4">
@@ -521,7 +521,7 @@ const isAppendixSection = computed(() => {
       <!-- Main Content -->
       <main 
         id="main-content"
-        class="flex-1 overflow-y-auto transition-colors duration-300"
+        class="flex-1 overflow-y-auto transition-colors duration-150"
         :class="theme === 'dark' ? 'bg-zinc-900' : 'bg-[#fefefe]'"
         tabindex="-1"
       >

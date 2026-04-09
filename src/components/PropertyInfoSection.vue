@@ -122,10 +122,10 @@ function removeInterviewBlock(index: number) {
     <!-- Intro Text -->
     <div 
       v-if="hasIntroText"
-      class="p-4 rounded-lg border-l-2"
-      :class="theme === 'dark' 
-        ? 'bg-zinc-900/30 border-blue-500/50' 
-        : 'bg-blue-50/50 border-blue-400'"
+      class="p-4 rounded-lg border"
+      :class="theme === 'dark'
+        ? 'bg-zinc-900/30 border-zinc-800'
+        : 'bg-slate-50 border-slate-200'"
     >
       <p 
         class="text-sm leading-relaxed italic"

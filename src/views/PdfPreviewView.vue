@@ -5,12 +5,14 @@ import { assembleReportHtml } from '@/services/pdf/reportTemplate';
 import type { ReportMeta } from '@/services/pdf/reportTemplate';
 import type { ReportContentRow } from '@/types/database';
 import { supabase } from '@/services/supabase';
+import { useTheme } from '@/composables/useTheme';
 
 const route = useRoute();
 const reportId = route.params.id as string | undefined;
 const iframeHtml = ref('');
 const loading = ref(true);
 const error = ref<string | null>(null);
+const { theme } = useTheme();
 
 const demoMeta: ReportMeta = {
   projectNumber: '25DEMO01',
@@ -69,72 +71,84 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="preview-container">
-    <header class="preview-header">
-      <h1>PDF Template Preview</h1>
-      <p v-if="reportId && reportId !== 'demo'">Report: {{ reportId }}</p>
-      <p v-else>Demo Mode (empty data)</p>
-      <router-link to="/" class="back-link">&larr; Back to Dashboard</router-link>
+  <div
+    class="flex flex-col h-screen transition-colors duration-150"
+    :class="theme === 'dark' ? 'bg-zinc-950' : 'bg-slate-200'"
+  >
+    <header
+      class="flex items-center gap-6 px-6 py-3 flex-shrink-0 border-b transition-colors duration-150"
+      :class="theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'"
+    >
+      <h1
+        class="text-sm font-semibold"
+        :class="theme === 'dark' ? 'text-zinc-100' : 'text-slate-900'"
+      >
+        PDF Template Preview
+      </h1>
+      <p
+        class="text-xs"
+        :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
+      >
+        {{ reportId && reportId !== 'demo' ? `Report: ${reportId}` : 'Demo Mode (empty data)' }}
+      </p>
+      <router-link
+        to="/"
+        class="ml-auto text-sm font-medium transition-colors"
+        :class="theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'"
+      >
+        &larr; Back to Dashboard
+      </router-link>
     </header>
 
-    <div v-if="loading" class="loading-state">Loading report data...</div>
-    <div v-else-if="error" class="error-state">{{ error }}</div>
+    <div
+      v-if="loading"
+      class="flex-1 flex items-center justify-center"
+    >
+      <div class="flex items-center gap-3">
+        <svg
+          class="w-5 h-5 animate-spin"
+          :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+          fill="none" viewBox="0 0 24 24"
+        >
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        <span
+          class="text-sm"
+          :class="theme === 'dark' ? 'text-zinc-400' : 'text-slate-500'"
+        >
+          Loading report data...
+        </span>
+      </div>
+    </div>
+
+    <div
+      v-else-if="error"
+      class="flex-1 flex items-center justify-center"
+    >
+      <div class="text-center">
+        <svg
+          class="w-10 h-10 mx-auto mb-3"
+          :class="theme === 'dark' ? 'text-red-400' : 'text-red-500'"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p
+          class="text-sm"
+          :class="theme === 'dark' ? 'text-red-300' : 'text-red-600'"
+        >
+          {{ error }}
+        </p>
+      </div>
+    </div>
+
     <iframe
       v-else
       :srcdoc="iframeHtml"
-      class="preview-iframe"
+      class="flex-1 border-none bg-white mx-auto my-4 shadow-lg"
+      style="width: 8.5in;"
       sandbox="allow-same-origin"
     />
   </div>
 </template>
-
-<style scoped>
-.preview-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: #1a1a2e;
-}
-.preview-header {
-  padding: 12px 24px;
-  background: #16213e;
-  color: #e0e0e0;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-shrink: 0;
-}
-.preview-header h1 {
-  font-size: 16px;
-  margin: 0;
-}
-.preview-header p {
-  font-size: 13px;
-  margin: 0;
-  color: #888;
-}
-.back-link {
-  margin-left: auto;
-  color: #64b5f6;
-  text-decoration: none;
-  font-size: 13px;
-}
-.back-link:hover { text-decoration: underline; }
-.loading-state, .error-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  color: #ccc;
-  font-size: 18px;
-}
-.error-state { color: #ef5350; }
-.preview-iframe {
-  flex: 1;
-  border: none;
-  background: white;
-  margin: 16px auto;
-  width: 8.5in;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-}
-</style>

@@ -18,7 +18,7 @@ function toggleLeftPanel() {
     <!-- Left Panel - Mobile Data Reference -->
     <aside
       :class="[
-        'left-panel flex-shrink-0 bg-gray-50 border-r border-gray-200 overflow-y-auto transition-all duration-300',
+        'left-panel flex-shrink-0 bg-gray-50 border-r border-gray-200 overflow-y-auto transition-all duration-150',
         isLeftPanelCollapsed ? 'w-0 opacity-0' : 'w-[450px]'
       ]"
     >

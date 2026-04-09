@@ -59,15 +59,15 @@ function getBlockIcon(block: BlockType): string {
 function getBlockTheme(block: BlockType) {
   switch (block) {
     case 'description':
-      return { text: 'text-blue-500', wrapperDark: 'border-l-blue-600/30', wrapperLight: 'border-l-blue-400/50' };
+      return { text: 'text-blue-500', wrapperDark: 'border-zinc-800', wrapperLight: 'border-slate-200' };
     case 'observations':
-      return { text: 'text-purple-500', wrapperDark: 'border-l-purple-600/30', wrapperLight: 'border-l-purple-400/50' };
+      return { text: 'text-purple-500', wrapperDark: 'border-zinc-800', wrapperLight: 'border-slate-200' };
     case 'concerns':
-      return { text: 'text-amber-500', wrapperDark: 'border-l-amber-600/30', wrapperLight: 'border-l-amber-400/50' };
+      return { text: 'text-amber-500', wrapperDark: 'border-zinc-800', wrapperLight: 'border-slate-200' };
     case 'recommendations':
-      return { text: 'text-emerald-500', wrapperDark: 'border-l-emerald-600/30', wrapperLight: 'border-l-emerald-400/50' };
+      return { text: 'text-emerald-500', wrapperDark: 'border-zinc-800', wrapperLight: 'border-slate-200' };
     default:
-      return { text: 'text-zinc-400', wrapperDark: 'border-l-zinc-600/30', wrapperLight: 'border-l-slate-300' };
+      return { text: 'text-zinc-400', wrapperDark: 'border-zinc-800', wrapperLight: 'border-slate-200' };
   }
 }
 
@@ -175,7 +175,7 @@ function switchMode(modeId: string) {
 function getEquipmentConditionClass(option: string, currentValue: string): string {
   const isSelected = currentValue === option;
   const isDark = theme.value === 'dark';
-  const baseClass = 'flex-1 inline-flex items-center justify-center px-2 py-1.5 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500';
+  const baseClass = 'flex-1 inline-flex items-center justify-center px-2 py-1.5 text-xs font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500';
 
   if (isSelected) {
     if (option === 'Good') return `${baseClass} bg-emerald-600 text-white shadow-sm z-10`;
@@ -222,7 +222,7 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
           v-for="mode in config.equipmentList!.modes"
           :key="mode.id"
           type="button"
-          class="flex-1 px-4 py-2.5 text-sm font-medium transition-all duration-200 first:rounded-l-lg last:rounded-r-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          class="flex-1 px-4 py-2.5 text-sm font-medium transition-all duration-150 first:rounded-l-lg last:rounded-r-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           :class="activeMode === mode.id
             ? 'bg-blue-600 text-white shadow-sm z-10'
             : theme === 'dark'
@@ -302,7 +302,7 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
                   role="switch"
                   :aria-checked="(row[ef.id] as string) === 'true'"
                   :disabled="disabled"
-                  class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-150 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   :class="[
                     (row[ef.id] as string) === 'true'
                       ? 'bg-blue-600'
@@ -312,7 +312,7 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
                   @click="updateEquipmentField(rowIdx, ef.id, (row[ef.id] as string) === 'true' ? 'false' : 'true')"
                 >
                   <span
-                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out"
+                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-150 ease-in-out"
                     :class="(row[ef.id] as string) === 'true' ? 'translate-x-5' : 'translate-x-0'"
                   />
                 </button>
@@ -330,7 +330,7 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
                   type="text"
                   :placeholder="ef.placeholder"
                   :disabled="disabled"
-                  class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   :class="theme === 'dark' 
                     ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
                     : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
@@ -412,7 +412,7 @@ function getEquipmentConditionClass(option: string, currentValue: string): strin
 
       <!-- Fields Container -->
       <div 
-        class="pl-6 ml-3 space-y-10 border-l-2"
+        class="pl-6 ml-3 space-y-10 border-l"
         :class="theme === 'dark' ? getBlockTheme(block).wrapperDark : getBlockTheme(block).wrapperLight"
       >
         <DynamicField

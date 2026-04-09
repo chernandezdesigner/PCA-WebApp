@@ -63,42 +63,8 @@ interface ReportItem {
 const pendingAssessments = ref<PendingAssessment[]>([]);
 const reports = ref<ReportItem[]>([]);
 
-// Status styling
-const reportStatusStyles: Record<ReportStatus, { bg: string; text: string; dot: string; label: string }> = {
-  draft: {
-    bg: theme.value === 'dark' ? 'bg-zinc-800 border-zinc-700' : 'bg-slate-100 border-slate-200',
-    text: theme.value === 'dark' ? 'text-zinc-300' : 'text-slate-600',
-    dot: 'bg-slate-400',
-    label: 'Draft',
-  },
-  in_progress: {
-    bg: theme.value === 'dark' ? 'bg-blue-950 border-blue-900' : 'bg-blue-50 border-blue-200',
-    text: theme.value === 'dark' ? 'text-blue-300' : 'text-blue-700',
-    dot: 'bg-blue-500',
-    label: 'In Progress',
-  },
-  review: {
-    bg: theme.value === 'dark' ? 'bg-amber-950 border-amber-900' : 'bg-amber-50 border-amber-200',
-    text: theme.value === 'dark' ? 'text-amber-300' : 'text-amber-700',
-    dot: 'bg-amber-500',
-    label: 'In Review',
-  },
-  final: {
-    bg: theme.value === 'dark' ? 'bg-emerald-950 border-emerald-900' : 'bg-emerald-50 border-emerald-200',
-    text: theme.value === 'dark' ? 'text-emerald-300' : 'text-emerald-700',
-    dot: 'bg-emerald-500',
-    label: 'Final',
-  },
-  exported: {
-    bg: theme.value === 'dark' ? 'bg-purple-950 border-purple-900' : 'bg-purple-50 border-purple-200',
-    text: theme.value === 'dark' ? 'text-purple-300' : 'text-purple-700',
-    dot: 'bg-purple-500',
-    label: 'Exported',
-  },
-};
-
-// Computed status styles (reactive to theme changes)
-const getStatusStyle = (status: ReportStatus) => {
+// Status styling (reactive to theme changes)
+function getStatusStyle(status: ReportStatus) {
   const styles: Record<ReportStatus, { bg: string; text: string; dot: string; label: string }> = {
     draft: {
       bg: theme.value === 'dark' ? 'bg-zinc-800 border-zinc-700' : 'bg-slate-100 border-slate-200',
@@ -132,7 +98,7 @@ const getStatusStyle = (status: ReportStatus) => {
     },
   };
   return styles[status];
-};
+}
 
 // Fetch pending assessments (submitted, not yet linked to a report)
 async function fetchPendingAssessments() {
@@ -424,12 +390,12 @@ onMounted(() => {
 
 <template>
   <div
-    class="min-h-screen transition-colors duration-300"
+    class="min-h-screen transition-colors duration-150"
     :class="theme === 'dark' ? 'bg-zinc-950' : 'bg-slate-100'"
   >
     <!-- Header -->
     <nav
-      class="sticky top-0 z-40 border-b transition-colors duration-300"
+      class="sticky top-0 z-40 border-b transition-colors duration-150"
       :class="theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'"
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -516,7 +482,7 @@ onMounted(() => {
 
         <!-- Card Container -->
         <div
-          class="rounded-xl border transition-colors duration-300 overflow-hidden"
+          class="rounded-xl border transition-colors duration-150 overflow-hidden"
           :class="theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'"
         >
           <!-- Loading State -->
@@ -577,8 +543,9 @@ onMounted(() => {
                   <span
                     class="font-medium truncate"
                     :class="theme === 'dark' ? 'text-zinc-100' : 'text-slate-900'"
+                    :title="assessment.project_summaries?.property_address || 'Untitled property'"
                   >
-                    {{ assessment.project_summaries?.property_address || 'No address' }}
+                    {{ assessment.project_summaries?.property_address || 'Untitled property' }}
                   </span>
                   <span
                     v-if="assessment.status !== 'submitted'"
@@ -660,7 +627,7 @@ onMounted(() => {
 
         <!-- Card Container -->
         <div
-          class="rounded-xl border transition-colors duration-300 overflow-hidden"
+          class="rounded-xl border transition-colors duration-150 overflow-hidden"
           :class="theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'"
         >
           <!-- Loading State -->
@@ -723,6 +690,7 @@ onMounted(() => {
                     <span
                       class="font-medium truncate"
                       :class="theme === 'dark' ? 'text-zinc-100' : 'text-slate-900'"
+                      :title="report.project_name || report.property_address || 'Untitled Report'"
                     >
                       {{ report.project_name || report.property_address || 'Untitled Report' }}
                     </span>

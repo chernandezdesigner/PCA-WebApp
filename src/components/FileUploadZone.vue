@@ -247,6 +247,7 @@ async function handlePaste() {
             <p
               class="text-[11px] font-medium truncate"
               :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
+              :title="file.filename"
             >
               {{ file.filename }}
             </p>
@@ -260,30 +261,7 @@ async function handlePaste() {
         </div>
       </div>
 
-      <!-- Add more -->
-      <div
-        v-if="!isAtLimit"
-        class="px-4 py-3 border-t flex items-center justify-center gap-3"
-        :class="theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'"
-      >
-        <button
-          @click="triggerFileSelect"
-          class="text-xs font-medium flex items-center gap-1.5 transition-colors"
-          :class="theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-700'"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
-          Add more files
-        </button>
-        <span :class="theme === 'dark' ? 'text-zinc-700' : 'text-slate-300'">|</span>
-        <span
-          class="text-[10px]"
-          :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
-        >PNG, JPG, GIF up to {{ maxSizeMb }}MB</span>
-      </div>
-
-      <!-- Action buttons -->
+      <!-- Footer actions -->
       <div
         v-if="!isAtLimit"
         class="px-4 py-2.5 border-t flex items-center gap-2"
@@ -291,19 +269,29 @@ async function handlePaste() {
       >
         <button
           @click="triggerFileSelect"
-          class="px-3 py-1.5 rounded-md text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors"
+          class="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors"
+          :class="theme === 'dark'
+            ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
         >
-          + Add More
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add more
         </button>
         <button
           @click="handlePaste"
-          class="px-3 py-1.5 rounded-md text-xs font-medium border transition-colors"
+          class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
           :class="theme === 'dark'
-            ? 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'
-            : 'border-slate-300 text-slate-600 hover:bg-slate-50'"
+            ? 'border-zinc-700 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800'
+            : 'border-slate-300 text-slate-500 hover:text-slate-600 hover:bg-slate-50'"
         >
-          Paste
+          Paste from clipboard
         </button>
+        <span
+          class="ml-auto text-[10px]"
+          :class="theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'"
+        >Up to {{ maxSizeMb }}MB per file</span>
       </div>
     </div>
 
@@ -314,7 +302,7 @@ async function handlePaste() {
       @dragover.prevent="handleDragOver"
       @dragleave="handleDragLeave"
       @click="triggerFileSelect"
-      class="rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all duration-200"
+      class="rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all duration-150"
       :class="[
         isDragging
           ? theme === 'dark'

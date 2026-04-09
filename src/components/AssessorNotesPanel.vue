@@ -125,7 +125,7 @@ function closeSearchResults() {
 
 <template>
   <aside
-    class="h-full flex flex-col border-l transition-all duration-300"
+    class="h-full flex flex-col border-l transition-all duration-150"
     :class="[
       isCollapsedInternal ? 'w-14' : 'w-[420px]',
       theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'

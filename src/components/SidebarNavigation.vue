@@ -63,7 +63,7 @@ function isCompleted(step: number): boolean {
 
 <template>
   <nav
-    class="sidebar-nav h-full flex flex-col transition-colors duration-300"
+    class="sidebar-nav w-64 h-full flex flex-col flex-shrink-0 transition-colors duration-150"
     :class="theme === 'dark' ? 'bg-zinc-950 border-r border-zinc-800' : 'bg-slate-50 border-r border-slate-200'"
     role="navigation"
     aria-label="Progress tracker"
@@ -99,7 +99,7 @@ function isCompleted(step: number): boolean {
               <!-- Section Anchor Dot -->
               <div class="relative flex items-center justify-center flex-shrink-0 w-6 h-6">
                 <div 
-                  class="w-2.5 h-2.5 rounded-full border-2 transition-all duration-300"
+                  class="w-2.5 h-2.5 rounded-full border-2 transition-all duration-150"
                   :class="[
                     theme === 'dark' ? 'bg-zinc-950' : 'bg-slate-50',
                     isExpanded(section.id) 
@@ -112,7 +112,7 @@ function isCompleted(step: number): boolean {
               <!-- Section Label -->
               <div class="flex-1 flex items-center justify-between">
                 <span 
-                  class="text-sm font-semibold transition-colors duration-200"
+                  class="text-sm font-semibold transition-colors duration-150"
                   :class="[
                     isExpanded(section.id) 
                       ? (theme === 'dark' ? 'text-zinc-100' : 'text-slate-900')
@@ -122,7 +122,7 @@ function isCompleted(step: number): boolean {
                   {{ section.title }}
                 </span>
                 <svg
-                  class="w-3.5 h-3.5 transition-transform duration-200"
+                  class="w-3.5 h-3.5 transition-transform duration-150"
                   :class="[
                     { 'rotate-180': isExpanded(section.id) },
                     theme === 'dark' ? 'text-zinc-600' : 'text-slate-400'
@@ -151,7 +151,7 @@ function isCompleted(step: number): boolean {
               <!-- Timeline Dot Container -->
               <div class="relative flex items-center justify-center flex-shrink-0 w-6 h-6">
                 <div 
-                  class="relative z-10 rounded-full transition-all duration-300 flex items-center justify-center"
+                  class="relative z-10 rounded-full transition-all duration-150 flex items-center justify-center"
                   :class="[
                     isActive(sub.step) 
                       ? 'w-3.5 h-3.5 bg-blue-600 ring-2 ring-blue-500/30 shadow-[0_0_8px_rgba(37,99,235,0.5)]' 
@@ -178,7 +178,7 @@ function isCompleted(step: number): boolean {
 
               <!-- Label Container -->
               <div 
-                class="flex-1 py-1.5 px-3 rounded-md transition-all duration-200"
+                class="flex-1 py-1.5 px-3 rounded-md transition-all duration-150"
                 :class="[
                   isActive(sub.step) 
                     ? (theme === 'dark' ? 'bg-zinc-900' : 'bg-blue-50')
@@ -186,7 +186,7 @@ function isCompleted(step: number): boolean {
                 ]"
               >
                 <span 
-                  class="text-xs font-medium transition-colors duration-200 block truncate"
+                  class="text-xs font-medium transition-colors duration-150 block truncate"
                   :class="[
                     isActive(sub.step) 
                       ? 'text-blue-400' 

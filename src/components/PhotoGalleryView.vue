@@ -163,7 +163,7 @@ onUnmounted(() => {
             v-for="(photo, idx) in photos"
             :key="photo.id"
             @click="openDetail(idx)"
-            class="group relative aspect-square rounded-lg overflow-hidden ring-1 transition-all duration-200 hover:ring-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            class="group relative aspect-square rounded-lg overflow-hidden ring-1 transition-all duration-150 hover:ring-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             :class="theme === 'dark'
               ? 'ring-zinc-800 hover:ring-zinc-600 bg-zinc-900'
               : 'ring-slate-200 hover:ring-slate-400 bg-slate-100'"
@@ -171,11 +171,11 @@ onUnmounted(() => {
             <img
               :src="getThumbnailUrl(photo)"
               :alt="photo.notes || photo.filename || `Photo ${idx + 1}`"
-              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              class="w-full h-full object-cover transition-transform duration-150 group-hover:scale-105"
               loading="lazy"
             />
             <div
-              class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2"
+              class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex flex-col justify-end p-2"
               :class="theme === 'dark'
                 ? 'bg-gradient-to-t from-black/80 via-black/20 to-transparent'
                 : 'bg-gradient-to-t from-black/70 via-black/10 to-transparent'"
@@ -222,7 +222,7 @@ onUnmounted(() => {
           <button
             v-if="selectedIndex > 0"
             @click="goPrev"
-            class="absolute left-2 z-20 p-1.5 rounded-full shadow-lg transition-all duration-200 backdrop-blur-sm"
+            class="absolute left-2 z-20 p-1.5 rounded-full shadow-lg transition-all duration-150 backdrop-blur-sm"
             :class="theme === 'dark'
               ? 'bg-zinc-900/80 text-zinc-300 hover:bg-zinc-800 hover:text-white'
               : 'bg-white/80 text-slate-600 hover:bg-white hover:text-slate-900'"
@@ -239,7 +239,7 @@ onUnmounted(() => {
             :alt="selectedPhoto?.notes || selectedPhoto?.filename || 'Photo'"
             class="w-full object-contain select-none"
             style="max-height: 360px;"
-            :class="imageLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'"
+            :class="imageLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-150'"
             @load="onImageLoad"
             draggable="false"
           />
@@ -248,7 +248,7 @@ onUnmounted(() => {
           <button
             v-if="selectedIndex < photos.length - 1"
             @click="goNext"
-            class="absolute right-2 z-20 p-1.5 rounded-full shadow-lg transition-all duration-200 backdrop-blur-sm"
+            class="absolute right-2 z-20 p-1.5 rounded-full shadow-lg transition-all duration-150 backdrop-blur-sm"
             :class="theme === 'dark'
               ? 'bg-zinc-900/80 text-zinc-300 hover:bg-zinc-800 hover:text-white'
               : 'bg-white/80 text-slate-600 hover:bg-white hover:text-slate-900'"

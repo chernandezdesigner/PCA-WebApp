@@ -73,7 +73,7 @@ function isCommentVisible(questionId: string): boolean {
 function getToggleClass(questionId: string, option: string): string {
   const selected = getAnswer(questionId) === option;
   const isDark = theme.value === 'dark';
-  const base = 'flex-1 inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer';
+  const base = 'flex-1 inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer';
 
   if (selected) {
     return `${base} bg-blue-600 text-white shadow-sm z-10`;
@@ -181,7 +181,7 @@ function getToggleClass(questionId: string, option: string): string {
                 rows="2"
                 placeholder="Add comment..."
                 :disabled="disabled"
-                class="block w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                class="block w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-150 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 :class="theme === 'dark'
                   ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700'
                   : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
@@ -231,7 +231,7 @@ function getToggleClass(questionId: string, option: string): string {
           rows="4"
           placeholder="Enter ADA recommendations..."
           :disabled="disabled"
-          class="block w-full px-4 py-3 rounded-lg text-sm shadow-sm transition-all duration-200 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          class="block w-full px-4 py-3 rounded-lg text-sm shadow-sm transition-all duration-150 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           :class="theme === 'dark'
             ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700'
             : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"

@@ -206,7 +206,7 @@ function removeTableRow(rowIdx: number) {
 function getTableConditionClass(option: string, current: string): string {
   const isSelected = current === option;
   const isDark = theme.value === 'dark';
-  const base = 'flex-1 inline-flex items-center justify-center px-2 py-1.5 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500';
+  const base = 'flex-1 inline-flex items-center justify-center px-2 py-1.5 text-xs font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500';
   if (isSelected) {
     if (option === 'Good') return `${base} bg-emerald-600 text-white shadow-sm z-10`;
     if (option === 'Fair') return `${base} bg-amber-500 text-black shadow-sm z-10`;
@@ -233,7 +233,7 @@ function isConditionSelected(option: string): boolean {
 function getConditionButtonClass(option: string): string {
   const isSelected = isConditionSelected(option);
   const isDark = theme.value === 'dark';
-  const baseClass = 'relative flex-1 inline-flex items-center justify-center px-4 py-3 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500';
+  const baseClass = 'relative flex-1 inline-flex items-center justify-center px-4 py-3 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500';
   
   if (isSelected) {
     if (option === 'Good') return `${baseClass} bg-emerald-600 text-white shadow-lg shadow-emerald-900/50 z-10`;
@@ -282,7 +282,7 @@ function getConditionButtonClass(option: string): string {
             :rows="renderField.rows || 3"
             :placeholder="renderField.placeholder"
             :disabled="disabled"
-            class="block w-full px-4 py-3 rounded-lg text-sm shadow-sm transition-all duration-200 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            class="block w-full px-4 py-3 rounded-lg text-sm shadow-sm transition-all duration-150 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             :class="theme === 'dark' 
               ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
               : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
@@ -372,7 +372,7 @@ function getConditionButtonClass(option: string): string {
             type="text"
             :placeholder="renderField.placeholder"
             :disabled="disabled"
-            class="flex-[2] min-w-0 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            class="flex-[2] min-w-0 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             :class="theme === 'dark'
               ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700'
               : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
@@ -392,7 +392,7 @@ function getConditionButtonClass(option: string): string {
               type="text"
               :placeholder="renderField.sourcePlaceholder"
               :disabled="disabled"
-              class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               :class="theme === 'dark' 
                 ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50' 
                 : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50'"
@@ -420,7 +420,7 @@ function getConditionButtonClass(option: string): string {
               type="text"
               :placeholder="addField.placeholder"
               :disabled="disabled"
-              class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               :class="theme === 'dark'
                 ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50'
                 : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50'"
@@ -459,7 +459,7 @@ function getConditionButtonClass(option: string): string {
                 type="text"
                 :placeholder="item.placeholder"
                 :disabled="disabled"
-                class="flex-1 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                class="flex-1 px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 :class="theme === 'dark' 
                   ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
                   : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"
@@ -564,7 +564,7 @@ function getConditionButtonClass(option: string): string {
                     role="switch"
                     :aria-checked="(row[col.id] as string) === 'true'"
                     :disabled="disabled"
-                    class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-150 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     :class="[
                       (row[col.id] as string) === 'true'
                         ? 'bg-blue-600'
@@ -574,7 +574,7 @@ function getConditionButtonClass(option: string): string {
                     @click="updateTableCell(rowIdx, col.id, (row[col.id] as string) === 'true' ? 'false' : 'true')"
                   >
                     <span
-                      class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out"
+                      class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-150 ease-in-out"
                       :class="(row[col.id] as string) === 'true' ? 'translate-x-5' : 'translate-x-0'"
                     />
                   </button>
@@ -588,7 +588,7 @@ function getConditionButtonClass(option: string): string {
                     type="text"
                     :placeholder="col.placeholder"
                     :disabled="disabled"
-                    class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    class="w-full px-3 py-2 rounded-lg text-sm shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     :class="theme === 'dark' 
                       ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700' 
                       : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500/50 hover:border-slate-300'"

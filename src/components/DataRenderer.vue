@@ -704,7 +704,7 @@ function formatValue(value: unknown): string {
             {{ section.title }}
           </span>
           <svg 
-            class="w-4 h-4 transition-transform duration-200"
+            class="w-4 h-4 transition-transform duration-150"
             :class="[
               expandedSections.has(section.key) ? 'rotate-180' : '',
               theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'
