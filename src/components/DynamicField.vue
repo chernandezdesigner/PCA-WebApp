@@ -630,6 +630,35 @@ function getConditionButtonClass(option: string): string {
     </template>
 
     <!-- Boolean Select -->
+    <template v-else-if="renderField.type === 'select'">
+      <div class="space-y-2">
+        <label
+          :for="fieldId"
+          class="block text-sm font-medium"
+          :class="theme === 'dark' ? 'text-zinc-200' : 'text-slate-700'"
+        >
+          {{ renderField.label }}
+        </label>
+        <select
+          :id="fieldId"
+          :value="value ?? ''"
+          :disabled="disabled"
+          class="w-full px-4 py-2.5 rounded-lg text-sm shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          :class="theme === 'dark'
+            ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 focus:border-blue-500/50 hover:border-zinc-700'
+            : 'bg-white border border-slate-200 text-slate-900 focus:border-blue-500/50 hover:border-slate-300'"
+          @change="value = ($event.target as HTMLSelectElement).value"
+        >
+          <option value="" disabled>{{ renderField.placeholder || 'Select...' }}</option>
+          <option
+            v-for="option in renderField.options"
+            :key="option.value"
+            :value="option.value"
+          >{{ option.label }}</option>
+        </select>
+      </div>
+    </template>
+
     <template v-else-if="renderField.type === 'boolean-select'">
       <fieldset class="space-y-3">
         <legend 

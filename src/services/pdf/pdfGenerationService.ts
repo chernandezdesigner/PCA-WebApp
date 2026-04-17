@@ -2,6 +2,7 @@ import { supabase } from '@/services/supabase';
 import { assembleReportHtml } from './reportTemplate';
 import type { ReportMeta } from './reportTemplate';
 import type { ReportContentRow, SectionData } from '@/types/database';
+import { PREPARERS } from '@/data/preparers';
 
 export interface AppendixFileEntry {
   url: string;
@@ -180,17 +181,26 @@ export async function generateReportPdf(
     resolveAppendixFileUrls(content, 'appendix_e'),
   ]);
 
-  // 3. Assemble HTML (only cover/table images go into the template now)
+  // 3. Resolve preparer from form data
+  const step1 = (content.section_1_summary as Record<string, Record<string, unknown>> | null)?.['step_1'] ?? {};
+  const preparerKey = step1['prepared-by'] as string | undefined;
+  const preparer = preparerKey ? PREPARERS[preparerKey] : undefined;
+
+  // 4. Assemble HTML (only cover/table images go into the template now)
   const resolvedMeta: ReportMeta = {
     ...meta,
     coverPhotoUrl: coverPhotoUrl || meta.coverPhotoUrl,
     table1ImageUrl: table1ImageUrl || meta.table1ImageUrl,
     table2ImageUrl: table2ImageUrl || meta.table2ImageUrl,
+    preparedBy: preparer?.name ?? meta.preparedBy,
+    preparedByTitle: preparer?.title ?? meta.preparedByTitle,
+    reviewedBy: meta.reviewedBy || 'Ronnie Long',
+    reviewedByTitle: meta.reviewedByTitle || 'Assessments Director',
   };
 
   const html = assembleReportHtml(content, resolvedMeta);
 
-  // 4. Call edge function
+  // 5. Call edge function
   const { data: fnData, error: fnError } = await supabase.functions.invoke('generate-pdf', {
     body: { reportId, html },
   });

@@ -310,7 +310,7 @@ async function handleExportPdf(reportId: string) {
       dateIssued: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
       preparedBy: '',
       preparedByTitle: 'Project Manager',
-      reviewedBy: '',
+      reviewedBy: 'Ronnie Long',
       reviewedByTitle: 'Assessments Director',
       logoUrl: 'https://sypjpnqrtyeielbpmdvs.supabase.co/storage/v1/object/public/report-assets/ASMLogoBlue.png',
     };

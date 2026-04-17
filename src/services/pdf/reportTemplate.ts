@@ -45,6 +45,8 @@ export interface ReportMeta {
   logoUrl?: string;
   table1ImageUrl?: string;
   table2ImageUrl?: string;
+  preparedBySignatureUrl?: string;
+  reviewedBySignatureUrl?: string;
 }
 
 interface StepData {
@@ -830,22 +832,29 @@ export function assembleReportHtml(
     .letter-page {
       page: content;
       page-break-after: always;
-      padding: 0.5in 0.65in;
+      padding: 0;
       font-size: 11pt;
       position: relative;
       height: 11in;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
     }
+    .letter-header { background-color: #0C306C; padding: 20px 0; width: 100%; }
+    .letter-header-logo { max-width: 500px; margin: 0 auto; }
+    .letter-header-logo img { width: 100%; max-height: 120px; object-fit: contain; }
+    .letter-content { padding: 0.4in 0.65in; }
     .letter-page p { text-align: left; margin: 6px 0; }
-    .letter-date { color: #c00000; margin-bottom: 16px; }
-    .letter-client-block { color: #c00000; margin-bottom: 16px; line-height: 1.4; }
+    .letter-date { margin-bottom: 16px; }
+    .letter-client-block { margin-bottom: 16px; line-height: 1.4; }
     .letter-re { margin-bottom: 16px; }
-    .letter-re .re-label { color: #c00000; font-weight: bold; }
-    .letter-re .re-indent { padding-left: 40px; color: #c00000; }
+    .letter-re .re-label { font-weight: bold; }
+    .letter-re .re-indent { padding-left: 40px; }
     .letter-salutation { margin-bottom: 12px; }
     .letter-body p { text-align: justify; margin: 10px 0; }
     .letter-sincerely { margin-top: 20px; }
-    .letter-signature-area { height: 50px; }
+    .letter-signature-area { height: 60px; margin: 4px 0; }
+    .letter-signature-img { height: 60px; }
     .letter-signer { margin-bottom: 0; }
     .letter-bottom-section {
       position: absolute;
@@ -853,29 +862,21 @@ export function assembleReportHtml(
       left: 0.65in;
       right: 0.65in;
     }
-    .letter-prep-review-header {
+    .letter-prep-review-cols {
       display: flex;
       justify-content: flex-start;
       gap: 120px;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
       font-size: 11pt;
     }
     .letter-ndds-footer {
       text-align: center;
       font-style: italic;
       font-size: 10pt;
-      margin-bottom: 40px;
+      color: #0C306C;
       line-height: 1.4;
     }
-    .letter-ndds-footer a { color: inherit; text-decoration: none; }
-    .letter-names-row {
-      display: flex;
-      justify-content: flex-start;
-      gap: 120px;
-      font-size: 11pt;
-    }
-    .letter-names-row .name { color: #c00000; }
-    .letter-names-row .title { color: #c00000; }
+    .letter-ndds-footer a { color: #0C306C; text-decoration: none; }
 
     /* ADA Checklist */
     .ada-table {
@@ -1071,60 +1072,75 @@ export function assembleReportHtml(
 <!-- TRANSMITTAL LETTER                                               -->
 <!-- ================================================================ -->
 <div class="letter-page">
-  <p class="letter-date">${dateIssued}</p>
-
-  <div class="letter-client-block">
-    ${clientContactName || 'Client Contact'}<br>
-    <strong>${clientName}</strong><br>
-    ${clientAddress || 'Address'}<br>
-    ${clientCityStateZip || 'City, State Zip Code'}
+  <!-- Blue banner with logo -->
+  <div class="letter-header">
+    <div class="letter-header-logo">
+      <img src="${logoUrl}" alt="ASM NDDS Logo" />
+    </div>
   </div>
 
-  <div class="letter-re">
-    <span class="re-label">RE:</span>
-    <span style="padding-left: 16px; color: #c00000;">${propertyName}</span><br>
-    <div class="re-indent">${propertyAddress}</div>
-    <div class="re-indent">${cityStateZip}</div>
-    <div class="re-indent">NDDS Project #${projectNum}</div>
-  </div>
+  <!-- Letter body content -->
+  <div class="letter-content">
+    <p class="letter-date">${dateIssued}</p>
 
-  <p class="letter-salutation">Dear Mr., Mrs., Ms. ${clientContactName || 'Client Contact Name'},</p>
-
-  <div class="letter-body">
-    <p>National Due Diligence Services, a division of American Surveying and Mapping, Inc. (ASM) has completed a Property Condition Assessment (PCA) of the above referenced property. The PCA was conducted in accordance with the ASTM International (ASTM) Standard Guide for Property Condition Assessments: <u>Baseline Property Condition Assessment Process E 2018 24 (the Standard)</u>, the applicable engagement letter with <strong>${clientName}</strong> <strong>(Client)</strong> dated <span style="color: #c00000;">Month Day, 2025</span> and generally accepted industry standards.</p>
-
-    <p>This report was prepared solely for the use of Client and any party specifically referenced in Section 2.5 User Reliance. No other party shall use or rely on this <u>report</u> or the findings herein, without the prior written consent of NDDS.</p>
-
-    <p>Please do not hesitate to contact us at 877 439 2582 if you have any questions or if we can be of further service to you.</p>
-  </div>
-
-  <p class="letter-sincerely">Sincerely,</p>
-
-  <div class="letter-signature-area"></div>
-
-  <p class="letter-signer">${escapeHtml(meta.reviewedBy || 'Ronnie Long')}<br>Assessments Director</p>
-
-  <div class="letter-bottom-section">
-    <div class="letter-prep-review-header">
-      <div>Prepared by</div>
-      <div>Reviewed by</div>
+    <div class="letter-client-block">
+      ${clientContactName || 'Client Contact'}<br>
+      <strong>${clientName}</strong><br>
+      ${clientAddress || 'Address'}<br>
+      ${clientCityStateZip || 'City, State Zip Code'}
     </div>
 
+    <div class="letter-re">
+      <span class="re-label">RE:</span>
+      <span style="padding-left: 16px;">${propertyName}</span><br>
+      <div class="re-indent">${propertyAddress}</div>
+      <div class="re-indent">${cityStateZip}</div>
+      <div class="re-indent">NDDS Project #${projectNum}</div>
+    </div>
+
+    <p class="letter-salutation">Dear Mr., Mrs., Ms. ${clientContactName || 'Client Contact Name'},</p>
+
+    <div class="letter-body">
+      <p>National Due Diligence Services, a division of American Surveying and Mapping, Inc. (ASM) has completed a Property Condition Assessment (PCA) of the above referenced property. The PCA was conducted in accordance with the ASTM International (ASTM) Standard Guide for Property Condition Assessments: <u>Baseline Property Condition Assessment Process E 2018 24 (the Standard)</u>, the applicable engagement letter with <strong>${clientName}</strong> <strong>(Client)</strong> dated ${dateIssued} and generally accepted industry standards.</p>
+
+      <p>This report was prepared solely for the use of Client and any party specifically referenced in Section 2.5 User Reliance. No other party shall use or rely on this <u>report</u> or the findings herein, without the prior written consent of NDDS.</p>
+
+      <p>Please do not hesitate to contact us at 877-439-2582 if you have any questions or if we can be of further service to you.</p>
+    </div>
+
+    <p class="letter-sincerely">Sincerely,</p>
+
+    <div class="letter-signature-area">
+      ${meta.reviewedBySignatureUrl ? `<img src="${escapeHtml(meta.reviewedBySignatureUrl)}" class="letter-signature-img" alt="Signature" />` : ''}
+    </div>
+
+    <p class="letter-signer">${escapeHtml(meta.reviewedBy || 'Ronnie Long')}<br>Assessments Director</p>
+  </div>
+
+  <!-- Bottom section: absolute positioned at page bottom -->
+  <div class="letter-bottom-section">
+    <div class="letter-prep-review-cols">
+      <div>
+        <div>Prepared by</div>
+        <div class="letter-signature-area">
+          ${meta.preparedBySignatureUrl ? `<img src="${escapeHtml(meta.preparedBySignatureUrl)}" class="letter-signature-img" alt="Signature" />` : ''}
+        </div>
+        ${escapeHtml(meta.preparedBy || 'Name')}<br>
+        ${escapeHtml(meta.preparedByTitle || 'Project Manager')}
+      </div>
+      <div>
+        <div>Reviewed by</div>
+        <div class="letter-signature-area">
+          ${meta.reviewedBySignatureUrl ? `<img src="${escapeHtml(meta.reviewedBySignatureUrl)}" class="letter-signature-img" alt="Signature" />` : ''}
+        </div>
+        ${escapeHtml(meta.reviewedBy || 'Ronnie Long')}<br>
+        ${escapeHtml(meta.reviewedByTitle || 'Assessments Director')}
+      </div>
+    </div>
     <div class="letter-ndds-footer">
       National Due Diligence Services, a Division of American Surveying and Mapping, Inc.<br>
       221 Circle Drive, Maitland, Florida 32751<br>
       <a href="http://www.NationalDueDiligenceServices.com">www.NationalDueDiligenceServices.com</a>
-    </div>
-
-    <div class="letter-names-row">
-      <div>
-        <span class="name">${escapeHtml(meta.preparedBy || 'Name')}</span><br>
-        <span class="title">${escapeHtml(meta.preparedByTitle || 'Project Manager')}</span>
-      </div>
-      <div>
-        <span class="name">${escapeHtml(meta.reviewedBy || 'Ronnie Long')}</span><br>
-        <span class="title">${escapeHtml(meta.reviewedByTitle || 'Assessments Director')}</span>
-      </div>
     </div>
   </div>
 </div>

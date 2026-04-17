@@ -45,7 +45,7 @@ export interface ConditionalField {
     mode?: 'exact' | 'includes';
   };
   showWhen: boolean;
-  innerField: TextareaField | ConditionSelectorField | TextField | RepeatingTextField | DynamicTableField;
+  innerField: TextareaField | ConditionSelectorField | TextField | RepeatingTextField | DynamicTableField | SelectField;
 }
 
 // Repeating text field (multiple text inputs, optionally dynamic)
@@ -64,14 +64,21 @@ export interface BooleanSelectField extends BaseField {
   options: { value: string; label: string; text: string }[];
 }
 
+// Simple dropdown select
+export interface SelectField extends BaseField {
+  type: 'select';
+  options: { value: string; label: string }[];
+}
+
 // Union of all field types
-export type FieldConfig = 
-  | TextareaField 
-  | ConditionSelectorField 
-  | TextField 
+export type FieldConfig =
+  | TextareaField
+  | ConditionSelectorField
+  | TextField
   | ConditionalField
   | RepeatingTextField
   | BooleanSelectField
+  | SelectField
   | DynamicTableField;
 
 export type FieldValue = string | null | Record<string, string>;

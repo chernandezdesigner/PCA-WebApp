@@ -48,6 +48,16 @@ export const generalDescription = {
             label: 'Client City, State Zip',
             placeholder: 'e.g. Orlando, FL 32801',
         },
+        {
+            id: 'prepared-by',
+            type: 'select',
+            label: 'Prepared By',
+            placeholder: 'Select preparer...',
+            options: [
+                { value: 'john-doe', label: 'John Doe' },
+                { value: 'jane-doe', label: 'Jane Doe' },
+            ],
+        },
         // --- Subject Property ---
         {
             id: '_header_property',
