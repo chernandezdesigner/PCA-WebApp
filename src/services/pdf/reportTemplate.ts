@@ -837,44 +837,45 @@ export function assembleReportHtml(
       position: relative;
       height: 11in;
       box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
     }
     .letter-header { background-color: #0C306C; padding: 20px 0; width: 100%; }
     .letter-header-logo { max-width: 500px; margin: 0 auto; }
     .letter-header-logo img { width: 100%; max-height: 120px; object-fit: contain; }
-    .letter-content { padding: 0.4in 0.65in; }
-    .letter-page p { text-align: left; margin: 6px 0; }
-    .letter-date { margin-bottom: 16px; }
-    .letter-client-block { margin-bottom: 16px; line-height: 1.4; }
-    .letter-re { margin-bottom: 16px; }
+    .letter-content { padding: 0.3in 0.65in 0.1in; }
+    .letter-page p { text-align: left; margin: 4px 0; }
+    .letter-date { margin-bottom: 12px; }
+    .letter-client-block { margin-bottom: 12px; line-height: 1.4; }
+    .letter-re { margin-bottom: 12px; line-height: 1.5; }
     .letter-re .re-label { font-weight: bold; }
-    .letter-re .re-indent { padding-left: 40px; }
-    .letter-salutation { margin-bottom: 12px; }
-    .letter-body p { text-align: justify; margin: 10px 0; }
-    .letter-sincerely { margin-top: 20px; }
-    .letter-signature-area { height: 60px; margin: 4px 0; }
-    .letter-signature-img { height: 60px; }
-    .letter-signer { margin-bottom: 0; }
+    .letter-re .re-indent { padding-left: 40px; display: inline-block; }
+    .letter-salutation { margin-bottom: 8px; }
+    .letter-body p { text-align: justify; margin: 8px 0; }
+    /* Bottom block: sincerely + 2-col signatures + footer — pinned to page bottom */
     .letter-bottom-section {
       position: absolute;
-      bottom: 0.5in;
+      bottom: 0.4in;
       left: 0.65in;
       right: 0.65in;
     }
-    .letter-prep-review-cols {
+    .letter-sincerely { margin: 0 0 2px; }
+    /* 2-col grid: Sincerely-signer left, empty right | then Prepared/Reviewed */
+    .letter-sig-grid {
       display: flex;
-      justify-content: flex-start;
-      gap: 120px;
-      margin-bottom: 16px;
-      font-size: 11pt;
+      gap: 100px;
+      margin-bottom: 4px;
     }
+    .letter-sig-col { flex: 1; min-width: 0; }
+    .letter-sig-col-label { font-size: 11pt; margin-bottom: 2px; }
+    .letter-signature-area { height: 55px; margin: 2px 0; }
+    .letter-signature-img { height: 55px; }
+    .letter-sig-name { font-size: 11pt; line-height: 1.3; }
     .letter-ndds-footer {
       text-align: center;
       font-style: italic;
       font-size: 10pt;
       color: #0C306C;
       line-height: 1.4;
+      margin-top: 8px;
     }
     .letter-ndds-footer a { color: #0C306C; text-decoration: none; }
 
@@ -1079,64 +1080,82 @@ export function assembleReportHtml(
     </div>
   </div>
 
-  <!-- Letter body content -->
+  <!-- Letter body content (date → body paragraphs only) -->
   <div class="letter-content">
     <p class="letter-date">${dateIssued}</p>
 
     <div class="letter-client-block">
-      ${clientContactName || 'Client Contact'}<br>
       <strong>${clientName}</strong><br>
-      ${clientAddress || 'Address'}<br>
-      ${clientCityStateZip || 'City, State Zip Code'}
+      ${clientContactName || ''}<br>
+      ${clientAddress || ''}<br>
+      ${clientCityStateZip || ''}
     </div>
 
     <div class="letter-re">
-      <span class="re-label">RE:</span>
-      <span style="padding-left: 16px;">${propertyName}</span><br>
-      <div class="re-indent">${propertyAddress}</div>
-      <div class="re-indent">${cityStateZip}</div>
-      <div class="re-indent">NDDS Project #${projectNum}</div>
+      <span class="re-label">RE:</span><span style="padding-left: 16px;">${propertyName}</span><br>
+      <span class="re-indent">${propertyAddress}</span><br>
+      <span class="re-indent">${cityStateZip}</span><br>
+      <span class="re-indent">NDDS Project #${projectNum}</span>
     </div>
 
-    <p class="letter-salutation">Dear Mr., Mrs., Ms. ${clientContactName || 'Client Contact Name'},</p>
+    <p class="letter-salutation">Dear Sir/Madam,</p>
 
     <div class="letter-body">
-      <p>National Due Diligence Services, a division of American Surveying and Mapping, Inc. (ASM) has completed a Property Condition Assessment (PCA) of the above referenced property. The PCA was conducted in accordance with the ASTM International (ASTM) Standard Guide for Property Condition Assessments: <u>Baseline Property Condition Assessment Process E 2018 24 (the Standard)</u>, the applicable engagement letter with <strong>${clientName}</strong> <strong>(Client)</strong> dated ${dateIssued} and generally accepted industry standards.</p>
+      <p>National Due Diligence Services, a division of American Surveying and Mapping, Inc. (ASM) has completed a Property Condition Assessment (PCA) of the above referenced property. The PCA was conducted in accordance with the ASTM International (ASTM) Standard Guide for Property Condition Assessments: <u>Baseline Property Condition Assessment Process E 2018-24 (the Standard)</u>, the applicable engagement letter with <strong>${clientName} (Client)</strong> dated ${dateIssued} and generally accepted industry standards.</p>
 
-      <p>This report was prepared solely for the use of Client and any party specifically referenced in Section 2.5 User Reliance. No other party shall use or rely on this <u>report</u> or the findings herein, without the prior written consent of NDDS.</p>
+      <p>This report was prepared solely for the use of Client and any party specifically referenced in Section 2.5 User Reliance. No other party shall use or rely on this report or the findings herein, without the prior written consent of NDDS.</p>
 
       <p>Please do not hesitate to contact us at 877-439-2582 if you have any questions or if we can be of further service to you.</p>
     </div>
-
-    <p class="letter-sincerely">Sincerely,</p>
-
-    <div class="letter-signature-area">
-      ${meta.reviewedBySignatureUrl ? `<img src="${escapeHtml(meta.reviewedBySignatureUrl)}" class="letter-signature-img" alt="Signature" />` : ''}
-    </div>
-
-    <p class="letter-signer">${escapeHtml(meta.reviewedBy || 'Ronnie Long')}<br>Assessments Director</p>
   </div>
 
-  <!-- Bottom section: absolute positioned at page bottom -->
+  <!-- Bottom section: absolute-pinned — sincerely block + 2×2 sig grid + footer -->
   <div class="letter-bottom-section">
-    <div class="letter-prep-review-cols">
-      <div>
-        <div>Prepared by</div>
-        <div class="letter-signature-area">
-          ${meta.preparedBySignatureUrl ? `<img src="${escapeHtml(meta.preparedBySignatureUrl)}" class="letter-signature-img" alt="Signature" />` : ''}
-        </div>
-        ${escapeHtml(meta.preparedBy || 'Name')}<br>
-        ${escapeHtml(meta.preparedByTitle || 'Project Manager')}
-      </div>
-      <div>
-        <div>Reviewed by</div>
+
+    <!-- Row 1: Sincerely sign-off (Ronnie Long only, left column) -->
+    <p class="letter-sincerely">Sincerely,</p>
+    <div class="letter-sig-grid">
+      <!-- Left: Ronnie Long sincerely signature -->
+      <div class="letter-sig-col">
         <div class="letter-signature-area">
           ${meta.reviewedBySignatureUrl ? `<img src="${escapeHtml(meta.reviewedBySignatureUrl)}" class="letter-signature-img" alt="Signature" />` : ''}
         </div>
-        ${escapeHtml(meta.reviewedBy || 'Ronnie Long')}<br>
-        ${escapeHtml(meta.reviewedByTitle || 'Assessments Director')}
+        <div class="letter-sig-name">
+          ${escapeHtml(meta.reviewedBy || 'Ronnie Long')}<br>
+          Assessments Director
+        </div>
+      </div>
+      <!-- Right: empty (sincerely is single sign-off) -->
+      <div class="letter-sig-col"></div>
+    </div>
+
+    <!-- Row 2: Prepared by / Reviewed by 2-column grid -->
+    <div class="letter-sig-grid" style="margin-top: 10px;">
+      <!-- Left: Prepared by -->
+      <div class="letter-sig-col">
+        <div class="letter-sig-col-label">Prepared by</div>
+        <div class="letter-signature-area">
+          ${meta.preparedBySignatureUrl ? `<img src="${escapeHtml(meta.preparedBySignatureUrl)}" class="letter-signature-img" alt="Signature" />` : ''}
+        </div>
+        <div class="letter-sig-name">
+          ${escapeHtml(meta.preparedBy || 'Name')}<br>
+          ${escapeHtml(meta.preparedByTitle || 'Project Manager')}
+        </div>
+      </div>
+      <!-- Right: Reviewed by -->
+      <div class="letter-sig-col">
+        <div class="letter-sig-col-label">Reviewed by</div>
+        <div class="letter-signature-area">
+          ${meta.reviewedBySignatureUrl ? `<img src="${escapeHtml(meta.reviewedBySignatureUrl)}" class="letter-signature-img" alt="Signature" />` : ''}
+        </div>
+        <div class="letter-sig-name">
+          ${escapeHtml(meta.reviewedBy || 'Ronnie Long')}<br>
+          ${escapeHtml(meta.reviewedByTitle || 'Assessments Director')}
+        </div>
       </div>
     </div>
+
+    <!-- Blue footer -->
     <div class="letter-ndds-footer">
       National Due Diligence Services, a Division of American Surveying and Mapping, Inc.<br>
       221 Circle Drive, Maitland, Florida 32751<br>
