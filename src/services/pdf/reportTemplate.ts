@@ -272,6 +272,49 @@ function buildCostOpinionTable(content: ReportContentRow): {
 }
 
 // ---------------------------------------------------------------------------
+// ADA Parking Requirements Table (static reference table)
+// ---------------------------------------------------------------------------
+
+function buildParkingRequirementsTable(): string {
+  const rows: [string, string, string][] = [
+    ['1-25',      '1',                         '1'],
+    ['26-50',     '2',                         '1'],
+    ['51-75',     '3',                         '1'],
+    ['76-100',    '4',                         '1'],
+    ['101-150',   '5',                         '1'],
+    ['151-200',   '6',                         '1'],
+    ['201-300',   '7',                         '1(2)'],
+    ['301-400',   '8',                         '1(2)'],
+    ['401-500',   '9',                         '2'],
+    ['501-1000',  '2% of total',               '1 of 8 (1 of 6)'],
+    ['> 1000',    '20, plus 1 for each 100, or fraction thereof, over 1,000', '1 of 8 (1 of 6)'],
+  ];
+
+  let html = `<table class="parking-table">\n`;
+  html += `<thead><tr>`;
+  html += `<th style="width: 30%;">Parking Requirements:</th>`;
+  html += `<th style="width: 25%;">Total Spaces</th>`;
+  html += `<th style="width: 22%;">Total ADA</th>`;
+  html += `<th style="width: 23%;">ADA Van</th>`;
+  html += `</tr></thead>\n`;
+  html += `<tbody>\n`;
+
+  rows.forEach((row, i) => {
+    html += `<tr>`;
+    if (i === 0) {
+      html += `<td rowspan="${rows.length}" style="vertical-align: top;">Proposed in ( )</td>`;
+    }
+    html += `<td>${row[0]}</td>`;
+    html += `<td>${row[1]}</td>`;
+    html += `<td>${row[2]}</td>`;
+    html += `</tr>\n`;
+  });
+
+  html += `</tbody></table>\n`;
+  return html;
+}
+
+// ---------------------------------------------------------------------------
 // ADA Checklist renderer
 // ---------------------------------------------------------------------------
 
@@ -279,9 +322,9 @@ function buildAdaChecklistTable(content: ReportContentRow): string {
   const sd = getStepData(content, 36);
   const fields = (sd['fields'] ?? sd) as Record<string, unknown>;
 
-  let html = `<h3 style="font-size: 11pt; margin-bottom: 8px;">Uniform Abbreviated Screening Checklist for the 2010 Americans with Disabilities Act</h3>\n`;
+  let html = `<p style="font-size: 10pt; font-weight: bold; margin-bottom: 6px; margin-top: 14px;">Uniform Abbreviated Screening Checklist for the 2010 Americans with Disabilities Act</p>\n`;
   html += `<table class="ada-table">\n`;
-  html += `<tr><th style="width: 5%;"></th><th style="width: 55%;">Item</th><th style="width: 8%;">Yes</th><th style="width: 8%;">No</th><th style="width: 8%;">N/A</th><th style="width: 16%;">Comments</th></tr>\n`;
+  html += `<tr><th style="width: 5%;"></th><th style="width: 55%;">Item</th><th style="width: 8%; text-align: center;">Yes</th><th style="width: 8%; text-align: center;">No</th><th style="width: 8%; text-align: center;">N/A</th><th style="width: 16%;">Comments</th></tr>\n`;
 
   for (const cat of adaScreeningChecklist.categories) {
     html += `<tr class="cat-header"><td><strong>${escapeHtml(cat.letter)}.</strong></td><td colspan="5"><strong>${escapeHtml(cat.title)}</strong></td></tr>\n`;
@@ -348,7 +391,7 @@ function renderEquipmentTable(
   // All columns render in the table (checkboxes show as Y/N)
   const cols = fields;
 
-  let html = `<table class="docr-table" style="margin-bottom: 16px;">\n`;
+  let html = `<table class="docr-table eq-table" style="margin-bottom: 16px;">\n`;
   html += `<tr class="block-header">`;
   for (const col of cols) {
     html += `<td style="text-align: center; font-weight: bold;">${escapeHtml(col.label.toUpperCase())}</td>`;
@@ -544,6 +587,16 @@ export function assembleReportHtml(
     { label: '10.2&nbsp;&nbsp;Microbial Contamination (Mold)', href: 'section-10-2', level: 2 },
     { label: '10.3&nbsp;&nbsp;Americans with Disabilities Act', href: 'section-10-3', level: 2 },
     { label: 'APPENDICES', href: 'section-appendices', level: 1 },
+    { label: 'APPENDIX A', href: 'appendix-a', level: 1 },
+    { label: 'PROPERTY MAPS, DRAWING, AND DESCRIPTION', href: 'appendix-a', level: 2 },
+    { label: 'APPENDIX B', href: 'appendix-b', level: 1 },
+    { label: 'PROPERTY PHOTOGRAPHS', href: 'appendix-b', level: 2 },
+    { label: 'APPENDIX C', href: 'appendix-c', level: 1 },
+    { label: 'INTERVIEW/QUESTIONNAIRE DOCUMENTATION/CORRESPONDENCE', href: 'appendix-c', level: 2 },
+    { label: 'APPENDIX D', href: 'appendix-d', level: 1 },
+    { label: 'SUPPORTING DOCUMENTS', href: 'appendix-d', level: 2 },
+    { label: 'APPENDIX E', href: 'appendix-e', level: 1 },
+    { label: 'PERSONAL QUALIFICATIONS', href: 'appendix-e', level: 2 },
   ];
 
   // ----- D/O/C/R sections -----
@@ -828,10 +881,18 @@ export function assembleReportHtml(
 
     .placeholder { color: #999; font-style: italic; }
 
+    /* Equipment list table header override — brand blue with white non-bold text */
+    .eq-table .block-header td {
+      background: #0C306C;
+      color: white;
+      font-weight: normal;
+      font-style: normal;
+      border-bottom: 2px solid #0C306C;
+    }
+
     /* ---- Letter page ---- */
     .letter-page {
       page: content;
-      page-break-after: always;
       padding: 0;
       font-size: 11pt;
       position: relative;
@@ -892,23 +953,62 @@ export function assembleReportHtml(
       vertical-align: top;
     }
     .ada-table th {
-      background: #0C306C;
-      color: white;
+      background: #ffffff;
+      color: #000000;
       text-align: left;
+      font-weight: bold;
     }
     .ada-table .cat-header td {
-      background: #e8e8e8;
+      background: #ffffff;
       font-weight: bold;
     }
 
-    /* Table divider pages (same style as appendix covers) */
+    /* Parking Requirements Table */
+    .parking-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 20px 0;
+      font-size: 10pt;
+    }
+    .parking-table th, .parking-table td {
+      padding: 5px 8px;
+      border: 1px solid #999;
+      vertical-align: middle;
+    }
+    .parking-table thead th {
+      background: #1F3864;
+      color: #ffffff;
+      text-align: center;
+      font-weight: bold;
+    }
+    .parking-table thead th:first-child {
+      text-align: left;
+    }
+    .parking-table td {
+      text-align: center;
+    }
+    .parking-table td:first-child {
+      text-align: left;
+    }
+
+    /* Table divider pages */
     .table-cover {
       page: content;
       page-break-before: always;
       text-align: center;
       padding-top: 3in;
     }
-    .table-cover h2 { font-size: 18pt; font-weight: bold; color: #0C306C; }
+    .table-cover h2 { font-size: 18pt; font-weight: bold; color: #0C306C; border: none; }
+
+    /* Appendix divider pages */
+    .appendix-cover {
+      page: content;
+      page-break-before: always;
+      text-align: center;
+      padding-top: 3in;
+    }
+    .appendix-cover .appendix-label { font-size: 16pt; font-weight: bold; color: #0C306C; margin-bottom: 8px; }
+    .appendix-cover .appendix-title { font-size: 13pt; color: #0C306C; }
     .table-cover p { font-size: 14pt; text-align: center; color: #0C306C; }
 
     /* Landscape page for table images */
@@ -934,10 +1034,10 @@ export function assembleReportHtml(
     }
     .pcs-header {
       text-align: center;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
     }
     .pcs-header .pcs-title {
-      font-size: 12pt;
+      font-size: 11pt;
       font-weight: bold;
       color: #0C306C;
       text-transform: uppercase;
@@ -951,21 +1051,21 @@ export function assembleReportHtml(
     .pcs-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 10pt;
+      font-size: 8.5pt;
     }
     .pcs-table th {
       background: #0C306C;
       color: white;
-      padding: 6px 8px;
+      padding: 3px 6px;
       border: 1px solid #0C306C;
       text-align: center;
-      font-size: 9pt;
+      font-size: 8pt;
       font-weight: bold;
       text-transform: uppercase;
     }
     .pcs-table th:first-child { text-align: left; }
     .pcs-table td {
-      padding: 5px 8px;
+      padding: 2px 6px;
       border: 1px solid #bbb;
       vertical-align: middle;
     }
@@ -1610,12 +1710,65 @@ ${section10Html}
 <!-- 10.3 ADA Screening - handled separately since it's a checklist -->
 <h3 id="section-10-3">10.3&nbsp;&nbsp;&nbsp;Americans with Disabilities Act</h3>
 
-<p>A Tier I Visual screening was conducted at the Subject Property for compliance with the Americans with Disabilities Act (ADA). The screening included a limited visual assessment of the property to determine if the property is accessible and usable by people with disabilities. No measurements were taken. This screening should not be considered an in-depth survey or audit.</p>
+<p>Title III of the Americans with Disabilities Act of 1990 (ADA) prohibits discrimination on the basis of disability by public accommodations and requires places of public accommodation and commercial
+facilities to be designed, constructed and altered in compliance with the accessibility standards outlined in the regulations. Places of public accommodation are facilities, or portions thereof, that are operated by a public entity, whose operations effect commerce and would be open to the public. General categories include: 1) Hotels or other place of lodging; 2) Restaurants other establishments serving food or drink; 3) Theaters or other places of exhibition or entertainment; 4) Convention centers or other places of public gathering; 5) Grocery stores or other sales or rental establishments; 6) Banks or other service establishments; 7) Bus terminals or other transportation stations; 8) Museums or other places of public display; 9) Parks or other places of amusement; 10) Nurseries, schools or other places of education; 11) Day care centers or other social service centers; and, 12) Bowling alleys or other places of exercise or recreation. Commercial facilities include facilities whose operations will affect commerce and are intended for non-residential use by a private entity such as manufacturing facilities and office buildings. Private clubs and residences are not covered under the ADA. A facility can be a mixture of any of these categories, for example a manufacturing facility that has an extensive customer service operation would be considered a public accommodation at the service area and a commercial facility for the remainder of the facility.
+</p><p>
+All places of public accommodation and commercial facilities constructed for first occupancy after January 26, 1993 must be constructed to be accessible. Any alteration made to a place of public accommodation or commercial facility after January 26, 1992, must be made so as to ensure that, to the maximum extent feasible, the altered portions of the facility are readily accessible to and useable by individuals with disabilities. Alterations include, but are not limited to, remodeling, renovations, rehabilitation, reconstruction, historic restoration, changes or rearrangement in the plan configuration of walls and full-height partitions. Normal maintenance, reroofing, painting or wallpapering, asbestos removal, or changes to mechanical and electrical systems are not alterations unless they affect the usability of the building or facility.
+</p><p>
+A public accommodation is required to remove architectural barriers in existing facilities, prior to the making of any alterations, where such removal is readily achievable, i.e., easily accomplished and able to be carried out without much difficulty or expense. Examples include, but are not limited to, providing designated handicapped parking spaces, adding small ramps and curb cuts, widening doorways,
+rearranging furniture, adding raised markings on elevators, installing grab bars in toilet stalls and
+rearranging toilet partitions to increase maneuvering space. If not readily achievable, alternative methods of providing service, such as access to the management office, must be offered. Alternative methods include, but are not limited to, installing an intercom system between the leasing office and an accessible area, or relocating activities to accessible locations. The determination as to whether removal of a barrier or an implementation of a component or system is readily achievable is often a business decision, which is based on the resources available to the owner or tenants, and contingent upon the timing of implementation. Determination of whether barrier removal is readily achievable is on a case-by-case basis; the United States Department of Justice did not provide numerical formulas or thresholds of any kind to determine whether an ac on is readily achievable. It is the property owner’s burden to prove that a modification is not readily achievable, or would pose an undue financial or administrative burden. 
+</p><p>
+NDDS is providing a Tier I survey. A Tier I survey is limited to visual observations and does not include taking extensive measurements or counts, or the inspection all areas of the Subject Property. As such, a Tier I inspection would not be expected to be as comprehensive or accurate as a Tier II or Tier III ADA survey. The scope of this limited visual survey is specifically limited to the following four areas: parking, path-of-travel, public restrooms and elevators. NDDS’s opinions regarding ADA compliance should be considered preliminary and a finding that the property is in general compliance with ADA guidelines should not be construed to mean that no areas of ADA non-compliance exist.
+</p><p>
+On July 23, 2004, the Architectural and Transportation Barriers Compliance Board (also known as the
+Access Board) published a final rule adopting revised guidelines to implement the ADA and the
+Architectural Barriers Act (ABA) in the Federal Register. 69 Fed. Reg.44083. These guidelines became
+effective on September 21, 2004 as guidance for the ADA standard setting agencies (Department of Justice and Department of Transportation) and the ABA standard setting agencies (Department of Defense, Department of Housing and Urban Development, the General Services Administration, and the U.S Postal Service). Each of these standard setting agencies is required to publish enforceable regulations that include design standards that consistent with the Access Board's guidelines. The Access Board's guidelines have no legal effect on the public until the standard setting agencies have completed their rule making process.
+</p><p>
+The Department of Justice has published an Advance Notice of Proposed Rulemaking (ANPRM) to begin
+the process of revising the Department's ADA regulations to adopt design standards that are consistent
+with the revised ADA Accessibility Guidelines published by the Access Board.
+</p><p>
+The ANPRM is the first of three steps in the regulatory process and is designed to solicit public comment on several issues relating to the potential application of the revised guidelines and to obtain background information needed for the regulatory impact analysis (a report analyzing the economic costs and benefits of a regulatory action) that will accompany the proposed and final rules. The ANPRM will be followed by notice of proposed rulemaking (NPRM) and a final rule.
+</p><p>
+Parking Facility
+</p><p>
+The term "parking facility" is used instead of the term "parking lot" in the ADA guidelines so that it is clear that both parking lots and parking structures are required to comply with these requirements. The number of parking spaces required to be accessible is to be calculated separately for each parking facility; the required number is not to be based on the total number of parking spaces provided in all of the parking facilities provided on the site. Each parking facility should comply with the following table. </p>
 
+${buildParkingRequirementsTable()}
 ${buildAdaChecklistTable(content)}
 
 <div id="section-appendices" style="height:0;margin:0;padding:0;"></div>
 </div><!-- end content-wrapper -->
+
+<!-- ================================================================ -->
+<!-- APPENDIX DIVIDER PAGES                                           -->
+<!-- ================================================================ -->
+<div class="appendix-cover" id="appendix-a">
+  <div class="appendix-label">APPENDIX A</div>
+  <div class="appendix-title">PROPERTY MAPS, DRAWING, AND DESCRIPTION</div>
+</div>
+
+<div class="appendix-cover" id="appendix-b">
+  <div class="appendix-label">APPENDIX B</div>
+  <div class="appendix-title">PROPERTY PHOTOGRAPHS</div>
+</div>
+
+<div class="appendix-cover" id="appendix-c">
+  <div class="appendix-label">APPENDIX C</div>
+  <div class="appendix-title">INTERVIEW/QUESTIONNAIRE DOCUMENTATION/CORRESPONDENCE</div>
+</div>
+
+<div class="appendix-cover" id="appendix-d">
+  <div class="appendix-label">APPENDIX D</div>
+  <div class="appendix-title">SUPPORTING DOCUMENTS</div>
+</div>
+
+<div class="appendix-cover" id="appendix-e">
+  <div class="appendix-label">APPENDIX E</div>
+  <div class="appendix-title">PERSONAL QUALIFICATIONS</div>
+</div>
 
 </body>
 </html>`;

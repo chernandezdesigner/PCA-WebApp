@@ -4,6 +4,12 @@ import { useToast } from '@/composables/useToast';
 import { useRoute, useRouter } from 'vue-router';
 import SidebarNavigation from '@/components/SidebarNavigation.vue';
 import AssessorNotesPanel from '@/components/AssessorNotesPanel.vue';
+import PdfExportOverlay from '@/components/PdfExportOverlay.vue';
+import { generateReportPdf, validateReportForExport } from '@/services/pdf/pdfGenerationService';
+import { postProcessPdf, triggerDownload } from '@/services/pdf/pdfPostProcessor';
+import type { ReportMeta } from '@/services/pdf/reportTemplate';
+import { withTimeout } from '@/utils/withTimeout';
+import { buildPdfFilename } from '@/utils/pdfFilename';
 import DynamicReportSection from '@/components/DynamicReportSection.vue';
 import PropertyInfoSection from '@/components/PropertyInfoSection.vue';
 import AdaChecklistSection from '@/components/AdaChecklistSection.vue';
@@ -64,7 +70,11 @@ import {
 const route = useRoute();
 const router = useRouter();
 const { theme, toggleTheme } = useTheme();
-const { showError } = useToast();
+const { showError, showSuccess } = useToast();
+
+// PDF export state
+const exportingPdf = ref(false);
+const pdfOverlayMessage = ref('Preparing your report...');
 
 const reportId = computed(() => (route.params.id as string) || 'demo');
 const isDemoMode = computed(() => reportId.value === 'demo');
@@ -304,8 +314,67 @@ async function handleNext() {
         .from('reports')
         .update({ status: 'final' })
         .eq('id', reportId.value);
+      await autoExportPdf();
     }
     router.push('/');
+  }
+}
+
+async function autoExportPdf() {
+  exportingPdf.value = true;
+  pdfOverlayMessage.value = 'Checking report data...';
+
+  try {
+    const validation = await validateReportForExport(reportId.value);
+    if (!validation.valid) {
+      showError(`Report saved. PDF export skipped — missing required fields: ${validation.missingFields.join(', ')}`);
+      return;
+    }
+
+    pdfOverlayMessage.value = 'Generating PDF with DocRaptor...';
+
+    const meta: ReportMeta = {
+      projectNumber: '',
+      clientName: '',
+      clientContactName: '',
+      clientAddress: '',
+      clientCityStateZip: '',
+      dateIssued: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      preparedBy: '',
+      preparedByTitle: 'Project Manager',
+      reviewedBy: 'Ronnie Long',
+      reviewedByTitle: 'Assessments Director',
+      logoUrl: 'https://sypjpnqrtyeielbpmdvs.supabase.co/storage/v1/object/public/report-assets/ASMLogoBlue.png',
+    };
+
+    const { pdfUrl, appendixData, propertyName, cityStateZip, projectNumber } =
+      await withTimeout(generateReportPdf(reportId.value, meta), 180_000, 'PDF generation');
+
+    pdfOverlayMessage.value = 'Building appendix pages...';
+
+    const finalPdfBytes = await withTimeout(
+      postProcessPdf(pdfUrl, {
+        projectNumber,
+        propertyName,
+        cityStateZip,
+        logoUrl: meta.logoUrl,
+        appendixData,
+      }),
+      120_000,
+      'PDF post-processing'
+    );
+
+    triggerDownload(finalPdfBytes, buildPdfFilename(projectNumber, propertyName, cityStateZip));
+
+    await supabase.from('reports').update({ status: 'exported' }).eq('id', reportId.value);
+
+    showSuccess('PDF exported successfully');
+  } catch (err) {
+    console.error('PDF export error:', err);
+    showError(err instanceof Error ? err.message : 'PDF export failed');
+  } finally {
+    exportingPdf.value = false;
+    pdfOverlayMessage.value = 'Preparing your report...';
   }
 }
 
@@ -388,10 +457,13 @@ const isAppendixSection = computed(() => {
 </script>
 
 <template>
-  <div 
+  <div
     class="report-view h-screen flex flex-col transition-colors duration-150"
     :class="theme === 'dark' ? 'bg-zinc-950 text-zinc-100' : 'bg-slate-100 text-slate-900'"
   >
+    <!-- PDF Export Overlay -->
+    <PdfExportOverlay :visible="exportingPdf" :message="pdfOverlayMessage" />
+
     <!-- Skip link -->
     <a 
       href="#main-content" 
