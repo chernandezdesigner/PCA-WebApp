@@ -54,9 +54,26 @@ export const generalDescription = {
             label: 'Prepared By',
             placeholder: 'Select preparer...',
             options: [
-                { value: 'john-doe', label: 'John Doe' },
-                { value: 'jane-doe', label: 'Jane Doe' },
+                { value: 'anthony-notaro', label: 'Anthony Notaro' },
+                { value: 'gabriella-baldomero', label: 'Gabriella Baldomero' },
+                { value: 't-west-white', label: 'T. West White' },
+                { value: 'timothy-d-nelson', label: 'Timothy D. Nelson' },
+                { value: 'kerry-cooper', label: 'Kerry Cooper' },
+                { value: 'stephanie-melvin', label: 'Stephanie Melvin' },
+                { value: 'john-t-mcrae', label: 'John T. McRae' },
+                { value: 'billy-mueller', label: 'Billy Mueller' },
+                { value: 'craig-lanouette', label: 'Craig Lanouette' },
+                { value: 'brendan-yadav', label: 'Brendan Yadav' },
+                { value: 'sarah-malekpour', label: 'Sarah Malekpour' },
+                { value: 'taru-holinsworth', label: 'Taru Holinsworth' },
             ],
+        },
+        {
+            id: 'prepared-by-title',
+            type: 'text',
+            label: 'Title',
+            defaultValue: 'Project Manager',
+            placeholder: 'Enter report author job title',
         },
         // --- Subject Property ---
         {

@@ -78,9 +78,9 @@ async function addCoverPage(
   const page = pdfDoc.addPage([612, 792]);
 
   const labelW = boldFont.widthOfTextAtSize(label, 24);
-  page.drawText(label, { x: (612 - labelW) / 2, y: 420, size: 24, font: boldFont, color: rgb(0, 0, 0) });
+  page.drawText(label, { x: (612 - labelW) / 2, y: 420, size: 24, font: boldFont, color: NAVY });
   const titleW = boldFont.widthOfTextAtSize(title, 14);
-  page.drawText(title, { x: (612 - titleW) / 2, y: 393, size: 14, font: boldFont, color: rgb(0, 0, 0) });
+  page.drawText(title, { x: (612 - titleW) / 2, y: 393, size: 14, font: boldFont, color: NAVY });
 
   addPageFooter(page, pageNum, projectNumber, font, boldFont);
 }

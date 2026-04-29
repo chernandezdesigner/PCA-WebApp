@@ -185,6 +185,14 @@ export async function generateReportPdf(
   const step1 = (content.section_1_summary as Record<string, Record<string, unknown>> | null)?.['step_1'] ?? {};
   const preparerKey = step1['prepared-by'] as string | undefined;
   const preparer = preparerKey ? PREPARERS[preparerKey] : undefined;
+  const formTitle = step1['prepared-by-title'] as string | undefined;
+
+  // Build public URL for the preparer's signature from report-assets/prepared-by-signatures/
+  // Encode each path segment separately to handle spaces and special chars in filenames
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+  const preparedBySignatureUrl = preparer?.signatureKey
+    ? `${supabaseUrl}/storage/v1/object/public/report-assets/${preparer.signatureKey.split('/').map(encodeURIComponent).join('/')}`
+    : undefined;
 
   // 4. Assemble HTML (only cover/table images go into the template now)
   const resolvedMeta: ReportMeta = {
@@ -193,7 +201,8 @@ export async function generateReportPdf(
     table1ImageUrl: table1ImageUrl || meta.table1ImageUrl,
     table2ImageUrl: table2ImageUrl || meta.table2ImageUrl,
     preparedBy: preparer?.name ?? meta.preparedBy,
-    preparedByTitle: preparer?.title ?? meta.preparedByTitle,
+    preparedByTitle: formTitle || preparer?.title || meta.preparedByTitle || 'Project Manager',
+    preparedBySignatureUrl: preparedBySignatureUrl || meta.preparedBySignatureUrl,
     reviewedBy: meta.reviewedBy || 'Ronnie Long',
     reviewedByTitle: meta.reviewedByTitle || 'Assessments Director',
   };

@@ -322,9 +322,9 @@ function buildAdaChecklistTable(content: ReportContentRow): string {
   const sd = getStepData(content, 36);
   const fields = (sd['fields'] ?? sd) as Record<string, unknown>;
 
-  let html = `<p style="font-size: 10pt; font-weight: bold; margin-bottom: 6px; margin-top: 14px;">Uniform Abbreviated Screening Checklist for the 2010 Americans with Disabilities Act</p>\n`;
+  let html = `<p style="font-size: 10pt; font-weight: bold; text-align: center; margin-bottom: 6px; margin-top: 14px;">Uniform Abbreviated Screening Checklist for the 2010 Americans with Disabilities Act</p>\n`;
   html += `<table class="ada-table">\n`;
-  html += `<tr><th style="width: 5%;"></th><th style="width: 55%;">Item</th><th style="width: 8%; text-align: center;">Yes</th><th style="width: 8%; text-align: center;">No</th><th style="width: 8%; text-align: center;">N/A</th><th style="width: 16%;">Comments</th></tr>\n`;
+  html += `<tr><th style="width: 5%; text-align: center;"></th><th style="width: 55%; text-align: center;">Item</th><th style="width: 8%; text-align: center;">Yes</th><th style="width: 8%; text-align: center;">No</th><th style="width: 8%; text-align: center;">N/A</th><th style="width: 16%; text-align: center;">Comments</th></tr>\n`;
 
   for (const cat of adaScreeningChecklist.categories) {
     html += `<tr class="cat-header"><td><strong>${escapeHtml(cat.letter)}.</strong></td><td colspan="5"><strong>${escapeHtml(cat.title)}</strong></td></tr>\n`;
@@ -846,7 +846,7 @@ export function assembleReportHtml(
     .prop-table .prop-source-value {
       width: 110px;
       font-size: 11pt;
-      color: #c00000;
+      color: #000000;
     }
 
     /* ---- D/O/C/R tables (sections 5-10) ---- */
@@ -969,6 +969,7 @@ export function assembleReportHtml(
       border-collapse: collapse;
       margin: 10px 0 20px 0;
       font-size: 10pt;
+      page-break-inside: avoid;
     }
     .parking-table th, .parking-table td {
       padding: 5px 8px;
@@ -1071,7 +1072,7 @@ export function assembleReportHtml(
     }
     .pcs-table .pcs-sys { font-weight: normal; }
     .pcs-table .pcs-x { text-align: center; font-weight: bold; }
-    .pcs-table .pcs-action { text-align: center; color: #c00000; font-weight: bold; }
+    .pcs-table .pcs-action { text-align: center; color: #000000; font-weight: bold; }
     .pcs-legend {
       margin-top: 16px;
       font-size: 9pt;
@@ -1215,10 +1216,10 @@ export function assembleReportHtml(
     <!-- Row 1: Sincerely sign-off (Ronnie Long only, left column) -->
     <p class="letter-sincerely">Sincerely,</p>
     <div class="letter-sig-grid">
-      <!-- Left: Ronnie Long sincerely signature -->
+      <!-- Left: Ronnie Long sincerely signature (hardcoded) -->
       <div class="letter-sig-col">
         <div class="letter-signature-area">
-          ${meta.reviewedBySignatureUrl ? `<img src="${escapeHtml(meta.reviewedBySignatureUrl)}" class="letter-signature-img" alt="Signature" />` : ''}
+          <img src="https://sypjpnqrtyeielbpmdvs.supabase.co/storage/v1/object/public/report-assets/prepared-by-signatures/ronnie%20lang%20signature.png" class="letter-signature-img" alt="Signature" />
         </div>
         <div class="letter-sig-name">
           ${escapeHtml(meta.reviewedBy || 'Ronnie Long')}<br>
@@ -1242,11 +1243,11 @@ export function assembleReportHtml(
           ${escapeHtml(meta.preparedByTitle || 'Project Manager')}
         </div>
       </div>
-      <!-- Right: Reviewed by -->
+      <!-- Right: Reviewed by (Ronnie Long hardcoded) -->
       <div class="letter-sig-col">
         <div class="letter-sig-col-label">Reviewed by</div>
         <div class="letter-signature-area">
-          ${meta.reviewedBySignatureUrl ? `<img src="${escapeHtml(meta.reviewedBySignatureUrl)}" class="letter-signature-img" alt="Signature" />` : ''}
+          <img src="https://sypjpnqrtyeielbpmdvs.supabase.co/storage/v1/object/public/report-assets/prepared-by-signatures/ronnie%20lang%20signature.png" class="letter-signature-img" alt="Signature" />
         </div>
         <div class="letter-sig-name">
           ${escapeHtml(meta.reviewedBy || 'Ronnie Long')}<br>
@@ -1741,33 +1742,6 @@ ${buildAdaChecklistTable(content)}
 <div id="section-appendices" style="height:0;margin:0;padding:0;"></div>
 </div><!-- end content-wrapper -->
 
-<!-- ================================================================ -->
-<!-- APPENDIX DIVIDER PAGES                                           -->
-<!-- ================================================================ -->
-<div class="appendix-cover" id="appendix-a">
-  <div class="appendix-label">APPENDIX A</div>
-  <div class="appendix-title">PROPERTY MAPS, DRAWING, AND DESCRIPTION</div>
-</div>
-
-<div class="appendix-cover" id="appendix-b">
-  <div class="appendix-label">APPENDIX B</div>
-  <div class="appendix-title">PROPERTY PHOTOGRAPHS</div>
-</div>
-
-<div class="appendix-cover" id="appendix-c">
-  <div class="appendix-label">APPENDIX C</div>
-  <div class="appendix-title">INTERVIEW/QUESTIONNAIRE DOCUMENTATION/CORRESPONDENCE</div>
-</div>
-
-<div class="appendix-cover" id="appendix-d">
-  <div class="appendix-label">APPENDIX D</div>
-  <div class="appendix-title">SUPPORTING DOCUMENTS</div>
-</div>
-
-<div class="appendix-cover" id="appendix-e">
-  <div class="appendix-label">APPENDIX E</div>
-  <div class="appendix-title">PERSONAL QUALIFICATIONS</div>
-</div>
 
 </body>
 </html>`;
