@@ -5,11 +5,15 @@ import { useTheme } from '@/composables/useTheme'
 const { toasts, hideToast } = useToast()
 const { theme } = useTheme()
 
-const typeConfig: Record<string, {
-  dark: string;
-  light: string;
-  icon: string;
-}> = {
+type ToastStyleConfig = { dark: string; light: string; icon: string }
+
+const INFO_CONFIG: ToastStyleConfig = {
+  dark: 'bg-blue-950 border-blue-900 text-blue-200',
+  light: 'bg-blue-50 border-blue-200 text-blue-800',
+  icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+}
+
+const typeConfig: Record<string, ToastStyleConfig> = {
   error: {
     dark: 'bg-red-950 border-red-900 text-red-200',
     light: 'bg-red-50 border-red-200 text-red-800',
@@ -20,11 +24,7 @@ const typeConfig: Record<string, {
     light: 'bg-emerald-50 border-emerald-200 text-emerald-800',
     icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
   },
-  info: {
-    dark: 'bg-blue-950 border-blue-900 text-blue-200',
-    light: 'bg-blue-50 border-blue-200 text-blue-800',
-    icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-  },
+  info: INFO_CONFIG,
   saving: {
     dark: 'bg-zinc-900 border-zinc-800 text-zinc-300',
     light: 'bg-slate-50 border-slate-200 text-slate-700',
@@ -33,12 +33,12 @@ const typeConfig: Record<string, {
 }
 
 function getToastClasses(type: string): string {
-  const config = typeConfig[type] || typeConfig.info
+  const config = typeConfig[type] ?? INFO_CONFIG
   return theme.value === 'dark' ? config.dark : config.light
 }
 
 function getIcon(type: string): string {
-  return (typeConfig[type] || typeConfig.info).icon
+  return (typeConfig[type] ?? INFO_CONFIG).icon
 }
 </script>
 

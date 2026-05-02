@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, useId, watch } from 'vue';
-import type { FieldConfig, FieldValue, FormData, RepeatingTextField, DynamicTableField as DynamicTableFieldType, EquipmentField } from '@/types/section';
+import type { FieldConfig, FieldValue, FormData, RepeatingTextField, DynamicTableField as DynamicTableFieldType } from '@/types/section';
 import { useTheme } from '@/composables/useTheme';
 
 const props = defineProps<{
@@ -185,7 +185,7 @@ function getTableData(): Record<string, string> {
 }
 
 function updateTableCell(rowIdx: number, colId: string, val: string) {
-  tableRows.value[rowIdx][colId] = val;
+  tableRows.value[rowIdx]![colId] = val;
   emit('update:modelValue', getTableData());
 }
 

@@ -108,9 +108,6 @@ function v(content: ReportContentRow, step: number, block: string, fieldId: stri
   return nl2br(getVal(content, step, block, fieldId));
 }
 
-function vRaw(content: ReportContentRow, step: number, block: string, fieldId: string): string {
-  return escapeHtml(getVal(content, step, block, fieldId));
-}
 
 // Resolve a field value that may be a plain string or a compound object {main, source, ...}
 function resolveFieldValue(val: unknown, subKey?: string): string {
@@ -330,7 +327,7 @@ function buildAdaChecklistTable(content: ReportContentRow): string {
     html += `<tr class="cat-header"><td><strong>${escapeHtml(cat.letter)}.</strong></td><td colspan="5"><strong>${escapeHtml(cat.title)}</strong></td></tr>\n`;
 
     for (let qi = 0; qi < cat.questions.length; qi++) {
-      const q = cat.questions[qi];
+      const q = cat.questions[qi]!;
       const data = fields[q.id] as Record<string, string> | undefined;
       const answer = data?.answer || '';
       const comment = data?.comment || '';
@@ -382,7 +379,7 @@ function renderEquipmentTable(
   let fields = eqCfg.fields;
   const savedMode = (eqData['_mode'] as string) || '';
   if (eqCfg.modes && eqCfg.modes.length > 0) {
-    const mode = eqCfg.modes.find((m: { id: string }) => m.id === savedMode) || eqCfg.modes[0];
+    const mode = eqCfg.modes.find((m: { id: string }) => m.id === savedMode) || eqCfg.modes[0]!;
     fields = mode.fields;
   }
 
@@ -475,7 +472,7 @@ function renderDOCRSection(
       if (block.key === 'recommendations') {
         html += `<tr><td colspan="2" class="field-value">${displayValue}</td></tr>\n`;
       } else {
-        const label = ('label' in field ? field.label : field.id).toUpperCase();
+        const label = field.label.toUpperCase();
         html += `<tr>`;
         html += `<td class="field-label">${escapeHtml(label)}</td>`;
         html += `<td class="field-value">${displayValue}</td>`;

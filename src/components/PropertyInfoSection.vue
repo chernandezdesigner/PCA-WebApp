@@ -39,8 +39,9 @@ const groupedFields = computed(() => {
   const groups: { row?: string; fields: FieldConfig[] }[] = [];
   for (const field of props.config.fields) {
     const rowKey = (field as any).row as string | undefined;
-    if (rowKey && groups.length > 0 && groups[groups.length - 1].row === rowKey) {
-      groups[groups.length - 1].fields.push(field);
+    const lastGroup = groups[groups.length - 1];
+    if (rowKey && lastGroup && lastGroup.row === rowKey) {
+      lastGroup.fields.push(field);
     } else {
       groups.push({ row: rowKey, fields: [field] });
     }
@@ -78,7 +79,7 @@ function initBlocks() {
     for (const key of keys) {
       const match = key.match(/^interviewee-(\d+)$/);
       if (match) {
-        const n = parseInt(match[1]);
+        const n = parseInt(match[1]!);
         if (!knownSuffixes.has(n)) {
           base.push(buildBlockFromTemplate(n));
           knownSuffixes.add(n);

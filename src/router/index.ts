@@ -74,7 +74,7 @@ const router = createRouter({
 });
 
 // Navigation guard for protected routes
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 

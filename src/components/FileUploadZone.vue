@@ -75,7 +75,7 @@ async function handleFiles(fileList: FileList | File[]) {
       for (const existing of props.modelValue) {
         await deleteFile(props.bucket, existing.storage_path);
       }
-      emit('update:modelValue', [uploaded[0]]);
+      emit('update:modelValue', [uploaded[0]!]);
     } else {
       emit('update:modelValue', [...props.modelValue, ...uploaded]);
     }
@@ -123,7 +123,7 @@ function handleItemDragOver(e: DragEvent, index: number) {
   e.preventDefault();
   if (draggedIndex.value === null || draggedIndex.value === index) return;
   const updated = [...props.modelValue];
-  const [moved] = updated.splice(draggedIndex.value, 1);
+  const moved = updated.splice(draggedIndex.value, 1)[0]!;
   updated.splice(index, 0, moved);
   draggedIndex.value = index;
   emit('update:modelValue', updated);

@@ -53,7 +53,7 @@ function getRowData(): Record<string, string> {
 }
 
 function updateCell(rowIdx: number, colId: string, val: string) {
-  rows.value[rowIdx][colId] = val;
+  rows.value[rowIdx]![colId] = val;
   emitUpdate(getRowData());
 }
 
@@ -66,7 +66,7 @@ function addRow() {
 }
 
 function removeRow(rowIdx: number) {
-  const removed = rows.value[rowIdx];
+  const removed = rows.value[rowIdx]!;
   rows.value.splice(rowIdx, 1);
   const data = getRowData();
   for (const col of props.config.deficiencyColumns) {
@@ -100,7 +100,7 @@ function handleCurrencyInput(rowIdx: number, colId: string, raw: string) {
 }
 
 function handleCurrencyBlur(rowIdx: number, colId: string) {
-  const raw = (rows.value[rowIdx][colId] as string) || '';
+  const raw = (rows.value[rowIdx]![colId] as string) || '';
   if (raw.trim() === '') return;
   const formatted = formatCurrencyInput(raw);
   updateCell(rowIdx, colId, formatted);

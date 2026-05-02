@@ -115,12 +115,14 @@ const FIELD_NOTES_CONFIG = [
     id: 'interior-conditions',
     title: 'Interior Conditions',
     icon: 'home',
-    table: null,
+    table: 'interior_conditions' as const,
     formType: 'interior_conditions',
     sections: [
-      { id: 'ic-1', stepKey: null, formStep: 1, title: 'Coming Soon' },
+      { id: 'ic-1', stepKey: 'step1', formStep: 1, title: 'Tenant Spaces' },
+      { id: 'ic-2', stepKey: 'step2', formStep: 2, title: 'Common Areas' },
+      { id: 'ic-3', stepKey: 'step3', formStep: 3, title: 'Microbial Conditions' },
+      { id: 'ic-4', stepKey: 'step4', formStep: 4, title: 'Unit Interiors' },
     ],
-    comingSoon: true,
   },
 ];
 
@@ -436,11 +438,12 @@ export function useFieldNotes(reportId: Ref<string>) {
       }
 
       // Fetch all data in parallel
-      const [projectSummaryRes, siteGroundsRes, buildingEnvelopeRes, mechanicalRes, photosRes] = await Promise.all([
+      const [projectSummaryRes, siteGroundsRes, buildingEnvelopeRes, mechanicalRes, interiorConditionsRes, photosRes] = await Promise.all([
         supabase.from('project_summaries').select('*').eq('assessment_id', sourceAssessmentId.value).maybeSingle(),
         supabase.from('site_grounds').select('*').eq('assessment_id', sourceAssessmentId.value).maybeSingle(),
         supabase.from('building_envelope').select('*').eq('assessment_id', sourceAssessmentId.value).maybeSingle(),
         supabase.from('mechanical_systems').select('*').eq('assessment_id', sourceAssessmentId.value).maybeSingle(),
+        supabase.from('interior_conditions').select('*').eq('assessment_id', sourceAssessmentId.value).maybeSingle(),
         supabase.from('photos').select('*').eq('assessment_id', sourceAssessmentId.value).order('captured_at', { ascending: false }),
       ]);
 
@@ -450,6 +453,7 @@ export function useFieldNotes(reportId: Ref<string>) {
         site_grounds: siteGroundsRes.data,
         building_envelope: buildingEnvelopeRes.data,
         mechanical_systems: mechanicalRes.data,
+        interior_conditions: interiorConditionsRes.data,
       };
 
       // DEBUG: Log raw data
@@ -458,6 +462,7 @@ export function useFieldNotes(reportId: Ref<string>) {
       console.log('site_grounds:', siteGroundsRes.data);
       console.log('building_envelope:', buildingEnvelopeRes.data);
       console.log('mechanical_systems:', mechanicalRes.data);
+      console.log('interior_conditions:', interiorConditionsRes.data);
       console.log('photos:', photosRes.data?.length || 0);
       console.groupEnd();
 

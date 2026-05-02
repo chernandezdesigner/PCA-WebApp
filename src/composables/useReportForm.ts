@@ -1,6 +1,6 @@
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { supabase } from '@/services/supabase';
-import type { SectionConfig, FormData, BlockType, FieldConfig } from '@/types/section';
+import type { SectionConfig, FormData, FieldValue, BlockType, FieldConfig } from '@/types/section';
 import { BLOCK_TYPES } from '@/types/section';
 
 interface ReportFormOptions {
@@ -64,7 +64,7 @@ export function useReportForm(options: ReportFormOptions) {
     for (let i = 0; i < configs.length; i++) {
       const stepNum = i + 1;
       if (!formData.value[stepNum]) {
-        formData.value[stepNum] = initializeSectionData(configs[i]);
+        formData.value[stepNum] = initializeSectionData(configs[i]!);
       }
     }
   }
@@ -209,7 +209,7 @@ export function useReportForm(options: ReportFormOptions) {
   }
 
   // Get a specific field value
-  function getFieldValue(step: number, block: BlockType, fieldId: string): string | null {
+  function getFieldValue(step: number, block: BlockType, fieldId: string): FieldValue | null {
     return formData.value[step]?.[block]?.[fieldId] ?? null;
   }
 

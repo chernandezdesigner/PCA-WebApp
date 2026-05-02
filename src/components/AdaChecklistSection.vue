@@ -32,16 +32,16 @@ function getComment(questionId: string): string {
 function setAnswer(questionId: string, answer: string) {
   const current = props.modelValue[questionId];
   const existing = typeof current === 'object' && current !== null ? current : {};
-  const currentAnswer = existing.answer || null;
+  const currentAnswer = existing.answer || undefined;
 
   emit('update:modelValue', {
     ...props.modelValue,
     [questionId]: {
       ...existing,
-      answer: currentAnswer === answer ? null : answer,
+      answer: currentAnswer === answer ? undefined : answer,
       comment: existing.comment || '',
     },
-  });
+  } as FormData);
 }
 
 function setComment(questionId: string, comment: string) {
@@ -52,10 +52,10 @@ function setComment(questionId: string, comment: string) {
     ...props.modelValue,
     [questionId]: {
       ...existing,
-      answer: existing.answer || null,
+      answer: existing.answer || undefined,
       comment,
     },
-  });
+  } as FormData);
 }
 
 function toggleComment(questionId: string) {

@@ -33,7 +33,6 @@ const reportIdRef = toRef(props, 'reportId');
 const {
   allPhotos,
   getPhotoUrl: getMobilePhotoUrl,
-  getThumbnailUrl: getMobileThumbnailUrl,
 } = useFieldNotes(reportIdRef);
 
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -74,7 +73,7 @@ function getPhotoThumbnail(photo: AppendixPhoto): string {
 
 function updateNotes(index: number, notes: string) {
   const updated = [...props.modelValue];
-  updated[index] = { ...updated[index], notes };
+  updated[index] = { ...updated[index]!, notes };
   emit('update:modelValue', updated);
 }
 
@@ -93,7 +92,7 @@ function handleItemDragOver(e: DragEvent, index: number) {
   e.preventDefault();
   if (draggedIndex.value === null || draggedIndex.value === index) return;
   const updated = [...props.modelValue];
-  const [moved] = updated.splice(draggedIndex.value, 1);
+  const moved = updated.splice(draggedIndex.value, 1)[0]!;
   updated.splice(index, 0, moved);
   updated.forEach((p, i) => p.sort_order = i);
   draggedIndex.value = index;

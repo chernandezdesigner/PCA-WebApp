@@ -10,7 +10,6 @@ const props = defineProps<{
 }>();
 
 const { theme } = useTheme();
-const depth = computed(() => props.depth ?? 0);
 
 // Track expanded sections
 const expandedSections = ref<Set<string>>(new Set());
@@ -27,9 +26,6 @@ function toggleSection(key: string) {
 
 // Keys to skip (metadata)
 const skipKeys = new Set(['id', 'assessment_id', 'created_at', 'updated_at', 'last_modified', 'current_step']);
-
-// Keys that represent assessment metrics
-const assessmentKeys = new Set(['conditions', 'condition', 'repair_status', 'cost_estimate', 'rating', 'status']);
 
 // Format key to readable label
 function formatKey(key: string): string {
@@ -54,15 +50,6 @@ function hasContent(value: unknown): boolean {
   if (Array.isArray(value)) return value.length > 0;
   if (isObject(value)) return Object.keys(value).some(k => !skipKeys.has(k) && hasContent(value[k]));
   return true;
-}
-
-// Check if a key is an assessment metric key
-function isAssessmentKey(key: string): boolean {
-  const keyLower = key.toLowerCase();
-  return assessmentKeys.has(keyLower) || 
-         keyLower.includes('condition') || 
-         keyLower.includes('repair_status') ||
-         keyLower.includes('cost_estimate');
 }
 
 // Check if array contains only primitive values (strings/numbers)

@@ -112,6 +112,17 @@ export interface MechanicalSystems {
   last_modified?: string;
 }
 
+export interface InteriorConditions {
+  id: string;
+  assessment_id: string;
+  step1?: Record<string, unknown>;
+  step2?: Record<string, unknown>;
+  step3?: Record<string, unknown>;
+  step4?: Record<string, unknown>;
+  current_step?: number;
+  last_modified?: string;
+}
+
 export interface Photo {
   id: string;
   assessment_id: string;
@@ -322,6 +333,11 @@ export interface Database {
       };
       mechanical_systems: {
         Row: MechanicalSystems;
+        Insert: never;
+        Update: never;
+      };
+      interior_conditions: {
+        Row: InteriorConditions;
         Insert: never;
         Update: never;
       };

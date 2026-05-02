@@ -47,7 +47,7 @@ function addPageFooter(
   page: PDFPage,
   pageNum: number,
   projectNumber: string,
-  font: EmbeddedFont,
+  _font: EmbeddedFont,
   boldFont: EmbeddedFont,
 ): void {
   const left = 'PROPERTY CONDITION ASSESSMENT';
@@ -206,7 +206,7 @@ async function addAppendixBGrid(
       const photoAreaY = cellY + CELL_PAD + CAPTION_H + CELL_PAD; // bottom of photo area
       // = cellY + 3 + 14 + 3 = cellY + 20
 
-      const photoBytes = await fetchFileBytes(batch[i].url);
+      const photoBytes = await fetchFileBytes(batch[i]!.url);
       if (photoBytes) {
         try {
           const img = isPng(photoBytes) ? await pdfDoc.embedPng(photoBytes) : await pdfDoc.embedJpg(photoBytes);
@@ -222,7 +222,7 @@ async function addAppendixBGrid(
       }
 
       // Caption inside cell at bottom
-      const caption = `${startNum + i}.  ${batch[i].notes || ''}`;
+      const caption = `${startNum + i}.  ${batch[i]!.notes || ''}`;
       page.drawText(caption.substring(0, 54), {
         x: cellX + CELL_PAD + 2,
         y: cellY + CELL_PAD + 3,
@@ -279,22 +279,22 @@ export async function postProcessPdf(
 
     // Appendix C
     await addCoverPage(pdfDoc, 'APPENDIX C', 'INTERVIEW/QUESTIONNAIRE DOCUMENTATION/CORRESPONDENCE', font, boldFont, projectNumber);
-    for (const f of appendixData.cFiles) await addFilePage(pdfDoc, f, font, boldFont, projectNumber);
+    for (const f of appendixData.cFiles) await addFilePage(pdfDoc, f);
 
     // Appendix D
     await addCoverPage(pdfDoc, 'APPENDIX D', 'SUPPORTING DOCUMENTS', font, boldFont, projectNumber);
-    for (const f of appendixData.dFiles) await addFilePage(pdfDoc, f, font, boldFont, projectNumber);
+    for (const f of appendixData.dFiles) await addFilePage(pdfDoc, f);
 
     // Appendix E
     await addCoverPage(pdfDoc, 'APPENDIX E', 'PERSONAL QUALIFICATIONS', font, boldFont, projectNumber);
-    for (const f of appendixData.eFiles) await addFilePage(pdfDoc, f, font, boldFont, projectNumber);
+    for (const f of appendixData.eFiles) await addFilePage(pdfDoc, f);
   }
 
   return pdfDoc.save();
 }
 
 export function triggerDownload(pdfBytes: Uint8Array, filename: string): void {
-  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  const blob = new Blob([pdfBytes as Uint8Array<ArrayBuffer>], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

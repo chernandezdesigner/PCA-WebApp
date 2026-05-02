@@ -240,7 +240,7 @@ export async function generateReportPdf(
 }
 
 export async function downloadPdf(storagePath: string): Promise<string> {
-  const bucket = storagePath.split('/')[0];
+  const bucket = storagePath.split('/')[0]!;
   const path = storagePath.split('/').slice(1).join('/');
 
   const { data } = await supabase.storage

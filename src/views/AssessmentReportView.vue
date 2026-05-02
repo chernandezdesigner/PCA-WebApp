@@ -296,6 +296,10 @@ function handlePropertyInfoUpdate(data: FormData) {
   currentStepData.value = data;
 }
 
+function handleAppendixUpdate(data: unknown) {
+  currentStepData.value = data as FormData;
+}
+
 function handleNavigate(_sectionId: string, step: number) {
   if (currentStepData.value && Object.keys(currentStepData.value).length > 0) {
     markStepComplete(currentStep.value);
@@ -709,7 +713,7 @@ const isAppendixSection = computed(() => {
             :model-value="(currentStepData as Record<string, unknown>) || {}"
             :report-id="reportId"
             :user-id="userId"
-            @update:model-value="handlePropertyInfoUpdate"
+            @update:model-value="handleAppendixUpdate"
           />
 
           <!-- Report Section (Sections 5-9) -->

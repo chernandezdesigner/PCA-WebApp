@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import DynamicField from './DynamicField.vue';
-import type { SectionConfig, FormData, BlockType, FieldConfig, EquipmentField } from '@/types/section';
+import type { SectionConfig, FormData, FieldValue, BlockType, FieldConfig, EquipmentField } from '@/types/section';
 import { BLOCK_TYPES, BLOCK_LABELS } from '@/types/section';
 import { useTheme } from '@/composables/useTheme';
 
@@ -18,11 +18,11 @@ const emit = defineEmits<{
 
 const { theme } = useTheme();
 
-function getFieldValue(block: BlockType, fieldId: string): string | null {
+function getFieldValue(block: BlockType, fieldId: string): FieldValue | null {
   return props.modelValue[block]?.[fieldId] ?? null;
 }
 
-function updateFieldValue(block: BlockType, fieldId: string, value: string | null) {
+function updateFieldValue(block: BlockType, fieldId: string, value: FieldValue) {
   const newData = {
     ...props.modelValue,
     [block]: {
@@ -100,7 +100,7 @@ function initEquipmentRows() {
 
   if (hasModes.value) {
     const eqData = (props.modelValue as Record<string, FormData>).equipmentList || {};
-    const savedMode = (eqData._mode as string) || cfg.modes![0].id;
+    const savedMode = (eqData._mode as string) || cfg.modes![0]!.id;
     activeMode.value = savedMode;
   }
 
@@ -146,7 +146,7 @@ function emitEquipmentUpdate() {
 }
 
 function updateEquipmentField(rowIdx: number, fieldId: string, value: string) {
-  equipmentRows.value[rowIdx][fieldId] = value;
+  equipmentRows.value[rowIdx]![fieldId] = value;
   emitEquipmentUpdate();
 }
 

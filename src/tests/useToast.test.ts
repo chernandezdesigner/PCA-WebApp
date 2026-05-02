@@ -25,9 +25,9 @@ describe('useToast', () => {
   it('showToast adds a toast with correct id, message, type', () => {
     showToast('Hello', 'info')
     expect(toasts.value).toHaveLength(1)
-    expect(toasts.value[0].message).toBe('Hello')
-    expect(toasts.value[0].type).toBe('info')
-    expect(toasts.value[0].id).toMatch(/^toast-\d+$/)
+    expect(toasts.value[0]!.message).toBe('Hello')
+    expect(toasts.value[0]!.type).toBe('info')
+    expect(toasts.value[0]!.id).toMatch(/^toast-\d+$/)
   })
 
   it('showToast returns an id string', () => {
@@ -53,8 +53,8 @@ describe('useToast', () => {
   it('updateToast changes message and type of existing toast', () => {
     const id = showToast('Loading', 'saving')
     updateToast(id, 'Done!', 'success')
-    expect(toasts.value[0].message).toBe('Done!')
-    expect(toasts.value[0].type).toBe('success')
+    expect(toasts.value[0]!.message).toBe('Done!')
+    expect(toasts.value[0]!.type).toBe('success')
   })
 
   it('hideToast removes the correct toast, others remain', () => {
@@ -62,7 +62,7 @@ describe('useToast', () => {
     const id2 = showToast('Second', 'error')
     hideToast(id1)
     expect(toasts.value).toHaveLength(1)
-    expect(toasts.value[0].id).toBe(id2)
+    expect(toasts.value[0]!.id).toBe(id2)
   })
 
   it('multiple toasts coexist in array', () => {

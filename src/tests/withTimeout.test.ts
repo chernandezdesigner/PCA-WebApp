@@ -27,7 +27,7 @@ describe('withTimeout', () => {
     const rejection = p.catch((e) => e)
     await vi.runAllTimersAsync()
     const err = await rejection
-    expect(err.message).toContain('myOp')
+    expect((err as Error).message).toContain('myOp')
   })
 
   it('rejection message contains the timeout duration in seconds', async () => {
@@ -37,7 +37,7 @@ describe('withTimeout', () => {
     const rejection = p.catch((e) => e)
     await vi.runAllTimersAsync()
     const err = await rejection
-    expect(err.message).toContain('5s')
+    expect((err as Error).message).toContain('5s')
   })
 
   it('does NOT reject if promise settles just before timeout', async () => {

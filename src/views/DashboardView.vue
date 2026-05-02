@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTheme } from '@/composables/useTheme';
 import { useReportCreation } from '@/composables/useReportCreation';
@@ -17,7 +17,7 @@ import PdfExportOverlay from '@/components/PdfExportOverlay.vue';
 const router = useRouter();
 const authStore = useAuthStore();
 const { theme, toggleTheme } = useTheme();
-const { createReportFromAssessment, loading: creatingReport, error: createError } = useReportCreation();
+const { createReportFromAssessment, loading: creatingReport, error: _createError } = useReportCreation();
 const { showError, showSuccess } = useToast();
 
 // Loading states
@@ -97,7 +97,7 @@ function getStatusStyle(status: ReportStatus) {
       label: 'Exported',
     },
   };
-  return styles[status];
+  return styles[status]!;
 }
 
 // Fetch pending assessments (submitted, not yet linked to a report)
@@ -146,7 +146,7 @@ async function fetchPendingAssessments() {
 
     if (error) throw error;
 
-    pendingAssessments.value = (data || []) as PendingAssessment[];
+    pendingAssessments.value = (data || []) as unknown as PendingAssessment[];
   } catch (err) {
     console.error('Error fetching assessments:', err);
     assessmentsError.value = err instanceof Error ? err.message : 'Failed to load assessments';

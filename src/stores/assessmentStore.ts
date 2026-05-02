@@ -165,7 +165,7 @@ export const useAssessmentStore = defineStore('assessment', () => {
       // Update local state
       const index = assessments.value.findIndex(a => a.id === id);
       if (index !== -1) {
-        assessments.value[index].status = status;
+        assessments.value[index]!.status = status;
       }
 
       return true;
