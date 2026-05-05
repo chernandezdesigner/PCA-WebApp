@@ -140,6 +140,9 @@ export function useFieldNotes(reportId: Ref<string>) {
   const inspectorName = ref<string>('');
   const inspectionDate = ref<string>('');
 
+  // Signed URL cache for private assessment-photos bucket
+  const signedUrlCache = ref<Map<string, string>>(new Map());
+
   // Navigation state
   const currentCategoryIndex = ref(0);
   const currentSectionIndex = ref(0);
@@ -209,10 +212,30 @@ export function useFieldNotes(reportId: Ref<string>) {
     return currentSectionIndex.value > 0 || currentCategoryIndex.value > 0;
   }
 
+  // Batch-generate signed URLs for all given paths and populate the cache.
+  // Uses createSignedUrls() (one round-trip) with a 1-hour expiry.
+  async function generateSignedUrls(paths: string[]): Promise<void> {
+    if (paths.length === 0) return;
+    try {
+      const { data, error } = await supabase.storage
+        .from('assessment-photos')
+        .createSignedUrls(paths, 3600);
+      if (error || !data) return;
+      const next = new Map(signedUrlCache.value);
+      for (const entry of data) {
+        if (entry.signedUrl) {
+          next.set(entry.path, entry.signedUrl);
+        }
+      }
+      signedUrlCache.value = next;
+    } catch {
+      // non-fatal — broken images are preferable to a crashed panel
+    }
+  }
+
   // Photo URL helpers
   function getPhotoUrl(path: string): string {
-    const { data } = supabase.storage.from('assessment-photos').getPublicUrl(path);
-    return data.publicUrl;
+    return signedUrlCache.value.get(path) ?? '';
   }
 
   function getThumbnailUrl(photo: FieldPhoto): string {
@@ -485,6 +508,12 @@ export function useFieldNotes(reportId: Ref<string>) {
         formType: p.form_type as string,
         formStep: p.form_step as number,
       }));
+
+      // Pre-generate signed URLs for all photos (assessment-photos is a private bucket)
+      const pathsToSign = allPhotos.value.flatMap(p =>
+        [p.storage_path, p.thumbnail_path].filter((x): x is string => !!x)
+      );
+      await generateSignedUrls(pathsToSign);
 
       // Build categories with raw data
       const builtCategories: FieldNotesCategory[] = FIELD_NOTES_CONFIG.map(config => {
