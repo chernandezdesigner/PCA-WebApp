@@ -131,13 +131,19 @@ serve(async (req: Request) => {
     }
 
     // Update reports table
-    await supabase
+    const { error: metaUpdateError } = await supabase
       .from('reports')
       .update({
         pdf_generated_at: new Date().toISOString(),
         pdf_storage_path: `report-pdfs/${pdfPath}`,
       })
       .eq('id', reportId);
+
+    if (metaUpdateError) {
+      // Non-fatal: PDF was generated and uploaded successfully.
+      // Log for diagnostics but continue so the client still receives a usable PDF URL.
+      console.error('Failed to update report metadata after PDF generation:', metaUpdateError.message);
+    }
 
     // Generate signed URL for download (1 hour expiry)
     const { data: signedUrlData } = await supabase.storage

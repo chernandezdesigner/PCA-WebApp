@@ -300,17 +300,17 @@ function handleAppendixUpdate(data: unknown) {
   currentStepData.value = data as FormData;
 }
 
-function handleNavigate(_sectionId: string, step: number) {
+async function handleNavigate(_sectionId: string, step: number) {
   if (currentStepData.value && Object.keys(currentStepData.value).length > 0) {
     markStepComplete(currentStep.value);
   }
-  goToStep(step);
+  await goToStep(step);
 }
 
 async function handleNext() {
   markStepComplete(currentStep.value);
   if (currentStep.value < TOTAL_STEPS) {
-    nextStep();
+    await nextStep();
   } else {
     await forceSave();
     if (!isDemoMode.value) {
@@ -382,8 +382,8 @@ async function autoExportPdf() {
   }
 }
 
-function handlePrev() {
-  prevStep();
+async function handlePrev() {
+  await prevStep();
 }
 
 function handleKeydown(event: KeyboardEvent) {

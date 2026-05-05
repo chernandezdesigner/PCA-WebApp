@@ -159,32 +159,32 @@ export function useWebReportForm(options: WebReportFormOptions) {
   });
 
   // Flush pending auto-save before navigating away from current step
-  function flushPendingSave() {
+  async function flushPendingSave(): Promise<void> {
     if (isDirty.value && saveTimeout) {
       clearTimeout(saveTimeout);
       saveTimeout = null;
-      saveToSupabase();
+      await saveToSupabase();
     }
   }
 
   // Navigation
-  function nextStep() {
+  async function nextStep() {
     if (currentStep.value < totalSteps.value) {
-      flushPendingSave();
+      await flushPendingSave();
       currentStep.value++;
     }
   }
 
-  function prevStep() {
+  async function prevStep() {
     if (currentStep.value > 1) {
-      flushPendingSave();
+      await flushPendingSave();
       currentStep.value--;
     }
   }
 
-  function goToStep(step: number) {
+  async function goToStep(step: number) {
     if (step >= 1 && step <= totalSteps.value) {
-      flushPendingSave();
+      await flushPendingSave();
       currentStep.value = step;
     }
   }

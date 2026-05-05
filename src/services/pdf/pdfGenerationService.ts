@@ -215,7 +215,19 @@ export async function generateReportPdf(
   });
 
   if (fnError) {
-    throw new Error(`Edge function error: ${fnError.message}`);
+    let message = fnError.message;
+    try {
+      // FunctionsHttpError.context is the underlying Response object.
+      // Extract the JSON body so the actual DocRaptor/server error is surfaced to the user.
+      const ctx = (fnError as unknown as { context?: Response }).context;
+      if (ctx) {
+        const body = await ctx.clone().json() as { error?: string; details?: string };
+        message = body?.details ?? body?.error ?? message;
+      }
+    } catch {
+      // ignore — fall back to fnError.message
+    }
+    throw new Error(`PDF generation failed: ${message}`);
   }
 
   if (!fnData?.pdfUrl) {
