@@ -223,7 +223,7 @@ export function useFieldNotes(reportId: Ref<string>) {
       if (error || !data) return;
       const next = new Map(signedUrlCache.value);
       for (const entry of data) {
-        if (entry.signedUrl) {
+        if (entry.path && entry.signedUrl) {
           next.set(entry.path, entry.signedUrl);
         }
       }
