@@ -598,7 +598,7 @@ const isAppendixSection = computed(() => {
       <main 
         id="main-content"
         class="flex-1 overflow-y-auto transition-colors duration-150"
-        :class="theme === 'dark' ? 'bg-zinc-900' : 'bg-[#fefefe]'"
+        :class="theme === 'dark' ? 'bg-zinc-900' : 'bg-slate-100'"
         tabindex="-1"
       >
         <div v-if="loading" class="h-full flex items-center justify-center" role="status" aria-live="polite">
