@@ -13,11 +13,12 @@ import { useToast } from '@/composables/useToast';
 import { withTimeout } from '@/utils/withTimeout';
 import { buildPdfFilename } from '@/utils/pdfFilename';
 import PdfExportOverlay from '@/components/PdfExportOverlay.vue';
+import RealEmailModal from '@/components/RealEmailModal.vue';;
 
 const router = useRouter();
 const authStore = useAuthStore();
 const { theme, toggleTheme } = useTheme();
-const { createReportFromAssessment, loading: creatingReport, error: _createError } = useReportCreation();
+const { createReportFromAssessment, createBlankReport, loading: creatingReport, error: _createError } = useReportCreation();
 const { showError, showSuccess } = useToast();
 
 // Loading states
@@ -174,7 +175,8 @@ async function fetchReports() {
         pdf_storage_path,
         report_content (
           current_step,
-          completed_steps
+          completed_steps,
+          section_1_summary
         )
       `)
       .order('updated_at', { ascending: false });
@@ -210,6 +212,17 @@ async function fetchReports() {
           reportItem.property_city = projectData.property_city;
           reportItem.property_state = projectData.property_state;
           reportItem.project_name = projectData.project_name;
+        }
+      }
+
+      // Fall back to section 1 report_content data for blank reports
+      if (!reportItem.project_name && !reportItem.property_address) {
+        const step1 = (report.report_content as any)?.section_1_summary?.step_1;
+        if (step1) {
+          reportItem.project_name = step1['property-name'] || null;
+          reportItem.property_address = step1['property-address'] || null;
+          reportItem.property_city = step1['property-city'] || null;
+          reportItem.property_state = step1['property-state'] || null;
         }
       }
 
@@ -283,6 +296,18 @@ function handleViewReport(reportId: string) {
   router.push({ name: 'report-editor', params: { id: reportId } });
 }
 
+async function handleCreateBlankReport() {
+  const result = await createBlankReport();
+  if (result.success && result.reportId) {
+    await fetchReports();
+    router.push({ name: 'report-editor', params: { id: result.reportId } });
+  } else {
+    showError(result.error || 'Failed to create report');
+  }
+}
+
+const showContactModal = ref(true);
+
 const exportingPdf = ref<string | null>(null);
 const downloadingPdf = ref<string | null>(null);
 const pdfOverlayMessage = ref('Preparing your report...');
@@ -299,7 +324,7 @@ async function handleExportPdf(reportId: string) {
       return;
     }
 
-    pdfOverlayMessage.value = 'Generating PDF with DocRaptor...';
+    pdfOverlayMessage.value = 'Generating PDF...';
 
     const meta: ReportMeta = {
       projectNumber: '',
@@ -440,6 +465,22 @@ onMounted(() => {
                 : 'text-slate-600 border-slate-300 hover:bg-slate-50'"
             >
               Logout
+            </button>
+
+            <!-- New Report -->
+            <button
+              @click="handleCreateBlankReport"
+              :disabled="creatingReport"
+              class="px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait"
+            >
+              <svg v-if="creatingReport" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span class="hidden sm:inline">New Report</span>
             </button>
           </div>
         </div>
@@ -602,13 +643,13 @@ onMounted(() => {
               class="text-lg font-semibold"
               :class="theme === 'dark' ? 'text-zinc-100' : 'text-slate-900'"
             >
-              My Reports
+              Reports
             </h2>
             <p
               class="text-sm mt-0.5"
               :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
             >
-              Reports you're authoring or have completed
+              Reports being authored or completed
             </p>
           </div>
           <button
@@ -825,4 +866,10 @@ onMounted(() => {
   </div>
 
   <PdfExportOverlay :visible="!!exportingPdf" :message="pdfOverlayMessage" />
+
+  <RealEmailModal
+    v-if="authStore.user?.email?.endsWith('@supabase.com') && showContactModal"
+    @done="showContactModal = false"
+    @skip="showContactModal = false"
+  />
 </template>

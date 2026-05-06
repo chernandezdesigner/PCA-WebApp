@@ -335,7 +335,7 @@ async function autoExportPdf() {
       return;
     }
 
-    pdfOverlayMessage.value = 'Generating PDF with DocRaptor...';
+    pdfOverlayMessage.value = 'Generating PDF...';
 
     const meta: ReportMeta = {
       projectNumber: '',
