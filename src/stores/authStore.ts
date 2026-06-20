@@ -7,17 +7,23 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const successMessage = ref<string | null>(null);
+
+  function clearMessages() {
+    error.value = null;
+    successMessage.value = null;
+  }
 
   // Initialize auth state
   async function initialize() {
+    // Always attach the listener, even if getSession() fails
+    supabase.auth.onAuthStateChange((_event, session) => {
+      user.value = session?.user ?? null;
+    });
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       user.value = session?.user ?? null;
-
-      // Listen for auth changes
-      supabase.auth.onAuthStateChange((_event, session) => {
-        user.value = session?.user ?? null;
-      });
     } catch (err) {
       console.error('Error initializing auth:', err);
     }
@@ -26,7 +32,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Login
   async function login(email: string, password: string) {
     loading.value = true;
-    error.value = null;
+    clearMessages();
 
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
@@ -49,14 +55,78 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Sign up
+  async function signUp(email: string, password: string) {
+    loading.value = true;
+    clearMessages();
+
+    try {
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (authError) {
+        error.value = authError.message;
+        return false;
+      }
+
+      // Supabase returns a user with empty identities array for duplicate emails
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        error.value = 'An account with this email already exists. Try signing in instead.';
+        return false;
+      }
+
+      // If email confirmation is enabled, session will be null
+      if (!data.session) {
+        successMessage.value = 'Check your email for a confirmation link to complete your registration.';
+        return true;
+      }
+
+      // If confirmation is disabled, user is immediately signed in
+      user.value = data.user;
+      return true;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'An error occurred during sign up';
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // Reset password
+  async function resetPassword(email: string) {
+    loading.value = true;
+    clearMessages();
+
+    try {
+      const { error: authError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/login',
+      });
+
+      if (authError) {
+        error.value = authError.message;
+        return false;
+      }
+
+      successMessage.value = 'If an account exists with that email, a password reset link has been sent.';
+      return true;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'An error occurred sending the reset link';
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   // Logout
   async function logout() {
     loading.value = true;
-    error.value = null;
+    clearMessages();
 
     try {
       const { error: authError } = await supabase.auth.signOut();
-      
+
       if (authError) {
         error.value = authError.message;
         return false;
@@ -76,8 +146,12 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     loading,
     error,
+    successMessage,
     initialize,
     login,
+    signUp,
+    resetPassword,
+    clearMessages,
     logout,
   };
 });

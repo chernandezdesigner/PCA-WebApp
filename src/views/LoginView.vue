@@ -21,21 +21,22 @@
             class="mt-2 text-sm"
             :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'"
           >
-            Sign in to your account
+            {{ headingSubtext }}
           </p>
         </div>
 
-        <form @submit.prevent="handleLogin" class="space-y-5">
+        <form @submit.prevent="handleSubmit" class="space-y-5">
+          <!-- Email (all modes) -->
           <div>
             <label
-              for="login-email"
+              for="auth-email"
               class="block text-sm font-medium mb-1.5"
               :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
             >
               Email
             </label>
             <input
-              id="login-email"
+              id="auth-email"
               v-model="email"
               type="email"
               required
@@ -48,21 +49,57 @@
             />
           </div>
 
-          <div>
+          <!-- Password (signin + signup) -->
+          <div v-if="mode !== 'forgot'">
             <label
-              for="login-password"
+              for="auth-password"
               class="block text-sm font-medium mb-1.5"
               :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
             >
               Password
             </label>
             <input
-              id="login-password"
+              id="auth-password"
               v-model="password"
               type="password"
               required
-              autocomplete="current-password"
+              :autocomplete="mode === 'signup' ? 'new-password' : 'current-password'"
               placeholder="Enter your password"
+              class="w-full px-4 py-2.5 rounded-lg text-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              :class="theme === 'dark'
+                ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700'
+                : 'bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 hover:border-slate-400'"
+            />
+
+            <!-- Forgot password link (signin only) -->
+            <div v-if="mode === 'signin'" class="mt-1.5 text-right">
+              <button
+                type="button"
+                class="text-xs hover:underline"
+                :class="theme === 'dark' ? 'text-blue-400' : 'text-blue-600'"
+                @click="mode = 'forgot'"
+              >
+                Forgot password?
+              </button>
+            </div>
+          </div>
+
+          <!-- Confirm Password (signup only) -->
+          <div v-if="mode === 'signup'">
+            <label
+              for="auth-confirm-password"
+              class="block text-sm font-medium mb-1.5"
+              :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
+            >
+              Confirm Password
+            </label>
+            <input
+              id="auth-confirm-password"
+              v-model="confirmPassword"
+              type="password"
+              required
+              autocomplete="new-password"
+              placeholder="Confirm your password"
               class="w-full px-4 py-2.5 rounded-lg text-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
               :class="theme === 'dark'
                 ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700'
@@ -70,6 +107,22 @@
             />
           </div>
 
+          <!-- Client-side validation error -->
+          <div
+            v-if="validationError"
+            class="flex items-start gap-3 p-3 rounded-lg text-sm"
+            :class="theme === 'dark'
+              ? 'bg-red-950/50 text-red-300'
+              : 'bg-red-50 text-red-700'"
+            role="alert"
+          >
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ validationError }}</span>
+          </div>
+
+          <!-- Server error -->
           <div
             v-if="authStore.error"
             class="flex items-start gap-3 p-3 rounded-lg text-sm"
@@ -84,6 +137,21 @@
             <span>{{ authStore.error }}</span>
           </div>
 
+          <!-- Success message -->
+          <div
+            v-if="authStore.successMessage"
+            class="flex items-start gap-3 p-3 rounded-lg text-sm"
+            :class="theme === 'dark'
+              ? 'bg-emerald-950/50 text-emerald-300'
+              : 'bg-emerald-50 text-emerald-700'"
+            role="status"
+          >
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ authStore.successMessage }}</span>
+          </div>
+
           <button
             type="submit"
             class="w-full inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -94,35 +162,132 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            {{ authStore.loading ? 'Signing in...' : 'Sign In' }}
+            {{ authStore.loading ? submitLoadingLabel : submitLabel }}
           </button>
         </form>
+
+        <!-- Mode toggle links -->
+        <div class="text-center text-sm" :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'">
+          <template v-if="mode === 'signin'">
+            Don't have an account?
+            <button
+              type="button"
+              class="font-medium hover:underline"
+              :class="theme === 'dark' ? 'text-blue-400' : 'text-blue-600'"
+              @click="mode = 'signup'"
+            >
+              Sign Up
+            </button>
+          </template>
+          <template v-else-if="mode === 'signup'">
+            Already have an account?
+            <button
+              type="button"
+              class="font-medium hover:underline"
+              :class="theme === 'dark' ? 'text-blue-400' : 'text-blue-600'"
+              @click="mode = 'signin'"
+            >
+              Sign In
+            </button>
+          </template>
+          <template v-else>
+            <button
+              type="button"
+              class="font-medium hover:underline"
+              :class="theme === 'dark' ? 'text-blue-400' : 'text-blue-600'"
+              @click="mode = 'signin'"
+            >
+              Back to Sign In
+            </button>
+          </template>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import { useTheme } from '@/composables/useTheme';
 
+type AuthMode = 'signin' | 'signup' | 'forgot';
+
+const mode = ref<AuthMode>('signin');
 const email = ref('');
 const password = ref('');
+const confirmPassword = ref('');
+const validationError = ref<string | null>(null);
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { theme } = useTheme();
 
-async function handleLogin() {
-  if (!email.value || !password.value) return;
+const headingSubtext = computed(() => {
+  switch (mode.value) {
+    case 'signin': return 'Sign in to your account';
+    case 'signup': return 'Create a new account';
+    case 'forgot': return 'Reset your password';
+  }
+});
 
-  const success = await authStore.login(email.value, password.value);
+const submitLabel = computed(() => {
+  switch (mode.value) {
+    case 'signin': return 'Sign In';
+    case 'signup': return 'Create Account';
+    case 'forgot': return 'Send Reset Link';
+  }
+});
 
-  if (success) {
-    const redirectPath = route.query.redirect as string || '/';
-    router.push(redirectPath);
+const submitLoadingLabel = computed(() => {
+  switch (mode.value) {
+    case 'signin': return 'Signing in...';
+    case 'signup': return 'Creating account...';
+    case 'forgot': return 'Sending...';
+  }
+});
+
+// Clear state when switching modes
+watch(mode, () => {
+  authStore.clearMessages();
+  validationError.value = null;
+  password.value = '';
+  confirmPassword.value = '';
+});
+
+async function handleSubmit() {
+  validationError.value = null;
+
+  if (mode.value === 'signup') {
+    if (password.value.length < 6) {
+      validationError.value = 'Password must be at least 6 characters.';
+      return;
+    }
+    if (password.value !== confirmPassword.value) {
+      validationError.value = 'Passwords do not match.';
+      return;
+    }
+  }
+
+  if (mode.value === 'signin') {
+    if (!email.value || !password.value) return;
+    const success = await authStore.login(email.value, password.value);
+    if (success) {
+      const redirectPath = route.query.redirect as string || '/';
+      router.push(redirectPath);
+    }
+  } else if (mode.value === 'signup') {
+    if (!email.value || !password.value) return;
+    const success = await authStore.signUp(email.value, password.value);
+    // If sign-up returned a session (confirmation disabled), redirect
+    if (success && authStore.user) {
+      const redirectPath = route.query.redirect as string || '/';
+      router.push(redirectPath);
+    }
+  } else {
+    if (!email.value) return;
+    await authStore.resetPassword(email.value);
   }
 }
 </script>

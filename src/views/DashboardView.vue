@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTheme } from '@/composables/useTheme';
 import { useReportCreation } from '@/composables/useReportCreation';
@@ -63,6 +63,33 @@ interface ReportItem {
 
 const pendingAssessments = ref<PendingAssessment[]>([]);
 const reports = ref<ReportItem[]>([]);
+
+const searchQuery = ref('');
+
+const filteredPendingAssessments = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return pendingAssessments.value;
+  return pendingAssessments.value.filter((a) => {
+    const ps = a.project_summaries;
+    return [
+      ps?.property_address,
+      ps?.property_city,
+      ps?.property_state,
+      ps?.project_name,
+      ps?.inspector_name,
+    ].some((v) => v?.toLowerCase().includes(q));
+  });
+});
+
+const filteredReports = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return reports.value;
+  return reports.value.filter((r) =>
+    [r.project_name, r.property_address, r.property_city, r.property_state, r.status].some(
+      (v) => v?.toLowerCase().includes(q)
+    )
+  );
+});
 
 // Status styling (reactive to theme changes)
 function getStatusStyle(status: ReportStatus) {
@@ -490,6 +517,29 @@ onMounted(() => {
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
+      <!-- Search Bar -->
+      <div class="relative">
+        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <svg
+            class="w-4 h-4"
+            :class="theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z" />
+          </svg>
+        </div>
+        <input
+          v-model="searchQuery"
+          type="search"
+          placeholder="Search assessments and reports…"
+          class="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          :class="theme === 'dark'
+            ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder-zinc-500'
+            : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
+        />
+      </div>
+
       <!-- Section 1: Pending Field Assessments -->
       <section>
         <div class="flex items-center justify-between mb-4">
@@ -549,7 +599,7 @@ onMounted(() => {
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="pendingAssessments.length === 0" class="p-12 text-center">
+          <div v-else-if="filteredPendingAssessments.length === 0" class="p-12 text-center">
             <svg
               class="w-12 h-12 mx-auto mb-4"
               :class="theme === 'dark' ? 'text-zinc-700' : 'text-slate-300'"
@@ -574,7 +624,7 @@ onMounted(() => {
           <!-- Assessments List -->
           <div v-else class="divide-y" :class="theme === 'dark' ? 'divide-zinc-800' : 'divide-slate-100'">
             <div
-              v-for="assessment in pendingAssessments"
+              v-for="assessment in filteredPendingAssessments"
               :key="assessment.id"
               class="p-4 flex items-center justify-between gap-4 transition-colors"
               :class="theme === 'dark' ? 'hover:bg-zinc-800/50' : 'hover:bg-slate-50'"
@@ -694,7 +744,7 @@ onMounted(() => {
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="reports.length === 0" class="p-12 text-center">
+          <div v-else-if="filteredReports.length === 0" class="p-12 text-center">
             <svg
               class="w-12 h-12 mx-auto mb-4"
               :class="theme === 'dark' ? 'text-zinc-700' : 'text-slate-300'"
@@ -719,7 +769,7 @@ onMounted(() => {
           <!-- Reports List -->
           <div v-else class="divide-y" :class="theme === 'dark' ? 'divide-zinc-800' : 'divide-slate-100'">
             <div
-              v-for="report in reports"
+              v-for="report in filteredReports"
               :key="report.id"
               class="p-4 transition-colors"
               :class="theme === 'dark' ? 'hover:bg-zinc-800/50' : 'hover:bg-slate-50'"
