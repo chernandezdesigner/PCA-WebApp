@@ -84,8 +84,9 @@ router.beforeEach((to, _from, next) => {
       path: '/login',
       query: { redirect: to.fullPath },
     });
-  } else if (to.path === '/login' && authStore.user) {
+  } else if (to.path === '/login' && authStore.user && !authStore.passwordRecovery) {
     // Redirect to home if user is already logged in and tries to access login
+    // (but allow access during password recovery flow)
     next('/');
   } else {
     next();

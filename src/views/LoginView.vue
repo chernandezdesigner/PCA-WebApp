@@ -26,8 +26,8 @@
         </div>
 
         <form @submit.prevent="handleSubmit" class="space-y-5">
-          <!-- Email (all modes) -->
-          <div>
+          <!-- Email (all modes except reset) -->
+          <div v-if="mode !== 'reset'">
             <label
               for="auth-email"
               class="block text-sm font-medium mb-1.5"
@@ -50,7 +50,7 @@
           </div>
 
           <!-- Password (signin + signup) -->
-          <div v-if="mode !== 'forgot'">
+          <div v-if="mode === 'signin' || mode === 'signup'">
             <label
               for="auth-password"
               class="block text-sm font-medium mb-1.5"
@@ -84,8 +84,31 @@
             </div>
           </div>
 
-          <!-- Confirm Password (signup only) -->
-          <div v-if="mode === 'signup'">
+          <!-- New Password (reset mode) -->
+          <div v-if="mode === 'reset'">
+            <label
+              for="auth-new-password"
+              class="block text-sm font-medium mb-1.5"
+              :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
+            >
+              New Password
+            </label>
+            <input
+              id="auth-new-password"
+              v-model="password"
+              type="password"
+              required
+              autocomplete="new-password"
+              placeholder="Enter new password"
+              class="w-full px-4 py-2.5 rounded-lg text-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              :class="theme === 'dark'
+                ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700'
+                : 'bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 hover:border-slate-400'"
+            />
+          </div>
+
+          <!-- Confirm Password (signup + reset) -->
+          <div v-if="mode === 'signup' || mode === 'reset'">
             <label
               for="auth-confirm-password"
               class="block text-sm font-medium mb-1.5"
@@ -190,7 +213,7 @@
               Sign In
             </button>
           </template>
-          <template v-else>
+          <template v-else-if="mode === 'forgot'">
             <button
               type="button"
               class="font-medium hover:underline"
@@ -207,12 +230,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import { useTheme } from '@/composables/useTheme';
 
-type AuthMode = 'signin' | 'signup' | 'forgot';
+type AuthMode = 'signin' | 'signup' | 'forgot' | 'reset';
 
 const mode = ref<AuthMode>('signin');
 const email = ref('');
@@ -224,11 +247,19 @@ const route = useRoute();
 const authStore = useAuthStore();
 const { theme } = useTheme();
 
+// If we arrived via a password recovery link, switch to reset mode
+onMounted(() => {
+  if (authStore.passwordRecovery) {
+    mode.value = 'reset';
+  }
+});
+
 const headingSubtext = computed(() => {
   switch (mode.value) {
     case 'signin': return 'Sign in to your account';
     case 'signup': return 'Create a new account';
     case 'forgot': return 'Reset your password';
+    case 'reset': return 'Choose a new password';
   }
 });
 
@@ -237,6 +268,7 @@ const submitLabel = computed(() => {
     case 'signin': return 'Sign In';
     case 'signup': return 'Create Account';
     case 'forgot': return 'Send Reset Link';
+    case 'reset': return 'Update Password';
   }
 });
 
@@ -245,6 +277,7 @@ const submitLoadingLabel = computed(() => {
     case 'signin': return 'Signing in...';
     case 'signup': return 'Creating account...';
     case 'forgot': return 'Sending...';
+    case 'reset': return 'Updating...';
   }
 });
 
@@ -259,7 +292,7 @@ watch(mode, () => {
 async function handleSubmit() {
   validationError.value = null;
 
-  if (mode.value === 'signup') {
+  if (mode.value === 'signup' || mode.value === 'reset') {
     if (password.value.length < 6) {
       validationError.value = 'Password must be at least 6 characters.';
       return;
@@ -284,6 +317,12 @@ async function handleSubmit() {
     if (success && authStore.user) {
       const redirectPath = route.query.redirect as string || '/';
       router.push(redirectPath);
+    }
+  } else if (mode.value === 'reset') {
+    if (!password.value) return;
+    const success = await authStore.updatePassword(password.value);
+    if (success) {
+      setTimeout(() => router.push('/'), 1500);
     }
   } else {
     if (!email.value) return;

@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
   const successMessage = ref<string | null>(null);
+  const passwordRecovery = ref(false);
 
   function clearMessages() {
     error.value = null;
@@ -17,8 +18,11 @@ export const useAuthStore = defineStore('auth', () => {
   // Initialize auth state
   async function initialize() {
     // Always attach the listener, even if getSession() fails
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((event, session) => {
       user.value = session?.user ?? null;
+      if (event === 'PASSWORD_RECOVERY') {
+        passwordRecovery.value = true;
+      }
     });
 
     try {
@@ -119,6 +123,32 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Update password (after clicking reset link)
+  async function updatePassword(newPassword: string) {
+    loading.value = true;
+    clearMessages();
+
+    try {
+      const { error: authError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (authError) {
+        error.value = authError.message;
+        return false;
+      }
+
+      passwordRecovery.value = false;
+      successMessage.value = 'Password updated successfully. Redirecting...';
+      return true;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'An error occurred updating your password';
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   // Logout
   async function logout() {
     loading.value = true;
@@ -147,10 +177,12 @@ export const useAuthStore = defineStore('auth', () => {
     loading,
     error,
     successMessage,
+    passwordRecovery,
     initialize,
     login,
     signUp,
     resetPassword,
+    updatePassword,
     clearMessages,
     logout,
   };
