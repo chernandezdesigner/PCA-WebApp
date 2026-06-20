@@ -78,6 +78,15 @@ router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 
+  // Let Supabase process auth tokens in the URL hash before redirecting.
+  // Recovery/magic links land at the redirect URL with #access_token=...
+  // If we redirect to /login here, the hash fragment is lost.
+  const hash = window.location.hash;
+  if (hash && (hash.includes('access_token') || hash.includes('type=recovery'))) {
+    next();
+    return;
+  }
+
   if (requiresAuth && !authStore.user) {
     // Redirect to login if route requires auth and user is not logged in
     next({

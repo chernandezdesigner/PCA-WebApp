@@ -230,7 +230,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import { useTheme } from '@/composables/useTheme';
@@ -247,12 +247,12 @@ const route = useRoute();
 const authStore = useAuthStore();
 const { theme } = useTheme();
 
-// If we arrived via a password recovery link, switch to reset mode
-onMounted(() => {
-  if (authStore.passwordRecovery) {
+// React to password recovery event (may fire after mount due to async token processing)
+watch(() => authStore.passwordRecovery, (isRecovery) => {
+  if (isRecovery) {
     mode.value = 'reset';
   }
-});
+}, { immediate: true });
 
 const headingSubtext = computed(() => {
   switch (mode.value) {
