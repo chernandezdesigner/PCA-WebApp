@@ -26,6 +26,29 @@
         </div>
 
         <form @submit.prevent="handleSubmit" class="space-y-5">
+          <!-- Access PIN (signup only) -->
+          <div v-if="mode === 'signup'">
+            <label
+              for="auth-pin"
+              class="block text-sm font-medium mb-1.5"
+              :class="theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'"
+            >
+              Access PIN
+            </label>
+            <input
+              id="auth-pin"
+              v-model="pin"
+              type="password"
+              required
+              autocomplete="off"
+              placeholder="Enter access PIN"
+              class="w-full px-4 py-2.5 rounded-lg text-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              :class="theme === 'dark'
+                ? 'bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 hover:border-zinc-700'
+                : 'bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 hover:border-slate-400'"
+            />
+          </div>
+
           <!-- Email (all modes except reset) -->
           <div v-if="mode !== 'reset'">
             <label
@@ -237,10 +260,13 @@ import { useTheme } from '@/composables/useTheme';
 
 type AuthMode = 'signin' | 'signup' | 'forgot' | 'reset';
 
+const SIGNUP_PIN = 'r019';
+
 const mode = ref<AuthMode>('signin');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
+const pin = ref('');
 const validationError = ref<string | null>(null);
 const router = useRouter();
 const route = useRoute();
@@ -287,6 +313,7 @@ watch(mode, () => {
   validationError.value = null;
   password.value = '';
   confirmPassword.value = '';
+  pin.value = '';
 });
 
 async function handleSubmit() {
@@ -312,6 +339,10 @@ async function handleSubmit() {
     }
   } else if (mode.value === 'signup') {
     if (!email.value || !password.value) return;
+    if (pin.value !== SIGNUP_PIN) {
+      validationError.value = 'Invalid access PIN.';
+      return;
+    }
     const success = await authStore.signUp(email.value, password.value);
     // If sign-up returned a session (confirmation disabled), redirect
     if (success && authStore.user) {
