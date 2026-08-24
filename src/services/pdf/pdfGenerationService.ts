@@ -1,8 +1,6 @@
 import { supabase } from '@/services/supabase';
-import { assembleReportHtml } from './reportTemplate';
 import type { ReportMeta } from './reportTemplate';
 import type { ReportContentRow, SectionData } from '@/types/database';
-import { PREPARERS } from '@/data/preparers';
 
 export interface AppendixFileEntry {
   url: string;
@@ -64,31 +62,6 @@ function readPropertyField(content: ReportContentRow, fieldId: string): string {
   return '';
 }
 
-/**
- * Resolve a signed URL for the first uploaded image file from appendices data.
- * Returns the signed URL or empty string if not found.
- */
-async function resolveAppendixUploadUrl(
-  content: ReportContentRow,
-  field: string,
-): Promise<string> {
-  try {
-    const stepData = getAppendixStepData(content);
-    if (!stepData) return '';
-    const fieldData = stepData[field] as { files?: Array<{ storage_path?: string; mime_type?: string }> } | undefined;
-    if (!fieldData?.files?.length) return '';
-    const file = fieldData.files[0];
-    if (!file?.storage_path) return '';
-    // Only resolve image files (PDFs can't be embedded as img)
-    if (file.mime_type && !file.mime_type.startsWith('image/')) return '';
-    const { data } = await supabase.storage
-      .from(UPLOAD_BUCKET)
-      .createSignedUrl(file.storage_path, 3600);
-    return data?.signedUrl || '';
-  } catch {
-    return '';
-  }
-}
 
 /**
  * Resolve signed URLs for all files (images + PDFs) in an appendix field (A/C/D/E).
@@ -160,20 +133,8 @@ export async function generateReportPdf(
 
   const content = contentData as ReportContentRow;
 
-  // 2. Resolve cover/table image URLs + appendix file URLs in parallel
-  const [
-    coverPhotoUrl,
-    table1ImageUrl,
-    table2ImageUrl,
-    aFiles,
-    bPhotos,
-    cFiles,
-    dFiles,
-    eFiles,
-  ] = await Promise.all([
-    resolveAppendixUploadUrl(content, 'cover_photo'),
-    resolveAppendixUploadUrl(content, 'table_1_deficiencies'),
-    resolveAppendixUploadUrl(content, 'table_2_reserves'),
+  // 2. Resolve appendix file URLs for pdf-lib post-processing (cover/table now resolved server-side)
+  const [aFiles, bPhotos, cFiles, dFiles, eFiles] = await Promise.all([
     resolveAppendixFileUrls(content, 'appendix_a'),
     resolveAppendixBPhotos(content),
     resolveAppendixFileUrls(content, 'appendix_c'),
@@ -181,37 +142,15 @@ export async function generateReportPdf(
     resolveAppendixFileUrls(content, 'appendix_e'),
   ]);
 
-  // 3. Resolve preparer from form data
-  const step1 = (content.section_1_summary as Record<string, Record<string, unknown>> | null)?.['step_1'] ?? {};
-  const preparerKey = step1['prepared-by'] as string | undefined;
-  const preparer = preparerKey ? PREPARERS[preparerKey] : undefined;
-  const formTitle = step1['prepared-by-title'] as string | undefined;
-
-  // Build public URL for the preparer's signature from report-assets/prepared-by-signatures/
-  // Encode each path segment separately to handle spaces and special chars in filenames
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-  const preparedBySignatureUrl = preparer?.signatureKey
-    ? `${supabaseUrl}/storage/v1/object/public/report-assets/${preparer.signatureKey.split('/').map(encodeURIComponent).join('/')}`
-    : undefined;
-
-  // 4. Assemble HTML (only cover/table images go into the template now)
-  const resolvedMeta: ReportMeta = {
-    ...meta,
-    coverPhotoUrl: coverPhotoUrl || meta.coverPhotoUrl,
-    table1ImageUrl: table1ImageUrl || meta.table1ImageUrl,
-    table2ImageUrl: table2ImageUrl || meta.table2ImageUrl,
-    preparedBy: preparer?.name ?? meta.preparedBy,
-    preparedByTitle: formTitle || preparer?.title || meta.preparedByTitle || 'Project Manager',
-    preparedBySignatureUrl: preparedBySignatureUrl || meta.preparedBySignatureUrl,
-    reviewedBy: meta.reviewedBy || 'Ronnie Long',
-    reviewedByTitle: meta.reviewedByTitle || 'Assessments Director',
-  };
-
-  const html = assembleReportHtml(content, resolvedMeta);
-
-  // 5. Call edge function
+  // 3. Call edge function — HTML assembly happens server-side to avoid large request bodies
   const { data: fnData, error: fnError } = await supabase.functions.invoke('generate-pdf', {
-    body: { reportId, html },
+    body: {
+      reportId,
+      reviewedBy: meta.reviewedBy,
+      reviewedByTitle: meta.reviewedByTitle,
+      logoUrl: meta.logoUrl,
+      dateIssued: meta.dateIssued,
+    },
   });
 
   if (fnError) {
@@ -234,20 +173,13 @@ export async function generateReportPdf(
     throw new Error(fnData?.error ?? 'No PDF URL returned from edge function');
   }
 
-  const propertyName = readPropertyField(content, 'property-name') || 'Subject Property';
-  const projectNumber = readPropertyField(content, 'project-number');
-  const city = readPropertyField(content, 'city');
-  const state = readPropertyField(content, 'state');
-  const zip = readPropertyField(content, 'zip');
-  const cityStateZip = [city, state].filter(Boolean).join(', ') + (zip ? ` ${zip}` : '');
-
   return {
     pdfUrl: fnData.pdfUrl,
     storagePath: fnData.storagePath,
     appendixData: { aFiles, bPhotos, cFiles, dFiles, eFiles },
-    propertyName,
-    cityStateZip,
-    projectNumber,
+    propertyName: fnData.propertyName || 'Subject Property',
+    cityStateZip: fnData.cityStateZip || '',
+    projectNumber: fnData.projectNumber || '',
   };
 }
 
@@ -255,15 +187,14 @@ export async function downloadPdf(storagePath: string): Promise<string> {
   const bucket = storagePath.split('/')[0]!;
   const path = storagePath.split('/').slice(1).join('/');
 
-  const { data } = await supabase.storage
-    .from(bucket)
-    .createSignedUrl(path, 3600);
+  // report-pdfs is a public bucket — getPublicUrl requires no auth or RLS
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
 
-  if (!data?.signedUrl) {
+  if (!data?.publicUrl) {
     throw new Error('Failed to generate download URL');
   }
 
-  return data.signedUrl;
+  return data.publicUrl as string;
 }
 
 export interface ValidationResult {
