@@ -36,7 +36,10 @@
       "Bash(npm test:*)",
       "Bash(npx vitest:*)",
       "Bash(find c:UsersbeatsOneDriveDesktopProjectspcaWebAppsupabasefunctions -type f -name *.ts)",
-      "Bash(grep -n \"current_step\" \"c:\\\\Users\\\\beats\\\\OneDrive\\\\Desktop\\\\Projects\\\\pcaWebApp\\\\supabase\\\\migrations\"/*.sql)"
+      "Bash(grep -n \"current_step\" \"c:\\\\Users\\\\beats\\\\OneDrive\\\\Desktop\\\\Projects\\\\pcaWebApp\\\\supabase\\\\migrations\"/*.sql)",
+      "mcp__supabase__list_edge_functions",
+      "mcp__supabase__query_logs",
+      "Bash(python -c ' *)"
     ]
   }
 }
